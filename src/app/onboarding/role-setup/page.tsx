@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { FormMessage } from "@/components/forms/form-message";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { getRoles, requestRole } from "@/lib/api/auth";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { useAuth } from "@/providers/auth-provider";
@@ -36,9 +37,14 @@ export default function RoleSetupPage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto max-w-4xl px-6 py-10">
-        <h1 className="text-3xl font-semibold text-ink">Choose your RealityNG roles</h1>
-        <p className="mt-2 text-muted">Tenant, buyer, and landlord roles are approved immediately. Professional roles require admin review.</p>
+      <main className="mx-auto max-w-4xl px-5 py-10 sm:px-6">
+        <h1 className="font-heading text-3xl font-semibold text-brand-text">
+          Choose your RealityNG roles
+        </h1>
+        <p className="mt-2 text-brand-muted">
+          Tenant, buyer, and landlord roles are approved immediately. Professional roles require
+          admin review.
+        </p>
         <div className="mt-6 space-y-3">
           <FormMessage tone="success">{message}</FormMessage>
           <FormMessage tone="error">{error}</FormMessage>
@@ -48,12 +54,14 @@ export default function RoleSetupPage() {
             const alreadyRequested = ownedRoleNames.has(role.name);
             const isAdminRole = role.name === "admin" || role.name === "super_admin";
             return (
-              <section className="rounded-md border border-slate-200 bg-white p-4" key={role.id}>
+              <Card className="p-4" key={role.id}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-semibold capitalize text-ink">{role.name.replace("_", " ")}</h2>
-                    <p className="mt-1 text-sm text-muted">{role.description}</p>
-                    <p className="mt-3 text-sm font-medium text-brand-700">
+                    <h2 className="text-lg font-semibold capitalize text-brand-text">
+                      {role.name.replace("_", " ")}
+                    </h2>
+                    <p className="mt-1 text-sm text-brand-muted">{role.description}</p>
+                    <p className="mt-3 text-sm font-medium text-brand-secondary">
                       {role.approval_required ? "Admin approval required" : "Auto-approved"}
                     </p>
                   </div>
@@ -64,11 +72,11 @@ export default function RoleSetupPage() {
                     {alreadyRequested ? "Selected" : "Request"}
                   </Button>
                 </div>
-              </section>
+              </Card>
             );
           })}
         </div>
-        {rolesQuery.isLoading ? <p className="mt-8 text-muted">Loading roles...</p> : null}
+        {rolesQuery.isLoading ? <p className="mt-8 text-brand-muted">Loading roles...</p> : null}
       </main>
     </ProtectedRoute>
   );

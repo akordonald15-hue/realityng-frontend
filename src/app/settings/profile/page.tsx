@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { updateCurrentUser } from "@/lib/api/auth";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { useAuth } from "@/providers/auth-provider";
@@ -92,39 +93,58 @@ export default function ProfilePage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto max-w-3xl px-6 py-10">
-        <h1 className="text-3xl font-semibold text-ink">Profile settings</h1>
-        <p className="mt-2 text-muted">Keep your contact and identity details current.</p>
-        <div className="mt-8 rounded-md border border-dashed border-slate-300 bg-white p-4 text-sm text-muted">
+      <main className="mx-auto max-w-3xl px-5 py-10 sm:px-6">
+        <h1 className="font-heading text-3xl font-semibold text-brand-text">Profile settings</h1>
+        <p className="mt-2 text-brand-muted">Keep your contact and identity details current.</p>
+        <Card className="mt-8 border-dashed p-4 text-sm text-brand-muted">
           Avatar upload placeholder. Secure file uploads arrive in a later document workflow sprint.
-        </div>
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TextField label="First name" error={errors.first_name} {...register("first_name")} />
-            <TextField label="Last name" error={errors.last_name} {...register("last_name")} />
-          </div>
-          <TextField label="Phone number" error={errors.phone_number} {...register("phone_number")} />
-          <TextField label="Bio" error={errors.bio} {...register("bio")} />
-          <div className="grid gap-4 sm:grid-cols-3">
-            <TextField label="Country" error={errors.country} {...register("country")} />
-            <TextField label="State" error={errors.state} {...register("state")} />
-            <TextField label="City" error={errors.city} {...register("city")} />
-          </div>
-          <TextField label="Address" error={errors.address} {...register("address")} />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TextField label="Date of birth" error={errors.date_of_birth} type="date" {...register("date_of_birth")} />
-            <TextField label="Gender" error={errors.gender} {...register("gender")} />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TextField label="Emergency contact name" error={errors.emergency_contact_name} {...register("emergency_contact_name")} />
-            <TextField label="Emergency contact phone" error={errors.emergency_contact_phone} {...register("emergency_contact_phone")} />
-          </div>
-          <FormMessage tone="error">{serverError}</FormMessage>
-          <FormMessage tone="success">{success}</FormMessage>
-          <Button disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Saving..." : "Save changes"}
-          </Button>
-        </form>
+        </Card>
+        <Card className="mt-6 p-5 sm:p-6">
+          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField label="First name" error={errors.first_name} {...register("first_name")} />
+              <TextField label="Last name" error={errors.last_name} {...register("last_name")} />
+            </div>
+            <TextField
+              label="Phone number"
+              error={errors.phone_number}
+              {...register("phone_number")}
+            />
+            <TextField label="Bio" error={errors.bio} {...register("bio")} />
+            <div className="grid gap-4 sm:grid-cols-3">
+              <TextField label="Country" error={errors.country} {...register("country")} />
+              <TextField label="State" error={errors.state} {...register("state")} />
+              <TextField label="City" error={errors.city} {...register("city")} />
+            </div>
+            <TextField label="Address" error={errors.address} {...register("address")} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField
+                label="Date of birth"
+                error={errors.date_of_birth}
+                type="date"
+                {...register("date_of_birth")}
+              />
+              <TextField label="Gender" error={errors.gender} {...register("gender")} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField
+                label="Emergency contact name"
+                error={errors.emergency_contact_name}
+                {...register("emergency_contact_name")}
+              />
+              <TextField
+                label="Emergency contact phone"
+                error={errors.emergency_contact_phone}
+                {...register("emergency_contact_phone")}
+              />
+            </div>
+            <FormMessage tone="error">{serverError}</FormMessage>
+            <FormMessage tone="success">{success}</FormMessage>
+            <Button disabled={isSubmitting} type="submit">
+              {isSubmitting ? "Saving..." : "Save changes"}
+            </Button>
+          </form>
+        </Card>
       </main>
     </ProtectedRoute>
   );

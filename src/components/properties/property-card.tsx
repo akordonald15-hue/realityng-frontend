@@ -19,6 +19,8 @@ export function PropertyCard({ property }: PropertyCardProps) {
             <img
               alt={property.title}
               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              decoding="async"
+              loading="lazy"
               src={property.cover_image_url}
             />
           ) : (

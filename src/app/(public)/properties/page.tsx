@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
 import { PropertyFilterPanel } from "@/components/properties/property-filter-panel";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getPublicProperties, type PropertyFilters } from "@/lib/api/properties";
@@ -49,14 +49,16 @@ function PropertiesContent() {
             />
             <div className="flex gap-3">
               <Button
+                aria-controls="mobile-property-filters"
+                aria-expanded={mobileFiltersOpen}
                 className="lg:hidden"
                 onClick={() => setMobileFiltersOpen((open) => !open)}
                 variant="secondary"
               >
                 Filters
               </Button>
-              <Link href="/properties/new">
-                <Button>Add listing</Button>
+              <Link className={buttonClasses("primary")} href="/properties/new">
+                Add listing
               </Link>
             </div>
           </div>
@@ -66,7 +68,7 @@ function PropertiesContent() {
             <PropertyFilterPanel filters={filters} onChange={setFilters} />
           </aside>
           {mobileFiltersOpen ? (
-            <div className="lg:hidden">
+            <div className="lg:hidden" id="mobile-property-filters">
               <PropertyFilterPanel
                 filters={filters}
                 onChange={(nextFilters) => {

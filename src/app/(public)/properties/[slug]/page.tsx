@@ -55,6 +55,8 @@ export default function PropertyDetailPage() {
                       <img
                         alt={cover.caption || property.title}
                         className="h-full w-full object-cover"
+                        decoding="async"
+                        loading="eager"
                         src={cover.image_url}
                       />
                     ) : (
@@ -66,11 +68,16 @@ export default function PropertyDetailPage() {
                   {gallery.length > 0 ? (
                     <div className="grid grid-cols-3 gap-2 p-2 sm:grid-cols-5">
                       {gallery.slice(0, 5).map((image, index) => (
-                        <div className="aspect-square overflow-hidden rounded-sm bg-brand-background" key={image.id}>
+                        <div
+                          className="aspect-square overflow-hidden rounded-sm bg-brand-background"
+                          key={image.id}
+                        >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             alt={image.caption || galleryAlt(index)}
                             className="h-full w-full object-cover"
+                            decoding="async"
+                            loading="lazy"
                             src={image.image_url}
                           />
                         </div>
@@ -112,11 +119,15 @@ export default function PropertyDetailPage() {
                   <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <dt className="text-brand-muted">Bedrooms</dt>
-                      <dd className="font-semibold text-brand-text">{property.bedrooms ?? "N/A"}</dd>
+                      <dd className="font-semibold text-brand-text">
+                        {property.bedrooms ?? "N/A"}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-brand-muted">Bathrooms</dt>
-                      <dd className="font-semibold text-brand-text">{property.bathrooms ?? "N/A"}</dd>
+                      <dd className="font-semibold text-brand-text">
+                        {property.bathrooms ?? "N/A"}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-brand-muted">Parking</dt>
@@ -131,9 +142,7 @@ export default function PropertyDetailPage() {
                   </dl>
                 </Card>
                 <Card className="p-5">
-                  <h2 className="font-heading text-2xl font-semibold text-brand-text">
-                    Amenities
-                  </h2>
+                  <h2 className="font-heading text-2xl font-semibold text-brand-text">Amenities</h2>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {[
                       property.bedrooms ? `${property.bedrooms} bedrooms` : null,

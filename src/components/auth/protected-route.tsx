@@ -16,7 +16,7 @@ export function ProtectedRoute({ children }: Readonly<{ children: React.ReactNod
   }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
-    return <main className="mx-auto max-w-3xl px-6 py-10 text-muted">Loading...</main>;
+    return <main className="mx-auto max-w-3xl px-6 py-10 text-brand-muted">Loading...</main>;
   }
 
   if (!isAuthenticated) {

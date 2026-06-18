@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -66,11 +66,11 @@ export default function HomePage() {
               owner controls, and review workflows built for trust.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/properties">
-                <Button>Browse properties</Button>
+              <Link className={buttonClasses("primary")} href="/properties">
+                Browse properties
               </Link>
-              <Link href="/properties/new">
-                <Button variant="secondary">List property</Button>
+              <Link className={buttonClasses("secondary")} href="/properties/new">
+                List property
               </Link>
             </div>
           </div>
@@ -190,8 +190,8 @@ export default function HomePage() {
                 renters inspect the property clearly.
               </p>
             </div>
-            <Link href="/properties/new">
-              <Button>Add listing</Button>
+            <Link className={buttonClasses("primary", "w-full sm:w-auto")} href="/properties/new">
+              Add listing
             </Link>
           </Card>
         </section>

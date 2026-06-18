@@ -135,11 +135,11 @@ export function PropertyImageManager({ propertySlug }: PropertyImageManagerProps
         </div>
       </Card>
 
-      {imagesQuery.isLoading ? <p className="text-sm text-brand-muted">Loading gallery...</p> : null}
+      {imagesQuery.isLoading ? (
+        <p className="text-sm text-brand-muted">Loading gallery...</p>
+      ) : null}
       {images.length === 0 && !imagesQuery.isLoading ? (
-        <Card className="p-5 text-sm text-brand-muted">
-          No images uploaded yet.
-        </Card>
+        <Card className="p-5 text-sm text-brand-muted">No images uploaded yet.</Card>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         {images.map((image, index) => (
@@ -149,6 +149,8 @@ export function PropertyImageManager({ propertySlug }: PropertyImageManagerProps
               <img
                 alt={image.caption || "Property image"}
                 className="h-full w-full object-cover"
+                decoding="async"
+                loading="lazy"
                 src={image.image_url}
               />
               {image.is_cover ? (
@@ -157,7 +159,10 @@ export function PropertyImageManager({ propertySlug }: PropertyImageManagerProps
                 </span>
               ) : null}
             </div>
-            <label className="mt-3 block text-sm font-medium text-brand-text" htmlFor={`caption-${image.id}`}>
+            <label
+              className="mt-3 block text-sm font-medium text-brand-text"
+              htmlFor={`caption-${image.id}`}
+            >
               <span>Caption</span>
               <Input
                 className="mt-2 h-10"

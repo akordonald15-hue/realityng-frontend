@@ -10,6 +10,7 @@ import { z } from "zod";
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -45,35 +46,45 @@ export default function SignInPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
-      <h1 className="text-3xl font-semibold text-ink">Sign in</h1>
-      <p className="mt-2 text-muted">Access your RealityNG dashboard.</p>
-      <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        <TextField label="Email" error={errors.email} type="email" {...register("email")} />
-        <div className="space-y-2">
-          <TextField
-            label="Password"
-            error={errors.password}
-            type={showPassword ? "text" : "password"}
-            {...register("password")}
-          />
-          <button className="text-sm font-medium text-brand-700" type="button" onClick={() => setShowPassword((value) => !value)}>
-            {showPassword ? "Hide password" : "Show password"}
-          </button>
+    <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
+      <Card className="w-full max-w-md p-6 sm:p-8">
+        <Link className="font-heading text-2xl font-semibold text-brand-text" href="/">
+          RealityNG
+        </Link>
+        <h1 className="mt-8 font-heading text-3xl font-semibold text-brand-text">Sign in</h1>
+        <p className="mt-2 text-brand-muted">Access your RealityNG dashboard.</p>
+        <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <TextField label="Email" error={errors.email} type="email" {...register("email")} />
+          <div className="space-y-2">
+            <TextField
+              label="Password"
+              error={errors.password}
+              type={showPassword ? "text" : "password"}
+              {...register("password")}
+            />
+            <Button
+              className="h-8 px-2 text-brand-secondary"
+              onClick={() => setShowPassword((value) => !value)}
+              type="button"
+              variant="ghost"
+            >
+              {showPassword ? "Hide password" : "Show password"}
+            </Button>
+          </div>
+          <FormMessage tone="error">{serverError}</FormMessage>
+          <Button className="w-full" disabled={isSubmitting} type="submit">
+            {isSubmitting ? "Signing in..." : "Sign in"}
+          </Button>
+        </form>
+        <div className="mt-6 flex items-center justify-between gap-4 text-sm">
+          <Link className="font-semibold text-brand-secondary" href="/auth/forgot-password">
+            Forgot password?
+          </Link>
+          <Link className="font-semibold text-brand-secondary" href="/auth/sign-up">
+            Create account
+          </Link>
         </div>
-        <FormMessage tone="error">{serverError}</FormMessage>
-        <Button className="w-full" disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Signing in..." : "Sign in"}
-        </Button>
-      </form>
-      <div className="mt-6 flex items-center justify-between text-sm">
-        <Link className="font-semibold text-brand-700" href="/auth/forgot-password">
-          Forgot password?
-        </Link>
-        <Link className="font-semibold text-brand-700" href="/auth/sign-up">
-          Create account
-        </Link>
-      </div>
+      </Card>
     </main>
   );
 }
