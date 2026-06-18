@@ -11,8 +11,10 @@ import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { PropertyImageManager } from "@/components/properties/property-image-manager";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { createProperty, propertyTypeOptions, type Property } from "@/lib/api/properties";
+import { Select } from "@/components/ui/select";
 
 const basicStepSchema = z.object({
   title: z.string().min(5, "Enter a descriptive title."),
@@ -161,22 +163,22 @@ export default function NewPropertyPage() {
   }
 
   const selectClass =
-    "mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100";
+    "mt-2";
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto max-w-5xl px-6 py-8">
-        <div className="border-b border-slate-200 pb-6">
-          <h1 className="text-3xl font-semibold text-ink">Add a property</h1>
-          <p className="mt-2 text-muted">{stepLabel(step)}</p>
+      <main className="min-h-screen bg-brand-background px-6 py-8 text-brand-text">
+        <div className="mx-auto max-w-5xl border-b border-white/10 pb-6">
+          <h1 className="font-heading text-4xl font-semibold text-brand-text">Add a property</h1>
+          <p className="mt-2 text-brand-muted">{stepLabel(step)}</p>
         </div>
-        <div className="mt-6 grid grid-cols-3 gap-2 text-sm font-medium">
+        <div className="mx-auto mt-6 grid max-w-5xl grid-cols-3 gap-2 text-sm font-medium">
           {(["basic", "location", "media"] as Step[]).map((item) => (
             <div
               className={
                 item === step
-                  ? "rounded-sm bg-brand-600 px-3 py-2 text-center text-white"
-                  : "rounded-sm bg-slate-100 px-3 py-2 text-center text-muted"
+                  ? "rounded-sm bg-brand-secondary px-3 py-2 text-center text-brand-background"
+                  : "rounded-sm bg-white/5 px-3 py-2 text-center text-brand-muted"
               }
               key={item}
             >
@@ -186,58 +188,58 @@ export default function NewPropertyPage() {
         </div>
 
         {step === "media" && savedProperty ? (
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="mx-auto mt-8 grid max-w-5xl gap-6 lg:grid-cols-[1fr_320px]">
             <PropertyImageManager propertySlug={savedProperty.slug} />
-            <aside className="h-fit rounded-md border border-slate-200 bg-white p-4">
+            <Card className="h-fit p-4">
               <FormMessage tone="success">{success}</FormMessage>
-              <p className="mt-3 text-sm text-muted">
+              <p className="mt-3 text-sm text-brand-muted">
                 Upload up to 30 JPEG, PNG, or WebP images. The first image becomes the cover
                 automatically.
               </p>
               <Button className="mt-4 w-full" onClick={() => setStep("location")} variant="secondary">
                 Edit details
               </Button>
-            </aside>
+            </Card>
           </div>
         ) : (
           <form
-            className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]"
+            className="mx-auto mt-8 grid max-w-5xl gap-6 lg:grid-cols-[1fr_320px]"
             onSubmit={handleSubmit(onSubmit)}
           >
             <section className="space-y-5">
               {step === "basic" ? (
                 <>
                   <TextField label="Title" error={errors.title} {...register("title")} />
-                  <label className="block text-sm font-medium text-ink" htmlFor="description">
+                  <label className="block text-sm font-medium text-brand-text" htmlFor="description">
                     <span>Description</span>
                     <textarea
-                      className="mt-2 min-h-32 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                      className="mt-2 min-h-32 w-full rounded-md border border-white/10 bg-white/5 px-3 py-3 text-sm text-brand-text outline-none transition focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
                       id="description"
                       {...register("description")}
                     />
                     {errors.description ? (
-                      <span className="mt-1 block text-sm text-red-600">
+                      <span className="mt-1 block text-sm text-red-300">
                         {errors.description.message}
                       </span>
                     ) : null}
                   </label>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="block text-sm font-medium text-ink" htmlFor="property_type">
+                    <label className="block text-sm font-medium text-brand-text" htmlFor="property_type">
                       <span>Property type</span>
-                      <select className={selectClass} id="property_type" {...register("property_type")}>
+                      <Select className={selectClass} id="property_type" {...register("property_type")}>
                         {propertyTypeOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </label>
-                    <label className="block text-sm font-medium text-ink" htmlFor="listing_type">
+                    <label className="block text-sm font-medium text-brand-text" htmlFor="listing_type">
                       <span>Listing type</span>
-                      <select className={selectClass} id="listing_type" {...register("listing_type")}>
+                      <Select className={selectClass} id="listing_type" {...register("listing_type")}>
                         <option value="rent">Rent</option>
                         <option value="sale">Sale</option>
-                      </select>
+                      </Select>
                     </label>
                     <TextField
                       label="Price"
@@ -299,7 +301,7 @@ export default function NewPropertyPage() {
                 </>
               ) : null}
             </section>
-            <aside className="h-fit rounded-md border border-slate-200 bg-white p-4">
+            <Card className="h-fit p-4">
               <FormMessage tone="error">{serverError}</FormMessage>
               {step === "basic" ? (
                 <Button className="mt-4 w-full" onClick={goToLocation}>
@@ -323,7 +325,7 @@ export default function NewPropertyPage() {
                   </Button>
                 </>
               )}
-            </aside>
+            </Card>
           </form>
         )}
       </main>

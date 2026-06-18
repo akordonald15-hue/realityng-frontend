@@ -9,6 +9,7 @@ afterEach(() => {
 });
 
 vi.mock("next/navigation", () => ({
+  useParams: () => ({ slug: "approved-lekki-apartment" }),
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),

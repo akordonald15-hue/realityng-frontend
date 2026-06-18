@@ -1,5 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import PropertiesPage from "@/app/(public)/properties/page";
@@ -22,7 +21,6 @@ vi.mock("@/lib/api/properties", async () => {
 
 describe("PropertiesPage", () => {
   it("renders approved listings and sends filters to the API", async () => {
-    const user = userEvent.setup();
     mocks.getPublicProperties.mockResolvedValue({
       count: 1,
       next: null,
@@ -55,9 +53,9 @@ describe("PropertiesPage", () => {
     renderWithQueryClient(<PropertiesPage />);
 
     expect(await screen.findByText("Approved Lekki Apartment")).toBeInTheDocument();
-    await user.type(screen.getByLabelText("City"), "Lagos");
-    await user.selectOptions(screen.getByLabelText("Listing type"), "rent");
-    await user.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.change(screen.getByLabelText("City"), { target: { value: "Lagos" } });
+    fireEvent.change(screen.getByLabelText("Listing type"), { target: { value: "rent" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
 
     await waitFor(() =>
       expect(mocks.getPublicProperties).toHaveBeenLastCalledWith(

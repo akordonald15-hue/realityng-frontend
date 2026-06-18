@@ -3,6 +3,9 @@
 import type { FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { propertyTypeOptions, type PropertyFilters } from "@/lib/api/properties";
 
 type PropertyFilterPanelProps = {
@@ -16,7 +19,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
   }
 
   function clearFilters() {
-    onChange({ ordering: "-created_at" });
+    onChange({ ordering: "-featured" });
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -24,30 +27,27 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
     onChange({ ...filters });
   }
 
-  const inputClass =
-    "h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100";
-
   return (
-    <form className="space-y-4 rounded-md border border-slate-200 bg-white p-4" onSubmit={submit}>
-      <div>
-        <label className="text-sm font-medium text-ink" htmlFor="property-search">
-          Search
-        </label>
-        <input
-          className={inputClass}
-          id="property-search"
-          onChange={(event) => update("search", event.target.value)}
-          placeholder="Title"
-          value={filters.search ?? ""}
-        />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+    <Card className="p-4">
+      <form className="space-y-4" onSubmit={submit}>
         <div>
-          <label className="text-sm font-medium text-ink" htmlFor="property-city">
+          <label className="text-sm font-medium text-brand-text" htmlFor="property-search">
+            Search
+          </label>
+          <Input
+            className="mt-2"
+            id="property-search"
+            onChange={(event) => update("search", event.target.value)}
+            placeholder="Title"
+            value={filters.search ?? ""}
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-brand-text" htmlFor="property-city">
             City
           </label>
-          <input
-            className={inputClass}
+          <Input
+            className="mt-2"
             id="property-city"
             onChange={(event) => update("city", event.target.value)}
             placeholder="Lagos"
@@ -55,11 +55,11 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-ink" htmlFor="property-type">
+          <label className="text-sm font-medium text-brand-text" htmlFor="property-type">
             Property type
           </label>
-          <select
-            className={inputClass}
+          <Select
+            className="mt-2"
             id="property-type"
             onChange={(event) => update("property_type", event.target.value)}
             value={filters.property_type ?? ""}
@@ -70,14 +70,14 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
-          <label className="text-sm font-medium text-ink" htmlFor="listing-type">
+          <label className="text-sm font-medium text-brand-text" htmlFor="listing-type">
             Listing type
           </label>
-          <select
-            className={inputClass}
+          <Select
+            className="mt-2"
             id="listing-type"
             onChange={(event) => update("listing_type", event.target.value)}
             value={filters.listing_type ?? ""}
@@ -85,15 +85,15 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
             <option value="">Sale or rent</option>
             <option value="sale">Sale</option>
             <option value="rent">Rent</option>
-          </select>
+          </Select>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium text-ink" htmlFor="min-price">
+            <label className="text-sm font-medium text-brand-text" htmlFor="min-price">
               Min price
             </label>
-            <input
-              className={inputClass}
+            <Input
+              className="mt-2"
               id="min-price"
               min="0"
               onChange={(event) => update("min_price", event.target.value)}
@@ -102,11 +102,11 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-ink" htmlFor="max-price">
+            <label className="text-sm font-medium text-brand-text" htmlFor="max-price">
               Max price
             </label>
-            <input
-              className={inputClass}
+            <Input
+              className="mt-2"
               id="max-price"
               min="0"
               onChange={(event) => update("max_price", event.target.value)}
@@ -116,28 +116,28 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           </div>
         </div>
         <div>
-          <label className="text-sm font-medium text-ink" htmlFor="ordering">
+          <label className="text-sm font-medium text-brand-text" htmlFor="ordering">
             Sort
           </label>
-          <select
-            className={inputClass}
+          <Select
+            className="mt-2"
             id="ordering"
             onChange={(event) => update("ordering", event.target.value)}
-            value={filters.ordering ?? "-created_at"}
+            value={filters.ordering ?? "-featured"}
           >
+            <option value="-featured">Featured</option>
             <option value="-created_at">Newest</option>
             <option value="price">Lowest price</option>
             <option value="-price">Highest price</option>
-            <option value="-featured">Featured</option>
-          </select>
+          </Select>
         </div>
-      </div>
-      <div className="flex gap-3">
-        <Button type="submit">Apply</Button>
-        <Button onClick={clearFilters} type="button" variant="secondary">
-          Clear
-        </Button>
-      </div>
-    </form>
+        <div className="flex gap-3">
+          <Button type="submit">Apply</Button>
+          <Button onClick={clearFilters} type="button" variant="secondary">
+            Clear
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 }

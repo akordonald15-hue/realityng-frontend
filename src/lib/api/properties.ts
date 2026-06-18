@@ -103,6 +103,11 @@ export async function getPublicProperties(filters: PropertyFilters = {}): Promis
   return response.data;
 }
 
+export async function getPublicProperty(propertySlug: string): Promise<Property> {
+  const response = await apiClient.get<Property>(`/public/properties/${propertySlug}/`);
+  return response.data;
+}
+
 export async function createProperty(payload: PropertyPayload): Promise<Property> {
   const response = await apiClient.post<Property>("/properties/", payload);
   return response.data;

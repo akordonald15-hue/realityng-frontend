@@ -1,61 +1,58 @@
+import Link from "next/link";
+
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import type { Property } from "@/lib/api/properties";
+import { formatPrice, formatPropertyType, propertySize } from "@/lib/properties/format";
 
-function formatPrice(property: Property) {
-  const amount = Number(property.price);
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: property.currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+type PropertyCardProps = {
+  property: Property;
+};
 
-export function PropertyCard({ property }: { property: Property }) {
+export function PropertyCard({ property }: PropertyCardProps) {
   return (
-    <article className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
-      {property.cover_image_url ? (
-        <div className="mb-4 aspect-[16/9] overflow-hidden rounded-sm bg-slate-100">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            alt={property.title}
-            className="h-full w-full object-cover"
-            src={property.cover_image_url}
-          />
+    <Card className="group overflow-hidden">
+      <Link aria-label={`View ${property.title}`} href={`/properties/${property.slug}`}>
+        <div className="aspect-[4/3] overflow-hidden bg-brand-background">
+          {property.cover_image_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              alt={property.title}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              src={property.cover_image_url}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#11241D,#0F3D2E)] px-6 text-center font-heading text-2xl text-brand-secondary">
+              RealityNG
+            </div>
+          )}
         </div>
-      ) : null}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-            {property.listing_type} / {property.property_type.replace("_", " ")}
+        <div className="p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge>{property.listing_type}</Badge>
+            <Badge variant="muted">{formatPropertyType(property.property_type)}</Badge>
+            {property.featured ? <Badge variant="green">Featured</Badge> : null}
+          </div>
+          <h3 className="mt-4 line-clamp-2 font-heading text-xl font-semibold text-brand-text">
+            {property.title}
+          </h3>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-brand-muted">
+            {property.description}
           </p>
-          <h2 className="mt-2 text-lg font-semibold text-ink">{property.title}</h2>
+          <div className="mt-5 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-brand-muted">Price</p>
+              <p className="font-semibold text-brand-secondary">{formatPrice(property)}</p>
+            </div>
+            <div className="text-right text-sm text-brand-muted">
+              <p>{property.city}</p>
+              <p>
+                {property.bedrooms ?? "N/A"} beds / {propertySize(property)}
+              </p>
+            </div>
+          </div>
         </div>
-        {property.featured ? (
-          <span className="rounded-sm bg-brand-50 px-2 py-1 text-xs font-semibold text-brand-700">
-            Featured
-          </span>
-        ) : null}
-      </div>
-      <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted">{property.description}</p>
-      <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        <div>
-          <dt className="text-muted">Price</dt>
-          <dd className="font-semibold text-ink">{formatPrice(property)}</dd>
-        </div>
-        <div>
-          <dt className="text-muted">Location</dt>
-          <dd className="font-semibold text-ink">{property.city}</dd>
-        </div>
-        <div>
-          <dt className="text-muted">Beds</dt>
-          <dd className="font-semibold text-ink">{property.bedrooms ?? "N/A"}</dd>
-        </div>
-        <div>
-          <dt className="text-muted">Size</dt>
-          <dd className="font-semibold text-ink">
-            {property.land_size ?? property.floor_area ?? "N/A"} sqm
-          </dd>
-        </div>
-      </dl>
-    </article>
+      </Link>
+    </Card>
   );
 }

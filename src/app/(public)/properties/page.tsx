@@ -1,64 +1,129 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
 import { PropertyFilterPanel } from "@/components/properties/property-filter-panel";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/section-header";
 import { getPublicProperties, type PropertyFilters } from "@/lib/api/properties";
 
-export default function PropertiesPage() {
-  const [filters, setFilters] = useState<PropertyFilters>({ ordering: "-created_at" });
+function filtersFromParams(params: URLSearchParams): PropertyFilters {
+  return {
+    search: params.get("search") ?? "",
+    city: params.get("city") ?? "",
+    property_type: params.get("property_type") ?? "",
+    listing_type: params.get("listing_type") ?? "",
+    min_price: params.get("min_price") ?? "",
+    max_price: params.get("max_price") ?? "",
+    ordering: params.get("ordering") ?? "-featured",
+  };
+}
+
+function PropertiesContent() {
+  const searchParams = useSearchParams();
+  const initialFilters = useMemo(() => filtersFromParams(searchParams), [searchParams]);
+  const [filters, setFilters] = useState<PropertyFilters>(initialFilters);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const propertiesQuery = useQuery({
     queryKey: ["public-properties", filters],
     queryFn: () => getPublicProperties(filters),
   });
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-8">
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold text-ink">Browse verified properties</h1>
-          <p className="mt-2 max-w-2xl text-muted">
-            Approved sale and rent listings across Nigerian cities.
-          </p>
-        </div>
-        <Link
-          className="inline-flex h-11 items-center justify-center rounded-md bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700"
-          href="/properties/new"
-        >
-          Add listing
-        </Link>
-      </div>
-      <div className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
-        <aside>
-          <PropertyFilterPanel filters={filters} onChange={setFilters} />
-        </aside>
-        <section>
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <p className="text-sm text-muted">
-              {propertiesQuery.data ? `${propertiesQuery.data.count} approved listings` : "Loading listings"}
-            </p>
+    <div className="min-h-screen bg-brand-background text-brand-text">
+      <Navbar />
+      <main>
+        <section className="border-b border-white/10 bg-brand-surface/45">
+          <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-10 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
+            <SectionHeader
+              eyebrow="Browse"
+              title="Verified Nigerian properties"
+              description="Approved sale and rent listings with gallery-aware cards and focused filters."
+            />
+            <div className="flex gap-3">
+              <Button
+                className="lg:hidden"
+                onClick={() => setMobileFiltersOpen((open) => !open)}
+                variant="secondary"
+              >
+                Filters
+              </Button>
+              <Link href="/properties/new">
+                <Button>Add listing</Button>
+              </Link>
+            </div>
           </div>
-          {propertiesQuery.isLoading ? <p className="text-muted">Loading properties...</p> : null}
-          {propertiesQuery.isError ? (
-            <p className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-              Properties could not be loaded.
-            </p>
-          ) : null}
-          <div className="space-y-4">
-            {propertiesQuery.data?.results.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
-          {propertiesQuery.data?.results.length === 0 ? (
-            <p className="rounded-md border border-slate-200 bg-white p-6 text-muted">
-              No approved listings match these filters.
-            </p>
-          ) : null}
         </section>
-      </div>
-    </main>
+        <section className="mx-auto grid max-w-7xl gap-6 px-5 py-8 sm:px-6 lg:grid-cols-[320px_1fr]">
+          <aside className="hidden lg:block">
+            <PropertyFilterPanel filters={filters} onChange={setFilters} />
+          </aside>
+          {mobileFiltersOpen ? (
+            <div className="lg:hidden">
+              <PropertyFilterPanel
+                filters={filters}
+                onChange={(nextFilters) => {
+                  setFilters(nextFilters);
+                  setMobileFiltersOpen(false);
+                }}
+              />
+            </div>
+          ) : null}
+          <section>
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <p className="text-sm text-brand-muted">
+                {propertiesQuery.data
+                  ? `${propertiesQuery.data.count} approved listings`
+                  : "Loading listings"}
+              </p>
+            </div>
+            {propertiesQuery.isLoading ? (
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {[1, 2, 3, 4, 5, 6].map((item) => (
+                  <div className="h-80 animate-pulse rounded-md bg-white/10" key={item} />
+                ))}
+              </div>
+            ) : null}
+            {propertiesQuery.isError ? (
+              <Card className="p-6 text-sm text-red-200">Properties could not be loaded.</Card>
+            ) : null}
+            {propertiesQuery.data && propertiesQuery.data.results.length > 0 ? (
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {propertiesQuery.data.results.map((property) => (
+                  <PropertyCard key={property.id} property={property} />
+                ))}
+              </div>
+            ) : null}
+            {propertiesQuery.data?.results.length === 0 ? (
+              <Card className="p-8 text-brand-muted">
+                No approved listings match these filters.
+              </Card>
+            ) : null}
+          </section>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default function PropertiesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-brand-background px-6 py-10 text-brand-muted">
+          Loading properties...
+        </div>
+      }
+    >
+      <PropertiesContent />
+    </Suspense>
   );
 }

@@ -5,6 +5,8 @@ import { useState } from "react";
 
 import { FormMessage } from "@/components/forms/form-message";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import {
   deletePropertyImage,
@@ -105,23 +107,23 @@ export function PropertyImageManager({ propertySlug }: PropertyImageManagerProps
 
   return (
     <section className="space-y-5">
-      <div className="rounded-md border border-slate-200 bg-white p-4">
+      <Card className="p-4">
         <FormMessage tone="error">{serverError}</FormMessage>
         <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
-          <label className="block text-sm font-medium text-ink" htmlFor="property-image">
+          <label className="block text-sm font-medium text-brand-text" htmlFor="property-image">
             <span>Image</span>
             <input
               accept="image/jpeg,image/png,image/webp"
-              className="mt-2 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="mt-2 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-muted file:mr-3 file:rounded-sm file:border-0 file:bg-brand-secondary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand-background"
               id="property-image"
               onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
               type="file"
             />
           </label>
-          <label className="block text-sm font-medium text-ink" htmlFor="image-caption">
+          <label className="block text-sm font-medium text-brand-text" htmlFor="image-caption">
             <span>Caption</span>
-            <input
-              className="mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+            <Input
+              className="mt-2"
               id="image-caption"
               onChange={(event) => setCaption(event.target.value)}
               value={caption}
@@ -131,18 +133,18 @@ export function PropertyImageManager({ propertySlug }: PropertyImageManagerProps
             {uploadMutation.isPending ? "Uploading..." : "Upload"}
           </Button>
         </div>
-      </div>
+      </Card>
 
-      {imagesQuery.isLoading ? <p className="text-sm text-muted">Loading gallery...</p> : null}
+      {imagesQuery.isLoading ? <p className="text-sm text-brand-muted">Loading gallery...</p> : null}
       {images.length === 0 && !imagesQuery.isLoading ? (
-        <p className="rounded-md border border-slate-200 bg-white p-5 text-sm text-muted">
+        <Card className="p-5 text-sm text-brand-muted">
           No images uploaded yet.
-        </p>
+        </Card>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         {images.map((image, index) => (
-          <article key={image.id} className="rounded-md border border-slate-200 bg-white p-3">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-slate-100">
+          <Card key={image.id} className="p-3">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-brand-background">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 alt={image.caption || "Property image"}
@@ -150,15 +152,15 @@ export function PropertyImageManager({ propertySlug }: PropertyImageManagerProps
                 src={image.image_url}
               />
               {image.is_cover ? (
-                <span className="absolute left-2 top-2 rounded-sm bg-white px-2 py-1 text-xs font-semibold text-brand-700">
+                <span className="absolute left-2 top-2 rounded-sm bg-brand-secondary px-2 py-1 text-xs font-semibold text-brand-background">
                   Cover
                 </span>
               ) : null}
             </div>
-            <label className="mt-3 block text-sm font-medium text-ink" htmlFor={`caption-${image.id}`}>
+            <label className="mt-3 block text-sm font-medium text-brand-text" htmlFor={`caption-${image.id}`}>
               <span>Caption</span>
-              <input
-                className="mt-2 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+              <Input
+                className="mt-2 h-10"
                 defaultValue={image.caption}
                 id={`caption-${image.id}`}
                 onBlur={(event) =>
@@ -200,7 +202,7 @@ export function PropertyImageManager({ propertySlug }: PropertyImageManagerProps
                 Delete
               </Button>
             </div>
-          </article>
+          </Card>
         ))}
       </div>
     </section>

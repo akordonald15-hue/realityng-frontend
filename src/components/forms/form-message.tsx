@@ -4,9 +4,9 @@ type FormMessageProps = {
 };
 
 const toneClasses = {
-  error: "border-red-200 bg-red-50 text-red-700",
-  success: "border-brand-100 bg-brand-50 text-brand-700",
-  info: "border-slate-200 bg-white text-muted",
+  error: "border-red-400/30 bg-red-400/10 text-red-100",
+  success: "border-brand-secondary/30 bg-brand-secondary/10 text-brand-secondary",
+  info: "border-white/10 bg-white/5 text-brand-muted",
 };
 
 export function FormMessage({ children, tone = "info" }: FormMessageProps) {
