@@ -12,10 +12,20 @@ function formatPrice(property: Property) {
 export function PropertyCard({ property }: { property: Property }) {
   return (
     <article className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
+      {property.cover_image_url ? (
+        <div className="mb-4 aspect-[16/9] overflow-hidden rounded-sm bg-slate-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            alt={property.title}
+            className="h-full w-full object-cover"
+            src={property.cover_image_url}
+          />
+        </div>
+      ) : null}
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-            {property.listing_type} · {property.property_type.replace("_", " ")}
+            {property.listing_type} / {property.property_type.replace("_", " ")}
           </p>
           <h2 className="mt-2 text-lg font-semibold text-ink">{property.title}</h2>
         </div>

@@ -33,6 +33,18 @@ export type Property = {
   floor_area?: string | null;
   status?: PropertyStatus;
   featured: boolean;
+  cover_image_url?: string;
+  image_count?: number;
+  image_gallery?: PropertyImage[];
+  created_at: string;
+};
+
+export type PropertyImage = {
+  id: string;
+  image_url: string;
+  caption: string;
+  display_order: number;
+  is_cover: boolean;
   created_at: string;
 };
 
@@ -94,4 +106,84 @@ export async function getPublicProperties(filters: PropertyFilters = {}): Promis
 export async function createProperty(payload: PropertyPayload): Promise<Property> {
   const response = await apiClient.post<Property>("/properties/", payload);
   return response.data;
+}
+
+export async function listPropertyImages(propertySlug: string): Promise<PropertyImage[]> {
+  const response = await apiClient.get<PropertyImage[]>(`/properties/${propertySlug}/images/`);
+  return response.data;
+}
+
+export async function uploadPropertyImage({
+  propertySlug,
+  file,
+  caption = "",
+  displayOrder = 0,
+  isCover = false,
+}: {
+  propertySlug: string;
+  file: File;
+  caption?: string;
+  displayOrder?: number;
+  isCover?: boolean;
+}): Promise<PropertyImage> {
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("caption", caption);
+  formData.append("display_order", String(displayOrder));
+  formData.append("is_cover", String(isCover));
+
+  const response = await apiClient.post<PropertyImage>(
+    `/properties/${propertySlug}/images/`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
+  return response.data;
+}
+
+export async function updatePropertyImage({
+  propertySlug,
+  imageId,
+  caption,
+  displayOrder,
+  isCover,
+}: {
+  propertySlug: string;
+  imageId: string;
+  caption?: string;
+  displayOrder?: number;
+  isCover?: boolean;
+}): Promise<PropertyImage> {
+  const response = await apiClient.patch<PropertyImage>(
+    `/properties/${propertySlug}/images/${imageId}/`,
+    {
+      ...(caption !== undefined ? { caption } : {}),
+      ...(displayOrder !== undefined ? { display_order: displayOrder } : {}),
+      ...(isCover !== undefined ? { is_cover: isCover } : {}),
+    },
+  );
+  return response.data;
+}
+
+export async function setPropertyCoverImage({
+  propertySlug,
+  imageId,
+}: {
+  propertySlug: string;
+  imageId: string;
+}): Promise<PropertyImage> {
+  const response = await apiClient.post<PropertyImage>(
+    `/properties/${propertySlug}/images/${imageId}/set-cover/`,
+    {},
+  );
+  return response.data;
+}
+
+export async function deletePropertyImage({
+  propertySlug,
+  imageId,
+}: {
+  propertySlug: string;
+  imageId: string;
+}): Promise<void> {
+  await apiClient.delete(`/properties/${propertySlug}/images/${imageId}/`);
 }

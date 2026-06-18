@@ -9,9 +9,28 @@ import { z } from "zod";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
+import { PropertyImageManager } from "@/components/properties/property-image-manager";
 import { Button } from "@/components/ui/button";
 import { getApiErrorMessage } from "@/lib/api/errors";
-import { createProperty, propertyTypeOptions } from "@/lib/api/properties";
+import { createProperty, propertyTypeOptions, type Property } from "@/lib/api/properties";
+
+const basicStepSchema = z.object({
+  title: z.string().min(5, "Enter a descriptive title."),
+  description: z.string().min(20, "Description must be at least 20 characters."),
+  property_type: z.enum([
+    "apartment",
+    "house",
+    "land",
+    "commercial",
+    "office",
+    "shop",
+    "warehouse",
+    "mixed_use",
+  ]),
+  listing_type: z.enum(["sale", "rent"]),
+  price: z.coerce.number().positive("Price must be greater than zero."),
+  currency: z.string().length(3, "Use a 3-letter currency code."),
+});
 
 const propertySchema = z
   .object({
@@ -58,6 +77,7 @@ const propertySchema = z
   });
 
 type PropertyFormValues = z.infer<typeof propertySchema>;
+type Step = "basic" | "location" | "media";
 
 function optionalNumber(value: number | "" | undefined) {
   return value === "" || value === undefined ? null : value;
@@ -67,12 +87,25 @@ function optionalDecimal(value: number | "" | undefined) {
   return value === "" || value === undefined ? null : String(value);
 }
 
+function stepLabel(step: Step) {
+  return {
+    basic: "Basic details",
+    location: "Location",
+    media: "Media upload",
+  }[step];
+}
+
 export default function NewPropertyPage() {
+  const [step, setStep] = useState<Step>("basic");
+  const [savedProperty, setSavedProperty] = useState<Property | null>(null);
   const [success, setSuccess] = useState("");
   const [serverError, setServerError] = useState("");
   const {
     register,
     handleSubmit,
+    getValues,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<PropertyFormValues>({
     resolver: zodResolver(propertySchema),
@@ -93,12 +126,27 @@ export default function NewPropertyPage() {
     onSuccess: (property) => {
       setServerError("");
       setSuccess(`${property.title} saved as a draft.`);
+      setSavedProperty(property);
+      setStep("media");
     },
     onError: (error) => {
       setSuccess("");
       setServerError(getApiErrorMessage(error));
     },
   });
+
+  function goToLocation() {
+    const result = basicStepSchema.safeParse(getValues());
+    if (result.success) {
+      clearErrors();
+      setStep("location");
+      return;
+    }
+    result.error.issues.forEach((issue) => {
+      const field = issue.path[0] as keyof PropertyFormValues;
+      setError(field, { message: issue.message, type: "manual" });
+    });
+  }
 
   function onSubmit(values: PropertyFormValues) {
     mutation.mutate({
@@ -120,71 +168,164 @@ export default function NewPropertyPage() {
       <main className="mx-auto max-w-5xl px-6 py-8">
         <div className="border-b border-slate-200 pb-6">
           <h1 className="text-3xl font-semibold text-ink">Add a property</h1>
-          <p className="mt-2 text-muted">Step 1 captures the listing basics and saves a draft.</p>
+          <p className="mt-2 text-muted">{stepLabel(step)}</p>
         </div>
-        <form className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]" onSubmit={handleSubmit(onSubmit)}>
-          <section className="space-y-5">
-            <TextField label="Title" error={errors.title} {...register("title")} />
-            <label className="block text-sm font-medium text-ink" htmlFor="description">
-              <span>Description</span>
-              <textarea
-                className="mt-2 min-h-32 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
-                id="description"
-                {...register("description")}
-              />
-              {errors.description ? (
-                <span className="mt-1 block text-sm text-red-600">{errors.description.message}</span>
+        <div className="mt-6 grid grid-cols-3 gap-2 text-sm font-medium">
+          {(["basic", "location", "media"] as Step[]).map((item) => (
+            <div
+              className={
+                item === step
+                  ? "rounded-sm bg-brand-600 px-3 py-2 text-center text-white"
+                  : "rounded-sm bg-slate-100 px-3 py-2 text-center text-muted"
+              }
+              key={item}
+            >
+              {stepLabel(item)}
+            </div>
+          ))}
+        </div>
+
+        {step === "media" && savedProperty ? (
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
+            <PropertyImageManager propertySlug={savedProperty.slug} />
+            <aside className="h-fit rounded-md border border-slate-200 bg-white p-4">
+              <FormMessage tone="success">{success}</FormMessage>
+              <p className="mt-3 text-sm text-muted">
+                Upload up to 30 JPEG, PNG, or WebP images. The first image becomes the cover
+                automatically.
+              </p>
+              <Button className="mt-4 w-full" onClick={() => setStep("location")} variant="secondary">
+                Edit details
+              </Button>
+            </aside>
+          </div>
+        ) : (
+          <form
+            className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <section className="space-y-5">
+              {step === "basic" ? (
+                <>
+                  <TextField label="Title" error={errors.title} {...register("title")} />
+                  <label className="block text-sm font-medium text-ink" htmlFor="description">
+                    <span>Description</span>
+                    <textarea
+                      className="mt-2 min-h-32 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                      id="description"
+                      {...register("description")}
+                    />
+                    {errors.description ? (
+                      <span className="mt-1 block text-sm text-red-600">
+                        {errors.description.message}
+                      </span>
+                    ) : null}
+                  </label>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block text-sm font-medium text-ink" htmlFor="property_type">
+                      <span>Property type</span>
+                      <select className={selectClass} id="property_type" {...register("property_type")}>
+                        {propertyTypeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium text-ink" htmlFor="listing_type">
+                      <span>Listing type</span>
+                      <select className={selectClass} id="listing_type" {...register("listing_type")}>
+                        <option value="rent">Rent</option>
+                        <option value="sale">Sale</option>
+                      </select>
+                    </label>
+                    <TextField
+                      label="Price"
+                      error={errors.price}
+                      min="1"
+                      type="number"
+                      {...register("price")}
+                    />
+                    <TextField label="Currency" error={errors.currency} {...register("currency")} />
+                  </div>
+                </>
               ) : null}
-            </label>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-ink" htmlFor="property_type">
-                <span>Property type</span>
-                <select className={selectClass} id="property_type" {...register("property_type")}>
-                  {propertyTypeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block text-sm font-medium text-ink" htmlFor="listing_type">
-                <span>Listing type</span>
-                <select className={selectClass} id="listing_type" {...register("listing_type")}>
-                  <option value="rent">Rent</option>
-                  <option value="sale">Sale</option>
-                </select>
-              </label>
-              <TextField label="Price" error={errors.price} min="1" type="number" {...register("price")} />
-              <TextField label="Currency" error={errors.currency} {...register("currency")} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <TextField label="Country" error={errors.country} {...register("country")} />
-              <TextField label="State" error={errors.state} {...register("state")} />
-              <TextField label="City" error={errors.city} {...register("city")} />
-              <TextField label="Address" error={errors.address} {...register("address")} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <TextField label="Bedrooms" error={errors.bedrooms} min="0" type="number" {...register("bedrooms")} />
-              <TextField label="Bathrooms" error={errors.bathrooms} min="0" type="number" {...register("bathrooms")} />
-              <TextField
-                label="Parking spaces"
-                error={errors.parking_spaces}
-                min="0"
-                type="number"
-                {...register("parking_spaces")}
-              />
-              <TextField label="Land size sqm" error={errors.land_size} min="1" type="number" {...register("land_size")} />
-              <TextField label="Floor area sqm" error={errors.floor_area} min="1" type="number" {...register("floor_area")} />
-            </div>
-          </section>
-          <aside className="h-fit rounded-md border border-slate-200 bg-white p-4">
-            <FormMessage tone="success">{success}</FormMessage>
-            <FormMessage tone="error">{serverError}</FormMessage>
-            <Button className="mt-4 w-full" disabled={mutation.isPending} type="submit">
-              {mutation.isPending ? "Saving draft..." : "Save draft"}
-            </Button>
-          </aside>
-        </form>
+
+              {step === "location" ? (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <TextField label="Country" error={errors.country} {...register("country")} />
+                    <TextField label="State" error={errors.state} {...register("state")} />
+                    <TextField label="City" error={errors.city} {...register("city")} />
+                    <TextField label="Address" error={errors.address} {...register("address")} />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <TextField
+                      label="Bedrooms"
+                      error={errors.bedrooms}
+                      min="0"
+                      type="number"
+                      {...register("bedrooms")}
+                    />
+                    <TextField
+                      label="Bathrooms"
+                      error={errors.bathrooms}
+                      min="0"
+                      type="number"
+                      {...register("bathrooms")}
+                    />
+                    <TextField
+                      label="Parking spaces"
+                      error={errors.parking_spaces}
+                      min="0"
+                      type="number"
+                      {...register("parking_spaces")}
+                    />
+                    <TextField
+                      label="Land size sqm"
+                      error={errors.land_size}
+                      min="1"
+                      type="number"
+                      {...register("land_size")}
+                    />
+                    <TextField
+                      label="Floor area sqm"
+                      error={errors.floor_area}
+                      min="1"
+                      type="number"
+                      {...register("floor_area")}
+                    />
+                  </div>
+                </>
+              ) : null}
+            </section>
+            <aside className="h-fit rounded-md border border-slate-200 bg-white p-4">
+              <FormMessage tone="error">{serverError}</FormMessage>
+              {step === "basic" ? (
+                <Button className="mt-4 w-full" onClick={goToLocation}>
+                  Continue to location
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    className="mt-4 w-full"
+                    disabled={mutation.isPending}
+                    type="submit"
+                  >
+                    {mutation.isPending ? "Saving draft..." : "Save draft and add media"}
+                  </Button>
+                  <Button
+                    className="mt-3 w-full"
+                    onClick={() => setStep("basic")}
+                    variant="secondary"
+                  >
+                    Back
+                  </Button>
+                </>
+              )}
+            </aside>
+          </form>
+        )}
       </main>
     </ProtectedRoute>
   );
