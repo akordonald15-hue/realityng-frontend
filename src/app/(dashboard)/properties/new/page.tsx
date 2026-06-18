@@ -1,0 +1,191 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import { FormMessage } from "@/components/forms/form-message";
+import { TextField } from "@/components/forms/text-field";
+import { Button } from "@/components/ui/button";
+import { getApiErrorMessage } from "@/lib/api/errors";
+import { createProperty, propertyTypeOptions } from "@/lib/api/properties";
+
+const propertySchema = z
+  .object({
+    title: z.string().min(5, "Enter a descriptive title."),
+    description: z.string().min(20, "Description must be at least 20 characters."),
+    property_type: z.enum([
+      "apartment",
+      "house",
+      "land",
+      "commercial",
+      "office",
+      "shop",
+      "warehouse",
+      "mixed_use",
+    ]),
+    listing_type: z.enum(["sale", "rent"]),
+    price: z.coerce.number().positive("Price must be greater than zero."),
+    currency: z.string().length(3, "Use a 3-letter currency code."),
+    country: z.string().min(1, "Country is required."),
+    state: z.string().min(1, "State is required."),
+    city: z.string().min(1, "City is required."),
+    address: z.string().min(1, "Address is required."),
+    bedrooms: z.coerce.number().int().nonnegative().optional().or(z.literal("")),
+    bathrooms: z.coerce.number().int().nonnegative().optional().or(z.literal("")),
+    parking_spaces: z.coerce.number().int().nonnegative().optional().or(z.literal("")),
+    land_size: z.coerce.number().positive().optional().or(z.literal("")),
+    floor_area: z.coerce.number().positive().optional().or(z.literal("")),
+  })
+  .superRefine((values, ctx) => {
+    if (values.property_type === "land" && !values.land_size) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Land listings require land size.",
+        path: ["land_size"],
+      });
+    }
+    if (values.property_type !== "land" && !values.floor_area) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Built property listings require floor area.",
+        path: ["floor_area"],
+      });
+    }
+  });
+
+type PropertyFormValues = z.infer<typeof propertySchema>;
+
+function optionalNumber(value: number | "" | undefined) {
+  return value === "" || value === undefined ? null : value;
+}
+
+function optionalDecimal(value: number | "" | undefined) {
+  return value === "" || value === undefined ? null : String(value);
+}
+
+export default function NewPropertyPage() {
+  const [success, setSuccess] = useState("");
+  const [serverError, setServerError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PropertyFormValues>({
+    resolver: zodResolver(propertySchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      property_type: "apartment",
+      listing_type: "rent",
+      currency: "NGN",
+      country: "Nigeria",
+      state: "",
+      city: "",
+      address: "",
+    },
+  });
+  const mutation = useMutation({
+    mutationFn: createProperty,
+    onSuccess: (property) => {
+      setServerError("");
+      setSuccess(`${property.title} saved as a draft.`);
+    },
+    onError: (error) => {
+      setSuccess("");
+      setServerError(getApiErrorMessage(error));
+    },
+  });
+
+  function onSubmit(values: PropertyFormValues) {
+    mutation.mutate({
+      ...values,
+      price: String(values.price),
+      bedrooms: optionalNumber(values.bedrooms),
+      bathrooms: optionalNumber(values.bathrooms),
+      parking_spaces: optionalNumber(values.parking_spaces),
+      land_size: optionalDecimal(values.land_size),
+      floor_area: optionalDecimal(values.floor_area),
+    });
+  }
+
+  const selectClass =
+    "mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100";
+
+  return (
+    <ProtectedRoute>
+      <main className="mx-auto max-w-5xl px-6 py-8">
+        <div className="border-b border-slate-200 pb-6">
+          <h1 className="text-3xl font-semibold text-ink">Add a property</h1>
+          <p className="mt-2 text-muted">Step 1 captures the listing basics and saves a draft.</p>
+        </div>
+        <form className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]" onSubmit={handleSubmit(onSubmit)}>
+          <section className="space-y-5">
+            <TextField label="Title" error={errors.title} {...register("title")} />
+            <label className="block text-sm font-medium text-ink" htmlFor="description">
+              <span>Description</span>
+              <textarea
+                className="mt-2 min-h-32 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                id="description"
+                {...register("description")}
+              />
+              {errors.description ? (
+                <span className="mt-1 block text-sm text-red-600">{errors.description.message}</span>
+              ) : null}
+            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm font-medium text-ink" htmlFor="property_type">
+                <span>Property type</span>
+                <select className={selectClass} id="property_type" {...register("property_type")}>
+                  {propertyTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-sm font-medium text-ink" htmlFor="listing_type">
+                <span>Listing type</span>
+                <select className={selectClass} id="listing_type" {...register("listing_type")}>
+                  <option value="rent">Rent</option>
+                  <option value="sale">Sale</option>
+                </select>
+              </label>
+              <TextField label="Price" error={errors.price} min="1" type="number" {...register("price")} />
+              <TextField label="Currency" error={errors.currency} {...register("currency")} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField label="Country" error={errors.country} {...register("country")} />
+              <TextField label="State" error={errors.state} {...register("state")} />
+              <TextField label="City" error={errors.city} {...register("city")} />
+              <TextField label="Address" error={errors.address} {...register("address")} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <TextField label="Bedrooms" error={errors.bedrooms} min="0" type="number" {...register("bedrooms")} />
+              <TextField label="Bathrooms" error={errors.bathrooms} min="0" type="number" {...register("bathrooms")} />
+              <TextField
+                label="Parking spaces"
+                error={errors.parking_spaces}
+                min="0"
+                type="number"
+                {...register("parking_spaces")}
+              />
+              <TextField label="Land size sqm" error={errors.land_size} min="1" type="number" {...register("land_size")} />
+              <TextField label="Floor area sqm" error={errors.floor_area} min="1" type="number" {...register("floor_area")} />
+            </div>
+          </section>
+          <aside className="h-fit rounded-md border border-slate-200 bg-white p-4">
+            <FormMessage tone="success">{success}</FormMessage>
+            <FormMessage tone="error">{serverError}</FormMessage>
+            <Button className="mt-4 w-full" disabled={mutation.isPending} type="submit">
+              {mutation.isPending ? "Saving draft..." : "Save draft"}
+            </Button>
+          </aside>
+        </form>
+      </main>
+    </ProtectedRoute>
+  );
+}
