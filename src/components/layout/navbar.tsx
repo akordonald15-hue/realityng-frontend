@@ -9,6 +9,7 @@ import { Button, buttonClasses } from "@/components/ui/button";
 const primaryLinks = [
   { href: "/", label: "Home" },
   { href: "/properties", label: "Browse" },
+  { href: "/saved-properties", label: "Saved" },
   { href: "/properties/new", label: "List property" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/settings/profile", label: "Profile" },

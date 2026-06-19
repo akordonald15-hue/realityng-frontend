@@ -36,6 +36,7 @@ export type Property = {
   cover_image_url?: string;
   image_count?: number;
   image_gallery?: PropertyImage[];
+  is_favorited?: boolean;
   created_at: string;
 };
 
@@ -83,6 +84,25 @@ export type PaginatedProperties = {
   results: Property[];
 };
 
+export type Favorite = {
+  id: string;
+  property: Property;
+  created_at: string;
+};
+
+export type PaginatedFavorites = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Favorite[];
+};
+
+export type DashboardSummary = {
+  saved_properties_count: number;
+  active_listings_count: number;
+  draft_listings_count: number;
+};
+
 export const propertyTypeOptions: Array<{ label: string; value: PropertyType }> = [
   { label: "Apartment", value: "apartment" },
   { label: "House", value: "house" },
@@ -94,7 +114,9 @@ export const propertyTypeOptions: Array<{ label: string; value: PropertyType }> 
   { label: "Mixed use", value: "mixed_use" },
 ];
 
-export async function getPublicProperties(filters: PropertyFilters = {}): Promise<PaginatedProperties> {
+export async function getPublicProperties(
+  filters: PropertyFilters = {},
+): Promise<PaginatedProperties> {
   const response = await apiClient.get<PaginatedProperties>("/public/properties/", {
     params: Object.fromEntries(
       Object.entries(filters).filter(([, value]) => value !== undefined && value !== ""),
@@ -191,4 +213,25 @@ export async function deletePropertyImage({
   imageId: string;
 }): Promise<void> {
   await apiClient.delete(`/properties/${propertySlug}/images/${imageId}/`);
+}
+
+export async function createFavorite(propertyId: string): Promise<Favorite> {
+  const response = await apiClient.post<Favorite>("/favorites/", { property_id: propertyId });
+  return response.data;
+}
+
+export async function deleteFavorite(propertyId: string): Promise<void> {
+  await apiClient.delete(`/favorites/${propertyId}/`);
+}
+
+export async function listFavorites(page = 1): Promise<PaginatedFavorites> {
+  const response = await apiClient.get<PaginatedFavorites>("/favorites/", {
+    params: { page },
+  });
+  return response.data;
+}
+
+export async function getDashboardSummary(): Promise<DashboardSummary> {
+  const response = await apiClient.get<DashboardSummary>("/dashboard/summary/");
+  return response.data;
 }

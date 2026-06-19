@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { FavoriteButton } from "@/components/properties/favorite-button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { Property } from "@/lib/api/properties";
@@ -11,7 +12,15 @@ type PropertyCardProps = {
 
 export function PropertyCard({ property }: PropertyCardProps) {
   return (
-    <Card className="group overflow-hidden">
+    <Card className="group relative overflow-hidden">
+      <div className="absolute right-3 top-3 z-10">
+        <FavoriteButton
+          compact
+          initialFavorited={property.is_favorited}
+          propertyId={property.id}
+          propertySlug={property.slug}
+        />
+      </div>
       <Link aria-label={`View ${property.title}`} href={`/properties/${property.slug}`}>
         <div className="aspect-[4/3] overflow-hidden bg-brand-background">
           {property.cover_image_url ? (
@@ -29,32 +38,34 @@ export function PropertyCard({ property }: PropertyCardProps) {
             </div>
           )}
         </div>
-        <div className="p-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge>{property.listing_type}</Badge>
-            <Badge variant="muted">{formatPropertyType(property.property_type)}</Badge>
-            {property.featured ? <Badge variant="green">Featured</Badge> : null}
-          </div>
-          <h3 className="mt-4 line-clamp-2 font-heading text-xl font-semibold text-brand-text">
+      </Link>
+      <div className="p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge>{property.listing_type}</Badge>
+          <Badge variant="muted">{formatPropertyType(property.property_type)}</Badge>
+          {property.featured ? <Badge variant="green">Featured</Badge> : null}
+        </div>
+        <Link href={`/properties/${property.slug}`}>
+          <h3 className="mt-4 line-clamp-2 font-heading text-xl font-semibold text-brand-text transition hover:text-brand-secondary">
             {property.title}
           </h3>
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-brand-muted">
-            {property.description}
-          </p>
-          <div className="mt-5 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-brand-muted">Price</p>
-              <p className="font-semibold text-brand-secondary">{formatPrice(property)}</p>
-            </div>
-            <div className="text-right text-sm text-brand-muted">
-              <p>{property.city}</p>
-              <p>
-                {property.bedrooms ?? "N/A"} beds / {propertySize(property)}
-              </p>
-            </div>
+        </Link>
+        <p className="mt-2 line-clamp-2 text-sm leading-6 text-brand-muted">
+          {property.description}
+        </p>
+        <div className="mt-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-brand-muted">Price</p>
+            <p className="font-semibold text-brand-secondary">{formatPrice(property)}</p>
+          </div>
+          <div className="text-right text-sm text-brand-muted">
+            <p>{property.city}</p>
+            <p>
+              {property.bedrooms ?? "N/A"} beds / {propertySize(property)}
+            </p>
           </div>
         </div>
-      </Link>
+      </div>
     </Card>
   );
 }

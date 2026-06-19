@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
+import { FavoriteButton } from "@/components/properties/favorite-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -111,6 +112,12 @@ export default function PropertyDetailPage() {
                   <p className="mt-2 text-sm text-brand-muted">
                     Listed for {property.listing_type}
                   </p>
+                  <FavoriteButton
+                    className="mt-5 w-full"
+                    initialFavorited={property.is_favorited}
+                    propertyId={property.id}
+                    propertySlug={property.slug}
+                  />
                 </Card>
                 <Card className="p-5">
                   <h2 className="font-heading text-2xl font-semibold text-brand-text">

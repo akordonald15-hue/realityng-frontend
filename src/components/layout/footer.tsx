@@ -17,6 +17,9 @@ export function Footer() {
             <Link className="hover:text-brand-text" href="/properties">
               Browse properties
             </Link>
+            <Link className="hover:text-brand-text" href="/saved-properties">
+              Saved properties
+            </Link>
             <Link className="hover:text-brand-text" href="/properties/new">
               Add a listing
             </Link>
