@@ -151,13 +151,18 @@ export default function PropertyDetailPage() {
                 <Card className="p-5">
                   <h2 className="font-heading text-2xl font-semibold text-brand-text">Amenities</h2>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {[
-                      property.bedrooms ? `${property.bedrooms} bedrooms` : null,
-                      property.bathrooms ? `${property.bathrooms} bathrooms` : null,
-                      property.parking_spaces ? `${property.parking_spaces} parking spaces` : null,
-                      property.floor_area ? "Floor area recorded" : null,
-                      property.land_size ? "Land size recorded" : null,
-                    ]
+                    {(property.amenities?.length
+                      ? property.amenities
+                      : [
+                          property.bedrooms ? `${property.bedrooms} bedrooms` : null,
+                          property.bathrooms ? `${property.bathrooms} bathrooms` : null,
+                          property.parking_spaces
+                            ? `${property.parking_spaces} parking spaces`
+                            : null,
+                          property.floor_area ? "Floor area recorded" : null,
+                          property.land_size ? "Land size recorded" : null,
+                        ]
+                    )
                       .filter(Boolean)
                       .map((item) => (
                         <Badge key={item} variant="muted">
@@ -170,12 +175,28 @@ export default function PropertyDetailPage() {
                   <h2 className="font-heading text-2xl font-semibold text-brand-text">
                     Agent/contact
                   </h2>
+                  <div className="mt-4 flex items-center gap-3">
+                    {property.agent_avatar_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        alt={property.agent_name ?? "Property agent"}
+                        className="h-14 w-14 rounded-md object-cover"
+                        decoding="async"
+                        src={property.agent_avatar_url}
+                      />
+                    ) : null}
+                    <div>
+                      <p className="font-semibold text-brand-text">
+                        {property.agent_name ?? "Verified RealityNG agent"}
+                      </p>
+                      <p className="text-sm text-brand-muted">{property.agent_email}</p>
+                    </div>
+                  </div>
                   <p className="mt-3 text-sm leading-6 text-brand-muted">
-                    Contact actions are reserved for a later sprint. This visual section preserves
-                    the approved layout without enabling inquiries.
+                    Demo contact card only. Inquiry workflows remain out of scope for this build.
                   </p>
                   <Button className="mt-4 w-full" disabled>
-                    Contact coming soon
+                    Inquiry demo preview
                   </Button>
                 </Card>
               </aside>

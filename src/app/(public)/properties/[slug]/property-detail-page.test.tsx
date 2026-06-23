@@ -9,9 +9,8 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/api/properties", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api/properties")>(
-    "@/lib/api/properties",
-  );
+  const actual =
+    await vi.importActual<typeof import("@/lib/api/properties")>("@/lib/api/properties");
   return {
     ...actual,
     getPublicProperty: (slug: string) => mocks.getPublicProperty(slug),
@@ -51,15 +50,21 @@ describe("PropertyDetailPage", () => {
           created_at: "2026-06-18T00:00:00Z",
         },
       ],
+      agent_name: "Tunde Balogun",
+      agent_email: "agent@realityng.com",
+      amenities: ["Pool", "24/7 security"],
       created_at: "2026-06-18T00:00:00Z",
     });
 
     renderWithQueryClient(<PropertyDetailPage />);
 
-    expect(await screen.findByRole("heading", { name: "Approved Lekki Apartment" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Approved Lekki Apartment" }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/2,500,000/)).toBeInTheDocument();
     expect(screen.getByText("Property details")).toBeInTheDocument();
     expect(screen.getByText("Amenities")).toBeInTheDocument();
-    expect(screen.getByText("Contact coming soon")).toBeDisabled();
+    expect(screen.getByText("Tunde Balogun")).toBeInTheDocument();
+    expect(screen.getByText("Inquiry demo preview")).toBeDisabled();
   });
 });

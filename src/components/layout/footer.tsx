@@ -1,11 +1,13 @@
 import Link from "next/link";
 
+import { BrandLogo } from "@/components/brand/brand-logo";
+
 export function Footer() {
   return (
     <footer className="border-t border-white/10 bg-brand-background">
       <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 text-sm text-brand-muted sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <p className="font-heading text-2xl font-semibold text-brand-text">RealityNG</p>
+          <BrandLogo className="h-16 w-auto object-contain" />
           <p className="mt-3 max-w-md leading-6">
             Trusted Nigerian property discovery for buyers, renters, landlords, and diaspora
             investors.

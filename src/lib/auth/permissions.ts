@@ -1,7 +1,9 @@
 import type { User } from "@/lib/auth/types";
 
 export function hasApprovedRole(user: User | null, roleName: string): boolean {
-  return Boolean(user?.roles.some((role) => role.role.name === roleName && role.status === "approved"));
+  return Boolean(
+    user?.roles.some((role) => role.role.name === roleName && role.status === "approved"),
+  );
 }
 
 export function isAdmin(user: User | null): boolean {
@@ -10,4 +12,11 @@ export function isAdmin(user: User | null): boolean {
 
 export function isApprovedProfessional(user: User | null): boolean {
   return ["agent", "artisan", "lawyer", "inspector"].some((role) => hasApprovedRole(user, role));
+}
+
+export function getRoleDashboardPath(user: User | null): string {
+  if (isAdmin(user)) {
+    return "/admin";
+  }
+  return "/dashboard";
 }

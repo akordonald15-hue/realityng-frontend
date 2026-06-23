@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Select } from "@/components/ui/select";
 import { getPublicProperties } from "@/lib/api/properties";
+import { mockAnalytics } from "@/mocks/mock-dashboard";
 
 const categories = [
   { label: "Apartments", value: "apartment" },
@@ -23,9 +25,10 @@ const categories = [
 ];
 
 const stats = [
-  { label: "Verified listing workflow", value: "100%" },
-  { label: "Gallery limit per listing", value: "30" },
-  { label: "Core Nigerian cities", value: "36+" },
+  { label: "Properties listed", value: String(mockAnalytics.propertiesListed) },
+  { label: "Monthly visitors", value: "1,200" },
+  { label: "Active agents", value: String(mockAnalytics.activeAgents) },
+  { label: "Verified listings", value: String(mockAnalytics.verifiedListings) },
 ];
 
 export default function HomePage() {
@@ -79,6 +82,7 @@ export default function HomePage() {
               <div className="flex h-full flex-col justify-between rounded-md border border-white/10 bg-brand-background/35 p-5">
                 <div>
                   <p className="text-sm text-brand-muted">Featured journey</p>
+                  <BrandLogo className="mt-4 h-28 w-auto object-contain" variant="icon" />
                   <h2 className="mt-3 font-heading text-3xl font-semibold text-brand-text">
                     Lagos apartment search to verified gallery review.
                   </h2>
@@ -137,7 +141,7 @@ export default function HomePage() {
         </section>
 
         <section className="bg-brand-primary">
-          <div className="mx-auto grid max-w-7xl gap-4 px-5 py-12 sm:px-6 md:grid-cols-3">
+          <div className="mx-auto grid max-w-7xl gap-4 px-5 py-12 sm:px-6 md:grid-cols-4">
             {stats.map((stat) => (
               <div className="border-l border-brand-secondary/50 pl-5" key={stat.label}>
                 <p className="font-heading text-4xl font-semibold text-brand-secondary">

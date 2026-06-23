@@ -5,40 +5,60 @@ import DashboardPage from "@/app/(dashboard)/dashboard/page";
 import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
-  getDashboardSummary: vi.fn(),
+  getDashboardOverview: vi.fn(),
 }));
 
 vi.mock("@/components/auth/protected-route", () => ({
   ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock("@/lib/api/properties", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/lib/api/properties")>("@/lib/api/properties");
+vi.mock("@/providers/auth-provider", () => ({
+  useAuth: () => ({
+    user: {
+      id: "buyer-1",
+      first_name: "Ify",
+      roles: [{ role: { name: "buyer" }, status: "approved" }],
+    },
+  }),
+}));
+
+vi.mock("@/lib/api/dashboard", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/dashboard")>("@/lib/api/dashboard");
   return {
     ...actual,
-    getDashboardSummary: () => mocks.getDashboardSummary(),
+    getDashboardOverview: (user: unknown) => mocks.getDashboardOverview(user),
   };
 });
 
 describe("DashboardPage", () => {
   it("renders quick stats and quick actions", async () => {
-    mocks.getDashboardSummary.mockResolvedValueOnce({
-      saved_properties_count: 2,
-      active_listings_count: 1,
-      draft_listings_count: 3,
+    mocks.getDashboardOverview.mockResolvedValueOnce({
+      role: "buyer",
+      metrics: [
+        { label: "Saved properties", value: "2", detail: "Shortlisted homes" },
+        { label: "Recently viewed", value: "8", detail: "Opened this week" },
+        { label: "My inquiries", value: "3", detail: "Agent conversations" },
+      ],
+      savedProperties: [],
+      recentlyViewed: [],
+      recommendedProperties: [],
+      inquiries: [],
+      activeListings: [],
+      leads: [],
+      pendingApprovals: [],
+      userStats: [],
     });
 
     renderWithQueryClient(<DashboardPage />);
 
     expect(await screen.findByText("Saved properties")).toBeInTheDocument();
-    expect(screen.getByText("Active listings")).toBeInTheDocument();
-    expect(screen.getByText("Draft listings")).toBeInTheDocument();
+    expect(screen.getAllByText("Recently viewed").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("My inquiries").length).toBeGreaterThan(0);
     expect(screen.getByText("View saved properties")).toBeInTheDocument();
     expect(screen.getByText("Browse properties")).toBeInTheDocument();
     expect(screen.getByText("Edit profile")).toBeInTheDocument();
     expect(await screen.findByText("2")).toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("8")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
   });
 });

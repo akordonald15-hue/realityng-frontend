@@ -1,5 +1,15 @@
 import { apiClient } from "@/lib/api/client";
+import { USE_MOCKS } from "@/lib/demo-mode";
 import type { AuthTokens, Role, User, UserRole } from "@/lib/auth/types";
+import {
+  mockGetCurrentUser,
+  mockGetRoles,
+  mockLoginUser,
+  mockLogoutUser,
+  mockRegisterUser,
+  mockRequestRole,
+  mockUpdateCurrentUser,
+} from "@/mocks/mock-auth";
 
 export type RegisterPayload = {
   email: string;
@@ -32,45 +42,77 @@ export type UpdateUserPayload = {
 };
 
 export async function registerUser(payload: RegisterPayload): Promise<User> {
+  if (USE_MOCKS) {
+    return mockRegisterUser(payload);
+  }
   const response = await apiClient.post<User>("/auth/register/", payload);
   return response.data;
 }
 
 export async function loginUser(payload: LoginPayload): Promise<AuthTokens & { user: User }> {
+  if (USE_MOCKS) {
+    return mockLoginUser(payload);
+  }
   const response = await apiClient.post<AuthTokens & { user: User }>("/auth/login/", payload);
   return response.data;
 }
 
 export async function logoutUser(refresh: string): Promise<void> {
+  if (USE_MOCKS) {
+    await mockLogoutUser();
+    return;
+  }
   await apiClient.post("/auth/logout/", { refresh });
 }
 
 export async function forgotPassword(email: string): Promise<{ status: string }> {
+  if (USE_MOCKS) {
+    return { status: `Demo reset instructions prepared for ${email}.` };
+  }
   const response = await apiClient.post<{ status: string }>("/auth/forgot-password/", { email });
   return response.data;
 }
 
-export async function resetPassword(payload: { uid: string; token: string; password: string }): Promise<{ status: string }> {
+export async function resetPassword(payload: {
+  uid: string;
+  token: string;
+  password: string;
+}): Promise<{ status: string }> {
+  if (USE_MOCKS) {
+    return { status: "Demo password reset complete." };
+  }
   const response = await apiClient.post<{ status: string }>("/auth/reset-password/", payload);
   return response.data;
 }
 
 export async function getCurrentUser(): Promise<User> {
+  if (USE_MOCKS) {
+    return mockGetCurrentUser();
+  }
   const response = await apiClient.get<User>("/users/me/");
   return response.data;
 }
 
 export async function updateCurrentUser(payload: UpdateUserPayload): Promise<User> {
+  if (USE_MOCKS) {
+    return mockUpdateCurrentUser(payload);
+  }
   const response = await apiClient.patch<User>("/users/me/", payload);
   return response.data;
 }
 
 export async function getRoles(): Promise<Role[]> {
+  if (USE_MOCKS) {
+    return mockGetRoles();
+  }
   const response = await apiClient.get<{ results?: Role[] } | Role[]>("/roles/");
-  return Array.isArray(response.data) ? response.data : response.data.results ?? [];
+  return Array.isArray(response.data) ? response.data : (response.data.results ?? []);
 }
 
 export async function requestRole(role: string): Promise<UserRole> {
+  if (USE_MOCKS) {
+    return mockRequestRole(role);
+  }
   const response = await apiClient.post<UserRole>("/roles/request/", { role });
   return response.data;
 }

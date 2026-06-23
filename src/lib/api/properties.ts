@@ -1,11 +1,29 @@
 import { apiClient } from "@/lib/api/client";
+import { USE_MOCKS } from "@/lib/demo-mode";
+import {
+  mockCreateFavorite,
+  mockCreateProperty,
+  mockDeleteFavorite,
+  mockDeletePropertyImage,
+  mockGetDashboardSummary,
+  mockGetPublicProperties,
+  mockGetPublicProperty,
+  mockListFavorites,
+  mockListPropertyImages,
+  mockSetPropertyCoverImage,
+  mockUpdatePropertyImage,
+  mockUploadPropertyImage,
+} from "@/mocks/mock-properties";
 
 export type ListingType = "sale" | "rent";
 export type PropertyType =
   | "apartment"
   | "house"
+  | "duplex"
   | "land"
+  | "shortlet"
   | "commercial"
+  | "hotel"
   | "office"
   | "shop"
   | "warehouse"
@@ -37,6 +55,14 @@ export type Property = {
   image_count?: number;
   image_gallery?: PropertyImage[];
   is_favorited?: boolean;
+  amenities?: string[];
+  agent_id?: string;
+  agent_name?: string;
+  agent_phone?: string | null;
+  agent_email?: string;
+  agent_avatar_url?: string | null;
+  views_count?: number;
+  inquiry_count?: number;
   created_at: string;
 };
 
@@ -106,8 +132,11 @@ export type DashboardSummary = {
 export const propertyTypeOptions: Array<{ label: string; value: PropertyType }> = [
   { label: "Apartment", value: "apartment" },
   { label: "House", value: "house" },
+  { label: "Duplex", value: "duplex" },
   { label: "Land", value: "land" },
+  { label: "Shortlet", value: "shortlet" },
   { label: "Commercial", value: "commercial" },
+  { label: "Hotel", value: "hotel" },
   { label: "Office", value: "office" },
   { label: "Shop", value: "shop" },
   { label: "Warehouse", value: "warehouse" },
@@ -117,6 +146,9 @@ export const propertyTypeOptions: Array<{ label: string; value: PropertyType }> 
 export async function getPublicProperties(
   filters: PropertyFilters = {},
 ): Promise<PaginatedProperties> {
+  if (USE_MOCKS) {
+    return mockGetPublicProperties(filters);
+  }
   const response = await apiClient.get<PaginatedProperties>("/public/properties/", {
     params: Object.fromEntries(
       Object.entries(filters).filter(([, value]) => value !== undefined && value !== ""),
@@ -126,16 +158,25 @@ export async function getPublicProperties(
 }
 
 export async function getPublicProperty(propertySlug: string): Promise<Property> {
+  if (USE_MOCKS) {
+    return mockGetPublicProperty(propertySlug);
+  }
   const response = await apiClient.get<Property>(`/public/properties/${propertySlug}/`);
   return response.data;
 }
 
 export async function createProperty(payload: PropertyPayload): Promise<Property> {
+  if (USE_MOCKS) {
+    return mockCreateProperty(payload);
+  }
   const response = await apiClient.post<Property>("/properties/", payload);
   return response.data;
 }
 
 export async function listPropertyImages(propertySlug: string): Promise<PropertyImage[]> {
+  if (USE_MOCKS) {
+    return mockListPropertyImages(propertySlug);
+  }
   const response = await apiClient.get<PropertyImage[]>(`/properties/${propertySlug}/images/`);
   return response.data;
 }
@@ -153,6 +194,15 @@ export async function uploadPropertyImage({
   displayOrder?: number;
   isCover?: boolean;
 }): Promise<PropertyImage> {
+  if (USE_MOCKS) {
+    return mockUploadPropertyImage({
+      propertySlug,
+      file,
+      caption,
+      displayOrder,
+      isCover,
+    });
+  }
   const formData = new FormData();
   formData.append("image", file);
   formData.append("caption", caption);
@@ -180,6 +230,15 @@ export async function updatePropertyImage({
   displayOrder?: number;
   isCover?: boolean;
 }): Promise<PropertyImage> {
+  if (USE_MOCKS) {
+    return mockUpdatePropertyImage({
+      propertySlug,
+      imageId,
+      caption,
+      displayOrder,
+      isCover,
+    });
+  }
   const response = await apiClient.patch<PropertyImage>(
     `/properties/${propertySlug}/images/${imageId}/`,
     {
@@ -198,6 +257,9 @@ export async function setPropertyCoverImage({
   propertySlug: string;
   imageId: string;
 }): Promise<PropertyImage> {
+  if (USE_MOCKS) {
+    return mockSetPropertyCoverImage({ propertySlug, imageId });
+  }
   const response = await apiClient.post<PropertyImage>(
     `/properties/${propertySlug}/images/${imageId}/set-cover/`,
     {},
@@ -212,19 +274,33 @@ export async function deletePropertyImage({
   propertySlug: string;
   imageId: string;
 }): Promise<void> {
+  if (USE_MOCKS) {
+    await mockDeletePropertyImage();
+    return;
+  }
   await apiClient.delete(`/properties/${propertySlug}/images/${imageId}/`);
 }
 
 export async function createFavorite(propertyId: string): Promise<Favorite> {
+  if (USE_MOCKS) {
+    return mockCreateFavorite(propertyId);
+  }
   const response = await apiClient.post<Favorite>("/favorites/", { property_id: propertyId });
   return response.data;
 }
 
 export async function deleteFavorite(propertyId: string): Promise<void> {
+  if (USE_MOCKS) {
+    await mockDeleteFavorite(propertyId);
+    return;
+  }
   await apiClient.delete(`/favorites/${propertyId}/`);
 }
 
 export async function listFavorites(page = 1): Promise<PaginatedFavorites> {
+  if (USE_MOCKS) {
+    return mockListFavorites(page);
+  }
   const response = await apiClient.get<PaginatedFavorites>("/favorites/", {
     params: { page },
   });
@@ -232,6 +308,9 @@ export async function listFavorites(page = 1): Promise<PaginatedFavorites> {
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
+  if (USE_MOCKS) {
+    return mockGetDashboardSummary();
+  }
   const response = await apiClient.get<DashboardSummary>("/dashboard/summary/");
   return response.data;
 }

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { getCurrentUser, loginUser, logoutUser, registerUser } from "@/lib/api/auth";
+import { getRoleDashboardPath } from "@/lib/auth/permissions";
 import { clearTokens, getRefreshToken, setTokens } from "@/lib/auth/token-storage";
 import type { LoginPayload, RegisterPayload } from "@/lib/api/auth";
 import type { User } from "@/lib/auth/types";
@@ -42,11 +43,15 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     refreshSession();
   }, [refreshSession]);
 
-  const signIn = useCallback(async (payload: LoginPayload) => {
-    const response = await loginUser(payload);
-    setTokens(response.access, response.refresh);
-    setUser(response.user);
-  }, []);
+  const signIn = useCallback(
+    async (payload: LoginPayload) => {
+      const response = await loginUser(payload);
+      setTokens(response.access, response.refresh);
+      setUser(response.user);
+      router.push(getRoleDashboardPath(response.user));
+    },
+    [router],
+  );
 
   const signUp = useCallback(async (payload: RegisterPayload) => registerUser(payload), []);
 

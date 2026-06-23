@@ -96,8 +96,29 @@ export default function ProfilePage() {
       <main className="mx-auto max-w-3xl px-5 py-10 sm:px-6">
         <h1 className="font-heading text-3xl font-semibold text-brand-text">Profile settings</h1>
         <p className="mt-2 text-brand-muted">Keep your contact and identity details current.</p>
-        <Card className="mt-8 border-dashed p-4 text-sm text-brand-muted">
-          Avatar upload placeholder. Secure file uploads arrive in a later document workflow sprint.
+        <Card className="mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+          {user?.profile?.avatar_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              alt={user.full_name || user.email}
+              className="h-20 w-20 rounded-md object-cover"
+              decoding="async"
+              src={user.profile.avatar_url}
+            />
+          ) : (
+            <div className="flex h-20 w-20 items-center justify-center rounded-md bg-brand-primary font-heading text-2xl text-brand-secondary">
+              {user?.first_name?.[0] ?? "R"}
+            </div>
+          )}
+          <div>
+            <p className="font-heading text-2xl font-semibold text-brand-text">
+              {user?.full_name || user?.email}
+            </p>
+            <p className="mt-1 text-sm text-brand-muted">{user?.profile?.bio}</p>
+            <p className="mt-2 text-sm font-semibold text-brand-secondary">
+              {user?.is_email_verified ? "Verified profile" : "Verification pending"}
+            </p>
+          </div>
         </Card>
         <Card className="mt-6 p-5 sm:p-6">
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>

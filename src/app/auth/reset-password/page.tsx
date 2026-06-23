@@ -7,6 +7,7 @@ import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { Button } from "@/components/ui/button";
@@ -54,8 +55,8 @@ function ResetPasswordForm() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
       <Card className="w-full max-w-md p-6 sm:p-8">
-        <Link className="font-heading text-2xl font-semibold text-brand-text" href="/">
-          RealityNG
+        <Link aria-label="RealityNG home" className="inline-flex" href="/">
+          <BrandLogo className="h-16 w-auto object-contain" priority />
         </Link>
         <h1 className="mt-8 font-heading text-3xl font-semibold text-brand-text">
           Choose a new password
