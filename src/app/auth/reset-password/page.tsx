@@ -54,14 +54,14 @@ function ResetPasswordForm() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
-      <Card className="w-full max-w-md p-6 sm:p-8">
-        <Link aria-label="RealityNG home" className="inline-flex" href="/">
+      <Card className="w-full max-w-md p-6 text-center sm:p-8">
+        <Link aria-label="RealityNG home" className="mx-auto inline-flex" href="/">
           <BrandLogo className="h-16 w-auto object-contain" priority />
         </Link>
         <h1 className="mt-8 font-heading text-3xl font-semibold text-brand-text">
           Choose a new password
         </h1>
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
           <TextField label="User ID" error={errors.uid} {...register("uid")} />
           <TextField label="Reset token" error={errors.token} {...register("token")} />
           <div className="space-y-2">
@@ -72,7 +72,7 @@ function ResetPasswordForm() {
               {...register("password")}
             />
             <Button
-              className="h-8 px-2 text-brand-secondary"
+              className="mx-auto h-8 px-2 text-brand-secondary"
               onClick={() => setShowPassword((value) => !value)}
               type="button"
               variant="ghost"

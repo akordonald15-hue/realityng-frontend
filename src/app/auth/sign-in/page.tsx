@@ -45,13 +45,13 @@ export default function SignInPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
-      <Card className="w-full max-w-md p-6 sm:p-8">
-        <Link aria-label="RealityNG home" className="inline-flex" href="/">
+      <Card className="w-full max-w-md p-6 text-center sm:p-8">
+        <Link aria-label="RealityNG home" className="mx-auto inline-flex" href="/">
           <BrandLogo className="h-16 w-auto object-contain" priority />
         </Link>
         <h1 className="mt-8 font-heading text-3xl font-semibold text-brand-text">Sign in</h1>
         <p className="mt-2 text-brand-muted">Access your RealityNG dashboard.</p>
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
           <TextField label="Email" error={errors.email} type="email" {...register("email")} />
           <div className="space-y-2">
             <TextField
@@ -61,7 +61,7 @@ export default function SignInPage() {
               {...register("password")}
             />
             <Button
-              className="h-8 px-2 text-brand-secondary"
+              className="mx-auto h-8 px-2 text-brand-secondary"
               onClick={() => setShowPassword((value) => !value)}
               type="button"
               variant="ghost"
@@ -74,7 +74,7 @@ export default function SignInPage() {
             {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
         </form>
-        <div className="mt-6 flex items-center justify-between gap-4 text-sm">
+        <div className="mt-6 flex flex-col items-center justify-center gap-3 text-sm sm:flex-row sm:gap-6">
           <Link className="font-semibold text-brand-secondary" href="/auth/forgot-password">
             Forgot password?
           </Link>

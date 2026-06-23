@@ -60,8 +60,8 @@ export default function SignUpPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
-      <Card className="w-full max-w-lg p-6 sm:p-8">
-        <Link aria-label="RealityNG home" className="inline-flex" href="/">
+      <Card className="w-full max-w-lg p-6 text-center sm:p-8">
+        <Link aria-label="RealityNG home" className="mx-auto inline-flex" href="/">
           <BrandLogo className="h-16 w-auto object-contain" priority />
         </Link>
         <h1 className="mt-8 font-heading text-3xl font-semibold text-brand-text">
@@ -70,7 +70,7 @@ export default function SignUpPage() {
         <p className="mt-2 text-brand-muted">
           Start your RealityNG property journey with a secure account.
         </p>
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField label="First name" error={errors.first_name} {...register("first_name")} />
             <TextField label="Last name" error={errors.last_name} {...register("last_name")} />
@@ -89,7 +89,7 @@ export default function SignUpPage() {
               {...register("password")}
             />
             <Button
-              className="h-8 px-2 text-brand-secondary"
+              className="mx-auto h-8 px-2 text-brand-secondary"
               onClick={() => setShowPassword((value) => !value)}
               type="button"
               variant="ghost"
