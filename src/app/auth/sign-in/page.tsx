@@ -21,12 +21,6 @@ const signInSchema = z.object({
 
 type SignInValues = z.infer<typeof signInSchema>;
 
-const demoAccounts = [
-  { label: "Admin", email: "admin@realityng.com" },
-  { label: "Agent", email: "agent@realityng.com" },
-  { label: "Buyer", email: "buyer@realityng.com" },
-];
-
 export default function SignInPage() {
   const { signIn } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +28,6 @@ export default function SignInPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -88,24 +81,6 @@ export default function SignInPage() {
           <Link className="font-semibold text-brand-secondary" href="/auth/sign-up">
             Create account
           </Link>
-        </div>
-        <div className="mt-6 rounded-md border border-white/10 bg-white/5 p-4">
-          <p className="text-sm font-semibold text-brand-text">Demo accounts</p>
-          <div className="mt-3 grid gap-2 text-xs text-brand-muted">
-            {demoAccounts.map((account) => (
-              <button
-                className="rounded-sm border border-white/10 px-3 py-2 text-left transition hover:border-brand-secondary hover:text-brand-text"
-                key={account.email}
-                onClick={() => {
-                  setValue("email", account.email, { shouldValidate: true });
-                  setValue("password", "password123", { shouldValidate: true });
-                }}
-                type="button"
-              >
-                {account.label}: {account.email} / password123
-              </button>
-            ))}
-          </div>
         </div>
       </Card>
     </main>
