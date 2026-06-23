@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Footer } from "@/components/layout/footer";
@@ -30,15 +31,62 @@ const stats = [
   { label: "Verified listings", value: String(mockAnalytics.verifiedListings) },
 ];
 
+const heroSlides = [
+  {
+    src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2200&q=85",
+    alt: "Premium modern Nigerian-style detached home exterior",
+    label: "Verified family homes",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2200&q=85",
+    alt: "Luxury open-plan apartment interior with large windows",
+    label: "Gallery-first apartments",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=2200&q=85",
+    alt: "Contemporary premium residential living room",
+    label: "Diaspora-ready inspections",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=2200&q=85",
+    alt: "Modern luxury property exterior with evening lighting",
+    label: "Approved premium listings",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2200&q=85",
+    alt: "Elegant furnished apartment dining and living space",
+    label: "Shortlets and rentals",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?auto=format&fit=crop&w=2200&q=85",
+    alt: "Premium residential interior staircase and living area",
+    label: "Curated galleries",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&w=2200&q=85",
+    alt: "High-end modern property lounge with warm lighting",
+    label: "Trusted agent inventory",
+  },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const [city, setCity] = useState("");
   const [listingType, setListingType] = useState("");
+  const [activeSlide, setActiveSlide] = useState(0);
   const featuredQuery = useQuery({
     queryKey: ["homepage-featured-properties"],
     queryFn: () => getPublicProperties({ ordering: "-featured" }),
   });
   const featured = featuredQuery.data?.results.slice(0, 3) ?? [];
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % heroSlides.length);
+    }, 5500);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   function searchProperties() {
     const params = new URLSearchParams();
@@ -55,44 +103,86 @@ export default function HomePage() {
     <div className="min-h-screen bg-brand-background text-brand-text">
       <Navbar />
       <main>
-        <section className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl items-center gap-10 px-5 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-brand-secondary">
-              Diaspora-focused Nigerian PropTech
-            </p>
-            <h1 className="mt-5 max-w-4xl font-heading text-5xl font-semibold leading-tight text-brand-text sm:text-6xl lg:text-7xl">
-              Find trusted property in Nigeria with confidence.
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-brand-muted">
-              Discover approved homes, land, and commercial listings with gallery-first previews,
-              owner controls, and review workflows built for trust.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link className={buttonClasses("primary")} href="/properties">
-                Browse properties
-              </Link>
-              <Link className={buttonClasses("secondary")} href="/properties/new">
-                List property
-              </Link>
-            </div>
+        <section className="relative isolate min-h-[calc(100svh-4rem)] overflow-hidden">
+          <div aria-hidden="true" className="absolute inset-0">
+            {heroSlides.map((slide, index) => (
+              <Image
+                alt=""
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                  activeSlide === index ? "opacity-100" : "opacity-0"
+                }`}
+                fill
+                key={slide.src}
+                priority={index === 0}
+                sizes="100vw"
+                src={slide.src}
+              />
+            ))}
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,28,21,0.96)_0%,rgba(8,28,21,0.82)_42%,rgba(8,28,21,0.36)_78%,rgba(8,28,21,0.68)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,28,21,0.48)_0%,rgba(8,28,21,0.12)_45%,rgba(8,28,21,0.88)_100%)]" />
           </div>
-          <Card className="p-5">
-            <div className="aspect-[4/5] rounded-md bg-[linear-gradient(150deg,#0F3D2E,#11241D_48%,#D4A017_160%)] p-5">
-              <div className="flex h-full flex-col justify-between rounded-md border border-white/10 bg-brand-background/35 p-5">
-                <div>
-                  <p className="text-sm text-brand-muted">Featured journey</p>
-                  <h2 className="mt-6 font-heading text-3xl font-semibold text-brand-text">
-                    Lagos apartment search to verified gallery review.
-                  </h2>
-                </div>
-                <div className="grid gap-3 text-sm text-brand-muted">
-                  <div className="rounded-md bg-white/10 p-3">Approved listing visibility</div>
-                  <div className="rounded-md bg-white/10 p-3">Cover image and gallery baseline</div>
-                  <div className="rounded-md bg-white/10 p-3">Owner-managed draft workflow</div>
-                </div>
+
+          <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-7xl flex-col justify-center px-5 py-16 sm:px-6 lg:py-20">
+            <div className="max-w-3xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-secondary sm:text-sm">
+                Diaspora-focused Nigerian PropTech
+              </p>
+              <h1
+                className="mt-5 max-w-4xl font-heading text-4xl font-semibold leading-tight text-brand-text sm:text-6xl lg:text-7xl"
+                style={{ textShadow: "0 4px 28px rgba(0,0,0,0.55)" }}
+              >
+                Find trusted property in Nigeria with confidence.
+              </h1>
+              <p className="mt-6 max-w-2xl text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
+                Discover approved homes, land, shortlets, and commercial listings with
+                gallery-first previews, owner controls, and review workflows built for trust.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link className={buttonClasses("primary", "w-full sm:w-auto")} href="/properties">
+                  Browse properties
+                </Link>
+                <Link
+                  className={buttonClasses("secondary", "w-full sm:w-auto")}
+                  href="/properties/new"
+                >
+                  List property
+                </Link>
               </div>
             </div>
-          </Card>
+
+            <div className="mt-10 grid max-w-3xl gap-3 text-sm text-white/85 sm:grid-cols-3">
+              <div className="rounded-md border border-white/15 bg-black/25 p-4 backdrop-blur">
+                Approved listing visibility
+              </div>
+              <div className="rounded-md border border-white/15 bg-black/25 p-4 backdrop-blur">
+                Cover image and gallery baseline
+              </div>
+              <div className="rounded-md border border-white/15 bg-black/25 p-4 backdrop-blur">
+                Owner-managed draft workflow
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-medium text-white/80">{heroSlides[activeSlide].label}</p>
+              <div className="flex gap-2" role="tablist" aria-label="Hero property slideshow">
+                {heroSlides.map((slide, index) => (
+                  <button
+                    aria-label={`Show ${slide.label}`}
+                    aria-selected={activeSlide === index}
+                    className={`h-2.5 rounded-full transition-all ${
+                      activeSlide === index
+                        ? "w-9 bg-brand-secondary"
+                        : "w-2.5 bg-white/45 hover:bg-white/75"
+                    }`}
+                    key={slide.src}
+                    onClick={() => setActiveSlide(index)}
+                    role="tab"
+                    type="button"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="border-y border-white/10 bg-brand-surface/55">
