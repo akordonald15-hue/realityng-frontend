@@ -18,6 +18,15 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "RealityNG",
   description: "Find, verify, buy, rent, build, and manage properties in Nigeria.",
+  icons: {
+    icon: [
+      { url: "/icons/realityng-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/realityng-icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
