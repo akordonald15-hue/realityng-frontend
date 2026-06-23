@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { BrandLogo } from "@/components/brand/brand-logo";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
@@ -82,8 +81,7 @@ export default function HomePage() {
               <div className="flex h-full flex-col justify-between rounded-md border border-white/10 bg-brand-background/35 p-5">
                 <div>
                   <p className="text-sm text-brand-muted">Featured journey</p>
-                  <BrandLogo className="mt-4 h-28 w-auto object-contain" variant="icon" />
-                  <h2 className="mt-3 font-heading text-3xl font-semibold text-brand-text">
+                  <h2 className="mt-6 font-heading text-3xl font-semibold text-brand-text">
                     Lagos apartment search to verified gallery review.
                   </h2>
                 </div>
