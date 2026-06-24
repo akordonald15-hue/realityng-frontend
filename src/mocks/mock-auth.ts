@@ -4,6 +4,7 @@ import { findMockUserByEmail, findMockUserById, mockBuyers, mockRoles } from "@/
 
 const MOCK_SESSION_KEY = "realityng.mockSessionUserId";
 const DEMO_PASSWORD = "password123";
+const MOCK_PASSWORD_PREFIX = "realityng.mockPassword.";
 
 function canUseStorage() {
   return typeof window !== "undefined" && Boolean(window.localStorage);
@@ -14,6 +15,7 @@ function saveMockUser(user: User) {
     return;
   }
   window.localStorage.setItem(`realityng.mockUser.${user.id}`, JSON.stringify(user));
+  window.localStorage.setItem(`realityng.mockUserEmail.${user.email.toLowerCase()}`, user.id);
 }
 
 function getStoredMockUser(id: string): User | null {
@@ -43,8 +45,15 @@ export function clearMockSession() {
 }
 
 export async function mockLoginUser(payload: LoginPayload): Promise<AuthTokens & { user: User }> {
-  const user = findMockUserByEmail(payload.email);
-  if (!user || payload.password !== DEMO_PASSWORD) {
+  const storedUserId = canUseStorage()
+    ? window.localStorage.getItem(`realityng.mockUserEmail.${payload.email.toLowerCase()}`)
+    : null;
+  const user =
+    (storedUserId ? getStoredMockUser(storedUserId) : null) ?? findMockUserByEmail(payload.email);
+  const storedPassword = canUseStorage()
+    ? window.localStorage.getItem(`${MOCK_PASSWORD_PREFIX}${payload.email.toLowerCase()}`)
+    : null;
+  if (!user || payload.password !== (storedPassword ?? DEMO_PASSWORD)) {
     throw new Error("Invalid demo credentials.");
   }
 
@@ -102,6 +111,12 @@ export async function mockRegisterUser(payload: RegisterPayload): Promise<User> 
     ],
   };
   saveMockUser(user);
+  if (canUseStorage()) {
+    window.localStorage.setItem(
+      `${MOCK_PASSWORD_PREFIX}${payload.email.toLowerCase()}`,
+      payload.password,
+    );
+  }
   return user;
 }
 

@@ -82,9 +82,10 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
             onChange={(event) => update("listing_type", event.target.value)}
             value={filters.listing_type ?? ""}
           >
-            <option value="">Sale or rent</option>
+            <option value="">Any listing type</option>
             <option value="sale">Sale</option>
             <option value="rent">Rent</option>
+            <option value="apartment_share">Apartment share</option>
           </Select>
         </div>
         <div className="grid grid-cols-2 gap-3">

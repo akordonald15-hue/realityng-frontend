@@ -33,6 +33,9 @@ describe("SignInPage", () => {
     await user.type(screen.getByLabelText("Password"), "Str0ngPass123!");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
-    expect(mocks.signIn).toHaveBeenCalledWith({ email: "ada@example.com", password: "Str0ngPass123!" });
+    expect(mocks.signIn).toHaveBeenCalledWith(
+      { email: "ada@example.com", password: "Str0ngPass123!" },
+      undefined,
+    );
   });
 });

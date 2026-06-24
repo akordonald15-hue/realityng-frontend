@@ -15,7 +15,7 @@ import {
   mockUploadPropertyImage,
 } from "@/mocks/mock-properties";
 
-export type ListingType = "sale" | "rent";
+export type ListingType = "sale" | "rent" | "apartment_share";
 export type PropertyType =
   | "apartment"
   | "house"

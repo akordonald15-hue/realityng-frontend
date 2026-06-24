@@ -14,7 +14,7 @@ type AuthContextValue = {
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshSession: () => Promise<void>;
-  signIn: (payload: LoginPayload) => Promise<void>;
+  signIn: (payload: LoginPayload, redirectTo?: string) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<User>;
   signOut: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -44,11 +44,11 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   }, [refreshSession]);
 
   const signIn = useCallback(
-    async (payload: LoginPayload) => {
+    async (payload: LoginPayload, redirectTo?: string) => {
       const response = await loginUser(payload);
       setTokens(response.access, response.refresh);
       setUser(response.user);
-      router.push(getRoleDashboardPath(response.user));
+      router.push(redirectTo || getRoleDashboardPath(response.user));
     },
     [router],
   );
@@ -91,4 +91,8 @@ export function useAuth() {
     throw new Error("useAuth must be used inside AuthProvider.");
   }
   return context;
+}
+
+export function useOptionalAuth() {
+  return useContext(AuthContext);
 }

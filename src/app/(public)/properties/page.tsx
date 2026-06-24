@@ -45,7 +45,7 @@ function PropertiesContent() {
             <SectionHeader
               eyebrow="Browse"
               title="Verified Nigerian properties"
-              description="Approved sale and rent listings with gallery-aware cards and focused filters."
+              description="Approved sale, rent, and apartment-share listings with gallery-aware cards and focused filters."
             />
             <div className="flex gap-3">
               <Button

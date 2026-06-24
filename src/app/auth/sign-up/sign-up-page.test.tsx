@@ -33,7 +33,9 @@ describe("SignUpPage", () => {
     await user.type(screen.getByLabelText("Password"), "Str0ngPass123!");
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
-    expect(await screen.findByText("Account created. Sign in to continue.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Account created. Continue to sign in and choose your role."),
+    ).toBeInTheDocument();
     expect(mocks.signUp).toHaveBeenCalledWith(
       expect.objectContaining({ email: "ada@example.com", password: "Str0ngPass123!" }),
     );

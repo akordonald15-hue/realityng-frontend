@@ -7,12 +7,18 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
+import { CompareButton } from "@/components/properties/compare-button";
 import { FavoriteButton } from "@/components/properties/favorite-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getPublicProperty } from "@/lib/api/properties";
-import { formatPrice, formatPropertyType, propertySize } from "@/lib/properties/format";
+import {
+  formatListingType,
+  formatPrice,
+  formatPropertyType,
+  propertySize,
+} from "@/lib/properties/format";
 
 function galleryAlt(index: number) {
   return `Property gallery image ${index + 1}`;
@@ -88,7 +94,7 @@ export default function PropertyDetailPage() {
                 </div>
                 <div className="mt-8">
                   <div className="flex flex-wrap gap-2">
-                    <Badge>{property.listing_type}</Badge>
+                    <Badge>{formatListingType(property.listing_type)}</Badge>
                     <Badge variant="muted">{formatPropertyType(property.property_type)}</Badge>
                     {property.featured ? <Badge variant="green">Featured</Badge> : null}
                   </div>
@@ -101,6 +107,15 @@ export default function PropertyDetailPage() {
                   <p className="mt-6 max-w-3xl text-base leading-8 text-brand-muted">
                     {property.description}
                   </p>
+                  {property.listing_type === "apartment_share" ? (
+                    <div className="mt-6 border-l-2 border-brand-secondary bg-brand-secondary/10 px-4 py-3">
+                      <p className="font-semibold text-brand-text">Apartment share</p>
+                      <p className="mt-1 text-sm leading-6 text-brand-muted">
+                        This listing offers shared occupancy. Confirm the available room, shared
+                        amenities, and household expectations with the listing owner.
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
               <aside className="space-y-5">
@@ -110,7 +125,7 @@ export default function PropertyDetailPage() {
                     {formatPrice(property)}
                   </p>
                   <p className="mt-2 text-sm text-brand-muted">
-                    Listed for {property.listing_type}
+                    Listed for {formatListingType(property.listing_type)}
                   </p>
                   <FavoriteButton
                     className="mt-5 w-full"
@@ -118,6 +133,7 @@ export default function PropertyDetailPage() {
                     propertyId={property.id}
                     propertySlug={property.slug}
                   />
+                  <CompareButton className="mt-3" property={property} />
                 </Card>
                 <Card className="p-5">
                   <h2 className="font-heading text-2xl font-semibold text-brand-text">

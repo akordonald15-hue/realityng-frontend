@@ -3,7 +3,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { SignUpPrompt } from "@/components/auth/sign-up-prompt";
+import { CompareTray } from "@/components/properties/compare-tray";
 import { AuthProvider } from "@/providers/auth-provider";
+import { CompareProvider } from "@/providers/compare-provider";
 
 export function AppProviders({ children }: Readonly<{ children: React.ReactNode }>) {
   const [queryClient] = useState(
@@ -21,7 +24,13 @@ export function AppProviders({ children }: Readonly<{ children: React.ReactNode 
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        <CompareProvider>
+          {children}
+          <CompareTray />
+          <SignUpPrompt />
+        </CompareProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

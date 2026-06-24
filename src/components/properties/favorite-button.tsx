@@ -77,7 +77,8 @@ export function FavoriteButton({
 
   function toggleFavorite() {
     if (!getAccessToken()) {
-      router.push("/auth/sign-in");
+      const nextPath = propertySlug ? `/properties/${propertySlug}` : "/properties";
+      router.push(`/auth/sign-up?next=${encodeURIComponent(nextPath)}`);
       return;
     }
     mutation.mutate(!isFavorited);

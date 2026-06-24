@@ -19,16 +19,16 @@ vi.mock("@/components/auth/protected-route", () => ({
 }));
 
 vi.mock("@/lib/api/properties", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api/properties")>(
-    "@/lib/api/properties",
-  );
+  const actual =
+    await vi.importActual<typeof import("@/lib/api/properties")>("@/lib/api/properties");
   return {
     ...actual,
     createProperty: (payload: Record<string, unknown>) => mocks.createProperty(payload),
     listPropertyImages: (propertySlug: string) => mocks.listPropertyImages(propertySlug),
     uploadPropertyImage: (payload: Record<string, unknown>) => mocks.uploadPropertyImage(payload),
     updatePropertyImage: (payload: Record<string, unknown>) => mocks.updatePropertyImage(payload),
-    setPropertyCoverImage: (payload: Record<string, unknown>) => mocks.setPropertyCoverImage(payload),
+    setPropertyCoverImage: (payload: Record<string, unknown>) =>
+      mocks.setPropertyCoverImage(payload),
     deletePropertyImage: (payload: Record<string, unknown>) => mocks.deletePropertyImage(payload),
   };
 });
@@ -90,6 +90,27 @@ describe("NewPropertyPage", () => {
     await user.click(screen.getByRole("button", { name: "Save draft and add media" }));
 
     expect(await screen.findByText("Land listings require land size.")).toBeInTheDocument();
+    expect(mocks.createProperty).not.toHaveBeenCalled();
+  });
+
+  it("requires apartment property type for apartment-share listings", async () => {
+    const user = userEvent.setup();
+    renderWithQueryClient(<NewPropertyPage />);
+
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Shared Home in Lekki" },
+    });
+    fireEvent.change(screen.getByLabelText("Description"), {
+      target: { value: "A furnished room in a calm shared home near key roads." },
+    });
+    fireEvent.change(screen.getByLabelText("Price"), { target: { value: "1500000" } });
+    await user.selectOptions(screen.getByLabelText("Property type"), "house");
+    await user.selectOptions(screen.getByLabelText("Listing type"), "apartment_share");
+    await user.click(screen.getByRole("button", { name: "Continue to location" }));
+
+    expect(
+      await screen.findByText("Apartment share listings must use the apartment property type."),
+    ).toBeInTheDocument();
     expect(mocks.createProperty).not.toHaveBeenCalled();
   });
 });

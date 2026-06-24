@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { FormMessage } from "@/components/forms/form-message";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getRoles, requestRole } from "@/lib/api/auth";
 import { getApiErrorMessage } from "@/lib/api/errors";
@@ -77,6 +78,11 @@ export default function RoleSetupPage() {
           })}
         </div>
         {rolesQuery.isLoading ? <p className="mt-8 text-brand-muted">Loading roles...</p> : null}
+        <div className="mt-8 border-t border-white/10 pt-6">
+          <Link className={buttonClasses("primary")} href="/dashboard">
+            Continue to dashboard
+          </Link>
+        </div>
       </main>
     </ProtectedRoute>
   );

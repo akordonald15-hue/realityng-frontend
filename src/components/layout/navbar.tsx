@@ -6,19 +6,31 @@ import { useState } from "react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button, buttonClasses } from "@/components/ui/button";
+import { useOptionalAuth } from "@/providers/auth-provider";
 
-const primaryLinks = [
-  { href: "/", label: "Home" },
-  { href: "/properties", label: "Browse" },
+const publicLinks = [{ href: "/properties", label: "Browse properties" }];
+const protectedLinks = [
   { href: "/saved-properties", label: "Saved" },
-  { href: "/properties/new", label: "List property" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/settings/profile", label: "Profile" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
+  const auth = useOptionalAuth();
+  const isAuthenticated = auth?.isAuthenticated ?? false;
+  const isLoading = auth?.isLoading ?? false;
   const [isOpen, setIsOpen] = useState(false);
+  const listPropertyHref = isAuthenticated
+    ? "/properties/new"
+    : "/auth/sign-up?next=%2Fproperties%2Fnew";
+  const navigationLinks = [
+    ...publicLinks,
+    ...protectedLinks.map((link) => ({
+      ...link,
+      href: isAuthenticated ? link.href : `/auth/sign-up?next=${encodeURIComponent(link.href)}`,
+    })),
+  ];
 
   function isActive(href: string) {
     if (href === "/") {
@@ -28,14 +40,15 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/90 backdrop-blur">
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-6">
-        <Link aria-label="RealityNG home" className="flex items-center" href="/">
-          <BrandLogo className="h-10 w-auto object-contain" priority />
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/95 backdrop-blur">
+      <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-6">
+        <Link aria-label="RealityNG home" className="flex shrink-0 items-center" href="/">
+          <BrandLogo className="h-11 w-auto object-contain sm:h-12" priority treatment="light" />
         </Link>
-        <div className="hidden items-center gap-6 text-sm font-medium text-brand-muted md:flex">
-          {primaryLinks.slice(1).map((link) => (
+        <div className="hidden items-center gap-5 text-sm font-medium text-brand-muted lg:flex">
+          {navigationLinks.map((link) => (
             <Link
+              aria-current={isActive(link.href) ? "page" : undefined}
               className={
                 isActive(link.href)
                   ? "text-brand-text transition hover:text-brand-text"
@@ -47,22 +60,33 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link className="transition hover:text-brand-text" href="/auth/sign-in">
-            Sign in
-          </Link>
+          {!isLoading && isAuthenticated ? (
+            <Button className="h-10" onClick={() => void auth?.signOut()} variant="ghost">
+              Sign out
+            </Button>
+          ) : (
+            <>
+              <Link className="transition hover:text-brand-text" href="/auth/sign-in">
+                Sign in
+              </Link>
+              <Link className={buttonClasses("secondary", "h-10")} href="/auth/sign-up">
+                Create account
+              </Link>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Link
             className={buttonClasses("primary", "hidden h-10 sm:inline-flex")}
-            href="/properties/new"
+            href={listPropertyHref}
           >
-            Add listing
+            List property
           </Link>
           <Button
             aria-controls="mobile-navigation"
             aria-expanded={isOpen}
             aria-label="Toggle navigation"
-            className="h-10 w-10 border border-white/10 p-0 md:hidden"
+            className="h-10 w-10 border border-white/10 p-0 lg:hidden"
             onClick={() => setIsOpen((value) => !value)}
             type="button"
             variant="ghost"
@@ -74,11 +98,18 @@ export function Navbar() {
         </div>
       </nav>
       <div
-        className={isOpen ? "border-t border-white/10 px-5 py-4 md:hidden" : "hidden"}
+        className={isOpen ? "border-t border-white/10 px-5 py-4 lg:hidden" : "hidden"}
         id="mobile-navigation"
       >
         <div className="mx-auto grid max-w-7xl gap-2 text-sm font-medium">
-          {primaryLinks.map((link) => (
+          <Link
+            className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+            href="/"
+            onClick={() => setIsOpen(false)}
+          >
+            Home
+          </Link>
+          {navigationLinks.map((link) => (
             <Link
               className={
                 isActive(link.href)
@@ -92,19 +123,41 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link
-            className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
-            href="/auth/sign-in"
-            onClick={() => setIsOpen(false)}
-          >
-            Sign in
-          </Link>
+          {!isLoading && isAuthenticated ? (
+            <Button
+              className="w-full justify-start"
+              onClick={() => {
+                setIsOpen(false);
+                void auth?.signOut();
+              }}
+              variant="ghost"
+            >
+              Sign out
+            </Button>
+          ) : (
+            <>
+              <Link
+                className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+                href="/auth/sign-in"
+                onClick={() => setIsOpen(false)}
+              >
+                Sign in
+              </Link>
+              <Link
+                className="rounded-md px-3 py-2 font-semibold text-brand-secondary transition hover:bg-white/10"
+                href="/auth/sign-up"
+                onClick={() => setIsOpen(false)}
+              >
+                Create account
+              </Link>
+            </>
+          )}
           <Link
             className={buttonClasses("primary", "mt-2 w-full")}
-            href="/properties/new"
+            href={listPropertyHref}
             onClick={() => setIsOpen(false)}
           >
-            Add listing
+            List property
           </Link>
         </div>
       </div>

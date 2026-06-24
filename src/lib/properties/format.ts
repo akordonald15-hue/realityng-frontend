@@ -10,7 +10,11 @@ export function formatPrice(property: Property) {
 }
 
 export function formatPropertyType(value: string) {
-  return value.replace("_", " ");
+  return value.replaceAll("_", " ");
+}
+
+export function formatListingType(value: string) {
+  return value.replaceAll("_", " ");
 }
 
 export function propertySize(property: Property) {

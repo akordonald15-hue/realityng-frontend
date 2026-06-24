@@ -37,7 +37,12 @@ export default function SignInPage() {
   async function onSubmit(values: SignInValues) {
     setServerError("");
     try {
-      await signIn(values);
+      const requestedPath = new URLSearchParams(window.location.search).get("next");
+      const safePath =
+        requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+          ? requestedPath
+          : undefined;
+      await signIn(values, safePath);
     } catch (error) {
       setServerError(getApiErrorMessage(error));
     }

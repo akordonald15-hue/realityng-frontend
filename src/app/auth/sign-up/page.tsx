@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -25,6 +26,7 @@ const signUpSchema = z.object({
 type SignUpValues = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
+  const router = useRouter();
   const { signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -52,7 +54,13 @@ export default function SignUpPage() {
         ...values,
         phone_number: values.phone_number || null,
       });
-      setSuccess("Account created. Sign in to continue.");
+      setSuccess("Account created. Continue to sign in and choose your role.");
+      const requestedPath = new URLSearchParams(window.location.search).get("next");
+      const nextPath =
+        requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+          ? requestedPath
+          : "/onboarding/role-setup";
+      router.push(`/auth/sign-in?next=${encodeURIComponent(nextPath)}`);
     } catch (error) {
       setServerError(getApiErrorMessage(error));
     }

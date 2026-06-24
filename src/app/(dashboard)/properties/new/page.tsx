@@ -16,23 +16,33 @@ import { getApiErrorMessage } from "@/lib/api/errors";
 import { createProperty, propertyTypeOptions, type Property } from "@/lib/api/properties";
 import { Select } from "@/components/ui/select";
 
-const basicStepSchema = z.object({
-  title: z.string().min(5, "Enter a descriptive title."),
-  description: z.string().min(20, "Description must be at least 20 characters."),
-  property_type: z.enum([
-    "apartment",
-    "house",
-    "land",
-    "commercial",
-    "office",
-    "shop",
-    "warehouse",
-    "mixed_use",
-  ]),
-  listing_type: z.enum(["sale", "rent"]),
-  price: z.coerce.number().positive("Price must be greater than zero."),
-  currency: z.string().length(3, "Use a 3-letter currency code."),
-});
+const basicStepSchema = z
+  .object({
+    title: z.string().min(5, "Enter a descriptive title."),
+    description: z.string().min(20, "Description must be at least 20 characters."),
+    property_type: z.enum([
+      "apartment",
+      "house",
+      "land",
+      "commercial",
+      "office",
+      "shop",
+      "warehouse",
+      "mixed_use",
+    ]),
+    listing_type: z.enum(["sale", "rent", "apartment_share"]),
+    price: z.coerce.number().positive("Price must be greater than zero."),
+    currency: z.string().length(3, "Use a 3-letter currency code."),
+  })
+  .superRefine((values, ctx) => {
+    if (values.listing_type === "apartment_share" && values.property_type !== "apartment") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Apartment share listings must use the apartment property type.",
+        path: ["property_type"],
+      });
+    }
+  });
 
 const propertySchema = z
   .object({
@@ -48,7 +58,7 @@ const propertySchema = z
       "warehouse",
       "mixed_use",
     ]),
-    listing_type: z.enum(["sale", "rent"]),
+    listing_type: z.enum(["sale", "rent", "apartment_share"]),
     price: z.coerce.number().positive("Price must be greater than zero."),
     currency: z.string().length(3, "Use a 3-letter currency code."),
     country: z.string().min(1, "Country is required."),
@@ -62,6 +72,13 @@ const propertySchema = z
     floor_area: z.coerce.number().positive().optional().or(z.literal("")),
   })
   .superRefine((values, ctx) => {
+    if (values.listing_type === "apartment_share" && values.property_type !== "apartment") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Apartment share listings must use the apartment property type.",
+        path: ["property_type"],
+      });
+    }
     if (values.property_type === "land" && !values.land_size) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -162,8 +179,7 @@ export default function NewPropertyPage() {
     });
   }
 
-  const selectClass =
-    "mt-2";
+  const selectClass = "mt-2";
 
   return (
     <ProtectedRoute>
@@ -196,7 +212,11 @@ export default function NewPropertyPage() {
                 Upload up to 30 JPEG, PNG, or WebP images. The first image becomes the cover
                 automatically.
               </p>
-              <Button className="mt-4 w-full" onClick={() => setStep("location")} variant="secondary">
+              <Button
+                className="mt-4 w-full"
+                onClick={() => setStep("location")}
+                variant="secondary"
+              >
                 Edit details
               </Button>
             </Card>
@@ -210,7 +230,10 @@ export default function NewPropertyPage() {
               {step === "basic" ? (
                 <>
                   <TextField label="Title" error={errors.title} {...register("title")} />
-                  <label className="block text-sm font-medium text-brand-text" htmlFor="description">
+                  <label
+                    className="block text-sm font-medium text-brand-text"
+                    htmlFor="description"
+                  >
                     <span>Description</span>
                     <textarea
                       className="mt-2 min-h-32 w-full rounded-md border border-white/10 bg-white/5 px-3 py-3 text-sm text-brand-text outline-none transition focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
@@ -224,22 +247,47 @@ export default function NewPropertyPage() {
                     ) : null}
                   </label>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="block text-sm font-medium text-brand-text" htmlFor="property_type">
+                    <label
+                      className="block text-sm font-medium text-brand-text"
+                      htmlFor="property_type"
+                    >
                       <span>Property type</span>
-                      <Select className={selectClass} id="property_type" {...register("property_type")}>
+                      <Select
+                        className={selectClass}
+                        id="property_type"
+                        {...register("property_type")}
+                      >
                         {propertyTypeOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
                         ))}
                       </Select>
+                      {errors.property_type ? (
+                        <span className="mt-1 block text-sm text-red-300">
+                          {errors.property_type.message}
+                        </span>
+                      ) : null}
                     </label>
-                    <label className="block text-sm font-medium text-brand-text" htmlFor="listing_type">
+                    <label
+                      className="block text-sm font-medium text-brand-text"
+                      htmlFor="listing_type"
+                    >
                       <span>Listing type</span>
-                      <Select className={selectClass} id="listing_type" {...register("listing_type")}>
+                      <Select
+                        className={selectClass}
+                        id="listing_type"
+                        {...register("listing_type")}
+                      >
                         <option value="rent">Rent</option>
                         <option value="sale">Sale</option>
+                        <option value="apartment_share">Apartment share</option>
                       </Select>
+                      {errors.listing_type ? (
+                        <span className="mt-1 block text-sm text-red-300">
+                          {errors.listing_type.message}
+                        </span>
+                      ) : null}
                     </label>
                     <TextField
                       label="Price"
@@ -309,11 +357,7 @@ export default function NewPropertyPage() {
                 </Button>
               ) : (
                 <>
-                  <Button
-                    className="mt-4 w-full"
-                    disabled={mutation.isPending}
-                    type="submit"
-                  >
+                  <Button className="mt-4 w-full" disabled={mutation.isPending} type="submit">
                     {mutation.isPending ? "Saving draft..." : "Save draft and add media"}
                   </Button>
                   <Button

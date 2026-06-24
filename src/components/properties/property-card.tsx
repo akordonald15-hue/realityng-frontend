@@ -1,10 +1,16 @@
 import Link from "next/link";
 
+import { CompareButton } from "@/components/properties/compare-button";
 import { FavoriteButton } from "@/components/properties/favorite-button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { Property } from "@/lib/api/properties";
-import { formatPrice, formatPropertyType, propertySize } from "@/lib/properties/format";
+import {
+  formatListingType,
+  formatPrice,
+  formatPropertyType,
+  propertySize,
+} from "@/lib/properties/format";
 
 type PropertyCardProps = {
   property: Property;
@@ -41,7 +47,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
       </Link>
       <div className="p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge>{property.listing_type}</Badge>
+          <Badge>{formatListingType(property.listing_type)}</Badge>
           <Badge variant="muted">{formatPropertyType(property.property_type)}</Badge>
           {property.featured ? <Badge variant="green">Featured</Badge> : null}
         </div>
@@ -65,6 +71,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             </p>
           </div>
         </div>
+        <CompareButton className="mt-4" compact property={property} />
       </div>
     </Card>
   );
