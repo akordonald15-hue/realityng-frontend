@@ -15,9 +15,15 @@ const playfair = Playfair_Display({
   variable: "--font-heading",
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://realityng.com");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "RealityNG",
-  description: "Find, verify, buy, rent, build, and manage properties in Nigeria.",
+  description:
+    "Where dreams find address. Find, verify, buy, rent, build, and manage properties in Nigeria.",
   icons: {
     icon: [
       { url: "/icons/realityng-icon-192.png", sizes: "192x192", type: "image/png" },
@@ -25,6 +31,19 @@ export const metadata: Metadata = {
       { url: "/favicon.ico", sizes: "32x32" },
     ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  openGraph: {
+    title: "RealityNG",
+    description:
+      "Where dreams find address. Discover verified Nigerian property listings with RealityNG.",
+    images: [{ url: "/brand/realityng-social.png", width: 1200, height: 630, alt: "RealityNG" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RealityNG",
+    description:
+      "Where dreams find address. Discover verified Nigerian property listings with RealityNG.",
+    images: ["/brand/realityng-social.png"],
   },
   manifest: "/manifest.webmanifest",
 };

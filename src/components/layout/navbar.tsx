@@ -43,7 +43,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/95 backdrop-blur">
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-6">
         <Link aria-label="RealityNG home" className="flex shrink-0 items-center" href="/">
-          <BrandLogo className="h-11 w-auto object-contain sm:h-12" priority treatment="light" />
+          <BrandLogo className="h-14 w-auto object-contain sm:h-16" priority />
         </Link>
         <div className="hidden items-center gap-5 text-sm font-medium text-brand-muted lg:flex">
           {navigationLinks.map((link) => (

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
@@ -68,6 +69,24 @@ const steps = [
     title: "Continue",
     description:
       "Create an account, choose your role, and manage your next steps from one dashboard.",
+  },
+];
+
+const artisanSolutions = [
+  {
+    title: "Verified service profiles",
+    description:
+      "A clear path for plumbers, electricians, painters, cleaners, and finishing specialists to present trusted property services.",
+  },
+  {
+    title: "Property-owner matching",
+    description:
+      "Designed to help owners and agents find reliable artisans around active rentals, shortlets, and managed properties.",
+  },
+  {
+    title: "Future booking readiness",
+    description:
+      "The experience is prepared for quotes, bookings, reviews, and verified artisan badges in the approved roadmap.",
   },
 ];
 
@@ -156,7 +175,11 @@ export default function HomePage() {
 
           <div className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-7xl flex-col justify-center px-5 py-14 sm:px-6 lg:py-20">
             <div className="max-w-3xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-secondary sm:text-sm">
+              <BrandLogo className="h-20 w-auto object-contain drop-shadow-[0_8px_26px_rgba(0,0,0,0.55)] sm:h-24" />
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.28em] text-brand-secondary sm:text-sm">
+                WHERE DREAMS FIND ADDRESS
+              </p>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/85 sm:text-sm">
                 Trusted Nigerian property discovery
               </p>
               <h1
@@ -333,6 +356,30 @@ export default function HomePage() {
                 <p className="mt-3 leading-7 text-brand-muted">{step.description}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="border-y border-white/10 bg-brand-surface/55">
+          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
+            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+              <SectionHeader
+                description="RealityNG is expanding property support beyond listings so owners, renters, agents, and diaspora investors can find trusted help when a property needs work."
+                eyebrow="Solutions for artisans"
+                title="A future-ready service layer for property care"
+              />
+              <div className="grid gap-4 md:grid-cols-3">
+                {artisanSolutions.map((solution) => (
+                  <Card className="h-full p-5" key={solution.title}>
+                    <h3 className="font-heading text-xl font-semibold text-brand-text">
+                      {solution.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-6 text-brand-muted">
+                      {solution.description}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 

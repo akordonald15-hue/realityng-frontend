@@ -147,7 +147,7 @@ export const mockInquiries: MockInquiry[] = [
     property_title: "Akobo Gated Estate Duplex",
     buyer_name: "Yewande Akin",
     buyer_email: "yewande.buyer@realityng.com",
-    message: "We are ready to proceed if legal due diligence is clean.",
+    message: "We are ready to proceed if the verification checks are clean.",
     status: "Converted",
     created_at: "2026-06-15T10:25:00Z",
   },

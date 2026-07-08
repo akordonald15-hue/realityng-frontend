@@ -129,6 +129,11 @@ export type DashboardSummary = {
   draft_listings_count: number;
 };
 
+export type PropertyInterestResponse = {
+  property_slug: string;
+  interested: boolean;
+};
+
 export const propertyTypeOptions: Array<{ label: string; value: PropertyType }> = [
   { label: "Apartment", value: "apartment" },
   { label: "House", value: "house" },
@@ -312,5 +317,24 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     return mockGetDashboardSummary();
   }
   const response = await apiClient.get<DashboardSummary>("/dashboard/summary/");
+  return response.data;
+}
+
+export async function recordPropertyInterest(
+  propertySlug: string,
+): Promise<PropertyInterestResponse> {
+  if (USE_MOCKS) {
+    const key = "realityng.propertyInterests";
+    const stored = window.localStorage.getItem(key);
+    const interests = stored ? (JSON.parse(stored) as string[]) : [];
+    const nextInterests = Array.from(new Set([...interests, propertySlug]));
+    window.localStorage.setItem(key, JSON.stringify(nextInterests));
+    return { property_slug: propertySlug, interested: true };
+  }
+
+  const response = await apiClient.post<PropertyInterestResponse>(
+    `/properties/${propertySlug}/interest/`,
+    {},
+  );
   return response.data;
 }

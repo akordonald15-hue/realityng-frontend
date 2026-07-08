@@ -9,8 +9,8 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { CompareButton } from "@/components/properties/compare-button";
 import { FavoriteButton } from "@/components/properties/favorite-button";
+import { ShowInterestButton } from "@/components/properties/show-interest-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getPublicProperty } from "@/lib/api/properties";
 import {
@@ -209,11 +209,10 @@ export default function PropertyDetailPage() {
                     </div>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-brand-muted">
-                    Demo contact card only. Inquiry workflows remain out of scope for this build.
+                    Show interest in this apartment or property so the RealityNG team can connect
+                    the next step when inquiry workflows are enabled.
                   </p>
-                  <Button className="mt-4 w-full" disabled>
-                    Inquiry demo preview
-                  </Button>
+                  <ShowInterestButton propertySlug={property.slug} />
                 </Card>
               </aside>
             </section>

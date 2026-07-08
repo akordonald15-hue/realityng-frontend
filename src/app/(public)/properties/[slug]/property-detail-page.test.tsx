@@ -18,7 +18,7 @@ vi.mock("@/lib/api/properties", async () => {
 });
 
 describe("PropertyDetailPage", () => {
-  it("renders gallery, price, details, amenities, and contact placeholder", async () => {
+  it("renders gallery, price, details, amenities, and show interest action", async () => {
     mocks.getPublicProperty.mockResolvedValue({
       id: "property-1",
       title: "Approved Lekki Apartment",
@@ -65,6 +65,6 @@ describe("PropertyDetailPage", () => {
     expect(screen.getByText("Property details")).toBeInTheDocument();
     expect(screen.getByText("Amenities")).toBeInTheDocument();
     expect(screen.getByText("Tunde Balogun")).toBeInTheDocument();
-    expect(screen.getByText("Inquiry demo preview")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Show interest" })).toBeInTheDocument();
   });
 });
