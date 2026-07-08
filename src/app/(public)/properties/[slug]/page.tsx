@@ -212,7 +212,11 @@ export default function PropertyDetailPage() {
                     Show interest in this apartment or property so the RealityNG team can connect
                     the next step when inquiry workflows are enabled.
                   </p>
-                  <ShowInterestButton propertySlug={property.slug} />
+                  <ShowInterestButton
+                    listingType={property.listing_type}
+                    propertyId={property.id}
+                    propertySlug={property.slug}
+                  />
                 </Card>
               </aside>
             </section>

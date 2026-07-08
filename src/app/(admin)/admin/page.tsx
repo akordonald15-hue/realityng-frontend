@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Footer } from "@/components/layout/footer";
@@ -9,8 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getDashboardOverview } from "@/lib/api/dashboard";
+import { formatInquiryStatus } from "@/lib/api/inquiries";
 import { useAuth } from "@/providers/auth-provider";
-import Link from "next/link";
 
 function AdminContent() {
   const { user } = useAuth();
@@ -99,10 +100,10 @@ function AdminContent() {
             {overview?.leads.slice(0, 6).map((lead) => (
               <div className="rounded-md border border-white/10 p-4" key={lead.id}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="font-semibold text-brand-text">{lead.buyer_name}</p>
-                  <Badge variant="muted">{lead.status}</Badge>
+                  <p className="font-semibold text-brand-text">{lead.interested_user.full_name}</p>
+                  <Badge variant="muted">{formatInquiryStatus(lead.status)}</Badge>
                 </div>
-                <p className="mt-2 text-sm text-brand-muted">{lead.property_title}</p>
+                <p className="mt-2 text-sm text-brand-muted">{lead.property.title}</p>
                 <p className="mt-2 text-sm leading-6 text-brand-muted">{lead.message}</p>
               </div>
             ))}

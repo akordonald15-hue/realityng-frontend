@@ -1,5 +1,5 @@
 import type { User } from "@/lib/auth/types";
-import type { MockInquiry } from "@/mocks/mock-inquiries";
+import type { Inquiry } from "@/lib/api/inquiries";
 import { mockInquiries } from "@/mocks/mock-inquiries";
 import { mockProperties } from "@/mocks/mock-properties";
 import { mockAgents, mockBuyers, mockUsers } from "@/mocks/mock-users";
@@ -16,9 +16,9 @@ export type MockDashboardOverview = {
   savedProperties: typeof mockProperties;
   recentlyViewed: typeof mockProperties;
   recommendedProperties: typeof mockProperties;
-  inquiries: MockInquiry[];
+  inquiries: Inquiry[];
   activeListings: typeof mockProperties;
-  leads: MockInquiry[];
+  leads: Inquiry[];
   pendingApprovals: typeof mockProperties;
   userStats: MockMetric[];
 };

@@ -127,6 +127,8 @@ export type DashboardSummary = {
   saved_properties_count: number;
   active_listings_count: number;
   draft_listings_count: number;
+  my_inquiries_count?: number;
+  received_inquiries_count?: number;
 };
 
 export type PropertyInterestResponse = {

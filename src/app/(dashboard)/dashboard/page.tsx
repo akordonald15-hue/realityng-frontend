@@ -1,13 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PropertyCard } from "@/components/properties/property-card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 import { getDashboardOverview } from "@/lib/api/dashboard";
+import {
+  formatInquiryStatus,
+  inquiryStatusOptions,
+  updateInquiryNotes,
+  updateInquiryStatus,
+  type Inquiry,
+  type InquiryStatus,
+} from "@/lib/api/inquiries";
 import { isApprovedProfessional } from "@/lib/auth/permissions";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -33,6 +43,140 @@ const dashboardLinks = [
     description: "Keep contact and identity details current for property workflows.",
   },
 ];
+
+function InquiryDate({ value }: { value: string }) {
+  return (
+    <span>
+      {new Intl.DateTimeFormat("en-NG", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(value))}
+    </span>
+  );
+}
+
+function MyInterestsList({ inquiries }: { inquiries: Inquiry[] }) {
+  if (inquiries.length === 0) {
+    return (
+      <Card className="p-5 text-sm text-brand-muted">
+        Your shown interests will appear here after you submit an inquiry from a property page.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {inquiries.slice(0, 5).map((inquiry) => (
+        <div className="rounded-md border border-white/10 p-4" key={inquiry.id}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-brand-text">{inquiry.property.title}</p>
+              <p className="mt-1 text-xs text-brand-muted">
+                <InquiryDate value={inquiry.created_at} /> · {inquiry.property.city},{" "}
+                {inquiry.property.state}
+              </p>
+            </div>
+            <Badge variant="muted">{formatInquiryStatus(inquiry.status)}</Badge>
+          </div>
+          {inquiry.message ? (
+            <p className="mt-3 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PropertyInquiryManager({ inquiries }: { inquiries: Inquiry[] }) {
+  const queryClient = useQueryClient();
+  const statusMutation = useMutation({
+    mutationFn: updateInquiryStatus,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+  const notesMutation = useMutation({
+    mutationFn: updateInquiryNotes,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+
+  if (inquiries.length === 0) {
+    return (
+      <Card className="p-5 text-sm text-brand-muted">
+        Buyer and tenant inquiries for your properties will appear here.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {inquiries.slice(0, 5).map((inquiry) => (
+        <div className="rounded-md border border-white/10 p-4" key={inquiry.id}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-brand-text">{inquiry.interested_user.full_name}</p>
+              <p className="mt-1 text-sm text-brand-muted">{inquiry.interested_user.email}</p>
+              <p className="mt-2 text-sm text-brand-muted">{inquiry.property.title}</p>
+            </div>
+            <Badge variant="muted">{formatInquiryStatus(inquiry.status)}</Badge>
+          </div>
+          {inquiry.message ? (
+            <p className="mt-3 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
+          ) : null}
+          <div className="mt-4 grid gap-3 md:grid-cols-[220px_1fr]">
+            <label>
+              <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                Status
+              </span>
+              <Select
+                aria-label={`Status for ${inquiry.interested_user.full_name}`}
+                className="mt-2"
+                disabled={statusMutation.isPending}
+                onChange={(event) =>
+                  statusMutation.mutate({
+                    inquiryId: inquiry.id,
+                    status: event.target.value as InquiryStatus,
+                  })
+                }
+                value={inquiry.status}
+              >
+                {inquiryStatusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                const formData = new FormData(event.currentTarget);
+                notesMutation.mutate({
+                  inquiryId: inquiry.id,
+                  internalNotes: String(formData.get("internal_notes") ?? ""),
+                });
+              }}
+            >
+              <label>
+                <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                  Internal notes
+                </span>
+                <textarea
+                  className="mt-2 min-h-20 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  defaultValue={inquiry.internal_notes}
+                  name="internal_notes"
+                  placeholder="Add private owner notes"
+                />
+              </label>
+              <Button className="mt-2 h-9" disabled={notesMutation.isPending} type="submit">
+                Save notes
+              </Button>
+            </form>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function DashboardContent() {
   const { user } = useAuth();
@@ -94,18 +238,11 @@ function DashboardContent() {
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">Lead pipeline</h2>
-              <div className="mt-5 space-y-4">
-                {overview.leads.slice(0, 5).map((lead) => (
-                  <div className="rounded-md border border-white/10 p-4" key={lead.id}>
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="font-semibold text-brand-text">{lead.buyer_name}</p>
-                      <Badge variant="muted">{lead.status}</Badge>
-                    </div>
-                    <p className="mt-2 text-sm text-brand-muted">{lead.property_title}</p>
-                    <p className="mt-2 text-sm leading-6 text-brand-muted">{lead.message}</p>
-                  </div>
-                ))}
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                Property inquiries
+              </h2>
+              <div className="mt-5">
+                <PropertyInquiryManager inquiries={overview.leads} />
               </div>
             </Card>
             <Card className="p-5">
@@ -143,17 +280,9 @@ function DashboardContent() {
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-2">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">My inquiries</h2>
-              <div className="mt-5 space-y-4">
-                {overview?.inquiries.slice(0, 5).map((inquiry) => (
-                  <div className="rounded-md border border-white/10 p-4" key={inquiry.id}>
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="font-semibold text-brand-text">{inquiry.property_title}</p>
-                      <Badge variant="muted">{inquiry.status}</Badge>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
-                  </div>
-                ))}
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">My interests</h2>
+              <div className="mt-5">
+                <MyInterestsList inquiries={overview?.inquiries ?? []} />
               </div>
             </Card>
             <Card className="p-5">
