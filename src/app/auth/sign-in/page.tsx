@@ -12,6 +12,7 @@ import { TextField } from "@/components/forms/text-field";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getApiErrorMessage } from "@/lib/api/errors";
+import { USE_MOCKS } from "@/lib/demo-mode";
 import { useAuth } from "@/providers/auth-provider";
 
 const signInSchema = z.object({
@@ -56,6 +57,17 @@ export default function SignInPage() {
         </Link>
         <h1 className="mt-8 font-heading text-3xl font-semibold text-brand-text">Sign in</h1>
         <p className="mt-2 text-brand-muted">Access your RealityNG dashboard.</p>
+        {USE_MOCKS ? (
+          <div
+            className="mt-5 rounded border border-brand-secondary/40 bg-brand-secondary/10 p-3 text-left text-sm text-brand-muted"
+            role="status"
+          >
+            <p className="font-semibold text-brand-text">Demo mode is active</p>
+            <p className="mt-1">
+              This environment uses local mock data and does not connect to production services.
+            </p>
+          </div>
+        ) : null}
         <form className="mt-8 space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
           <TextField label="Email" error={errors.email} type="email" {...register("email")} />
           <div className="space-y-2">

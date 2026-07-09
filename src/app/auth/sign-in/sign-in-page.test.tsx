@@ -12,7 +12,19 @@ vi.mock("@/providers/auth-provider", () => ({
   useAuth: () => ({ signIn: mocks.signIn }),
 }));
 
+vi.mock("@/lib/demo-mode", () => ({
+  USE_MOCKS: true,
+}));
+
 describe("SignInPage", () => {
+  it("shows demo mode without exposing demo credentials", () => {
+    render(<SignInPage />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Demo mode is active");
+    expect(screen.queryByText(/password123/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/admin@realityng.com/i)).not.toBeInTheDocument();
+  });
+
   it("validates email and password", async () => {
     const user = userEvent.setup();
     render(<SignInPage />);
