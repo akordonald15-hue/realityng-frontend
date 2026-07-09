@@ -1,4 +1,5 @@
 import { USE_MOCKS } from "@/lib/demo-mode";
+import { listMyApplications, listReceivedApplications } from "@/lib/api/applications";
 import { getDashboardSummary } from "@/lib/api/properties";
 import { listMyInquiries, listReceivedInquiries } from "@/lib/api/inquiries";
 import { listMyViewings, listReceivedViewings } from "@/lib/api/viewings";
@@ -17,11 +18,20 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
   }
 
   const summary = await getDashboardSummary();
-  const [myInquiries, receivedInquiries, myViewings, receivedViewings] = await Promise.all([
+  const [
+    myInquiries,
+    receivedInquiries,
+    myViewings,
+    receivedViewings,
+    myApplications,
+    receivedApplications,
+  ] = await Promise.all([
     listMyInquiries(),
     listReceivedInquiries(),
     listMyViewings(),
     listReceivedViewings(),
+    listMyApplications(),
+    listReceivedApplications(),
   ]);
   const roles = user?.roles.map((role) => role.role.name) ?? [];
   const role = roles.includes("agent") || roles.includes("landlord") ? "agent" : "buyer";
@@ -61,6 +71,16 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
       value: String(summary.received_viewings_count ?? receivedViewings.count),
       detail: "Viewing requests for your properties",
     },
+    {
+      label: "My applications",
+      value: String(summary.my_applications_count ?? myApplications.count),
+      detail: "Submitted rental applications",
+    },
+    {
+      label: "Received applications",
+      value: String(summary.received_applications_count ?? receivedApplications.count),
+      detail: "Applications awaiting owner review",
+    },
   ];
 
   return {
@@ -71,9 +91,11 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
     recommendedProperties: [],
     inquiries: myInquiries.results,
     viewings: myViewings.results,
+    applications: myApplications.results,
     activeListings: [],
     leads: receivedInquiries.results,
     receivedViewings: receivedViewings.results,
+    receivedApplications: receivedApplications.results,
     pendingApprovals: [],
     userStats: [],
   };

@@ -131,6 +131,8 @@ export type DashboardSummary = {
   received_inquiries_count?: number;
   my_viewings_count?: number;
   received_viewings_count?: number;
+  my_applications_count?: number;
+  received_applications_count?: number;
 };
 
 export type PropertyInterestResponse = {

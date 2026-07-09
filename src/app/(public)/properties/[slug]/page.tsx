@@ -11,6 +11,7 @@ import { CompareButton } from "@/components/properties/compare-button";
 import { FavoriteButton } from "@/components/properties/favorite-button";
 import { ShowInterestButton } from "@/components/properties/show-interest-button";
 import { Badge } from "@/components/ui/badge";
+import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getPublicProperty } from "@/lib/api/properties";
 import {
@@ -217,6 +218,12 @@ export default function PropertyDetailPage() {
                     propertyId={property.id}
                     propertySlug={property.slug}
                   />
+                  <Link
+                    className={buttonClasses("secondary", "mt-3 w-full")}
+                    href={`/apply/${property.id}?slug=${property.slug}`}
+                  >
+                    Apply for this property
+                  </Link>
                 </Card>
               </aside>
             </section>

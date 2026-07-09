@@ -7,9 +7,18 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PropertyCard } from "@/components/properties/property-card";
 import { ViewingRequestButton } from "@/components/properties/viewing-request-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
+import {
+  approveApplication,
+  formatApplicationStatus,
+  markApplicationUnderReview,
+  rejectApplication,
+  updateApplicationNotes,
+  withdrawApplication,
+  type RentalApplication,
+} from "@/lib/api/applications";
 import { getDashboardOverview } from "@/lib/api/dashboard";
 import {
   formatInquiryStatus,
@@ -195,6 +204,75 @@ function MyViewingsList({ viewings }: { viewings: Viewing[] }) {
               variant="secondary"
             >
               Cancel request
+            </Button>
+          ) : null}
+          {viewing.status === "completed" ? (
+            <Link
+              className={buttonClasses("primary", "mt-3 h-9")}
+              href={`/apply/${viewing.property.id}?viewing=${viewing.id}&slug=${viewing.property.slug}`}
+            >
+              Apply now
+            </Link>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ApplicationDate({ value }: { value: string }) {
+  return (
+    <span>
+      {new Intl.DateTimeFormat("en-NG", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(value))}
+    </span>
+  );
+}
+
+function MyApplicationsList({ applications }: { applications: RentalApplication[] }) {
+  const queryClient = useQueryClient();
+  const withdrawMutation = useMutation({
+    mutationFn: withdrawApplication,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+
+  if (applications.length === 0) {
+    return (
+      <Card className="p-5 text-sm text-brand-muted">
+        Rental applications you submit will appear here.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {applications.slice(0, 5).map((application) => (
+        <div className="rounded-md border border-white/10 p-4" key={application.id}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-brand-text">{application.property.title}</p>
+              <p className="mt-1 text-sm text-brand-muted">
+                Submitted <ApplicationDate value={application.created_at} /> - Move-in{" "}
+                <ApplicationDate value={application.move_in_date} />
+              </p>
+            </div>
+            <Badge variant="muted">{formatApplicationStatus(application.status)}</Badge>
+          </div>
+          {application.message ? (
+            <p className="mt-3 text-sm leading-6 text-brand-muted">{application.message}</p>
+          ) : null}
+          {application.status === "submitted" || application.status === "under_review" ? (
+            <Button
+              className="mt-3 h-9"
+              disabled={withdrawMutation.isPending}
+              onClick={() => withdrawMutation.mutate(application.id)}
+              type="button"
+              variant="secondary"
+            >
+              Withdraw
             </Button>
           ) : null}
         </div>
@@ -471,6 +549,137 @@ function ViewingRequestsManager({ viewings }: { viewings: Viewing[] }) {
   );
 }
 
+function ReceivedApplicationsManager({ applications }: { applications: RentalApplication[] }) {
+  const queryClient = useQueryClient();
+  const statusMutation = useMutation({
+    mutationFn: ({
+      action,
+      applicationId,
+    }: {
+      action: "under_review" | "approved" | "rejected";
+      applicationId: string;
+    }) => {
+      if (action === "under_review") {
+        return markApplicationUnderReview(applicationId);
+      }
+      if (action === "approved") {
+        return approveApplication(applicationId);
+      }
+      return rejectApplication(applicationId);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+  const notesMutation = useMutation({
+    mutationFn: updateApplicationNotes,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+
+  if (applications.length === 0) {
+    return (
+      <Card className="p-5 text-sm text-brand-muted">
+        Rental applications for your properties will appear here.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {applications.slice(0, 5).map((application) => (
+        <div className="rounded-md border border-white/10 p-4" key={application.id}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-brand-text">{application.full_name}</p>
+              <p className="mt-1 text-sm text-brand-muted">{application.email}</p>
+              <p className="mt-2 text-sm text-brand-muted">{application.property.title}</p>
+              <p className="mt-1 text-xs text-brand-muted">
+                {application.employment_status} - Move-in{" "}
+                <ApplicationDate value={application.move_in_date} />
+              </p>
+            </div>
+            <Badge variant="muted">{formatApplicationStatus(application.status)}</Badge>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-[1fr_220px]">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                const formData = new FormData(event.currentTarget);
+                notesMutation.mutate({
+                  applicationId: application.id,
+                  ownerNotes: String(formData.get("owner_notes") ?? ""),
+                });
+              }}
+            >
+              <label>
+                <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                  Owner notes
+                </span>
+                <textarea
+                  className="mt-2 min-h-20 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  defaultValue={application.owner_notes}
+                  name="owner_notes"
+                  placeholder="Add private application review notes"
+                />
+              </label>
+              <Button className="mt-2 h-9" disabled={notesMutation.isPending} type="submit">
+                Save notes
+              </Button>
+            </form>
+            <div className="flex flex-col gap-2">
+              {application.status === "submitted" ? (
+                <Button
+                  className="h-9"
+                  disabled={statusMutation.isPending}
+                  onClick={() =>
+                    statusMutation.mutate({
+                      action: "under_review",
+                      applicationId: application.id,
+                    })
+                  }
+                  type="button"
+                  variant="secondary"
+                >
+                  Mark review
+                </Button>
+              ) : null}
+              {application.status === "under_review" ? (
+                <>
+                  <Button
+                    className="h-9"
+                    disabled={statusMutation.isPending}
+                    onClick={() =>
+                      statusMutation.mutate({
+                        action: "approved",
+                        applicationId: application.id,
+                      })
+                    }
+                    type="button"
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    className="h-9"
+                    disabled={statusMutation.isPending}
+                    onClick={() =>
+                      statusMutation.mutate({
+                        action: "rejected",
+                        applicationId: application.id,
+                      })
+                    }
+                    type="button"
+                    variant="secondary"
+                  >
+                    Reject
+                  </Button>
+                </>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function DashboardContent() {
   const { user } = useAuth();
   const dashboardQuery = useQuery({
@@ -568,6 +777,16 @@ function DashboardContent() {
               </div>
             </Card>
           </section>
+          <section className="mt-10">
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                Received applications
+              </h2>
+              <div className="mt-5">
+                <ReceivedApplicationsManager applications={overview.receivedApplications} />
+              </div>
+            </Card>
+          </section>
         </>
       ) : (
         <>
@@ -613,6 +832,16 @@ function DashboardContent() {
                     </p>
                   </Link>
                 ))}
+              </div>
+            </Card>
+          </section>
+          <section className="mt-10">
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                My applications
+              </h2>
+              <div className="mt-5">
+                <MyApplicationsList applications={overview?.applications ?? []} />
               </div>
             </Card>
           </section>

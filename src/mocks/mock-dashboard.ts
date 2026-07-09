@@ -1,6 +1,8 @@
 import type { User } from "@/lib/auth/types";
+import type { RentalApplication } from "@/lib/api/applications";
 import type { Inquiry } from "@/lib/api/inquiries";
 import type { Viewing } from "@/lib/api/viewings";
+import { mockApplications } from "@/mocks/mock-applications";
 import { mockInquiries } from "@/mocks/mock-inquiries";
 import { mockProperties } from "@/mocks/mock-properties";
 import { mockAgents, mockBuyers, mockUsers } from "@/mocks/mock-users";
@@ -20,9 +22,11 @@ export type MockDashboardOverview = {
   recommendedProperties: typeof mockProperties;
   inquiries: Inquiry[];
   viewings: Viewing[];
+  applications: RentalApplication[];
   activeListings: typeof mockProperties;
   leads: Inquiry[];
   receivedViewings: Viewing[];
+  receivedApplications: RentalApplication[];
   pendingApprovals: typeof mockProperties;
   userStats: MockMetric[];
 };
@@ -67,9 +71,11 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
       recommendedProperties: [],
       inquiries: mockInquiries.slice(0, 5),
       viewings: mockViewings.slice(0, 4),
+      applications: mockApplications.slice(0, 4),
       activeListings: mockProperties.slice(0, 6),
       leads: mockInquiries.slice(0, 8),
       receivedViewings: mockViewings.slice(0, 6),
+      receivedApplications: mockApplications.slice(0, 6),
       pendingApprovals: mockProperties.slice(6, 12),
       userStats: [
         {
@@ -109,9 +115,11 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
       recommendedProperties: [],
       inquiries: mockInquiries.slice(0, 6),
       viewings: [],
+      applications: [],
       activeListings: agentListings.length ? agentListings : mockProperties.slice(0, 5),
       leads: mockInquiries.slice(0, 7),
       receivedViewings: mockViewings.slice(0, 6),
+      receivedApplications: mockApplications.slice(0, 6),
       pendingApprovals: mockProperties.slice(12, 15),
       userStats: [],
     };
@@ -130,9 +138,11 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
     recommendedProperties: mockProperties.slice(7, 11),
     inquiries: mockInquiries.slice(0, 5),
     viewings: mockViewings.slice(0, 4),
+    applications: mockApplications.slice(0, 4),
     activeListings: [],
     leads: [],
     receivedViewings: [],
+    receivedApplications: [],
     pendingApprovals: [],
     userStats: [],
   };
