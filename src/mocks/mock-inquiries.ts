@@ -205,7 +205,7 @@ export const mockInquiries: Inquiry[] = [
   }),
 ];
 
-function readInquiries(): Inquiry[] {
+export function mockReadInquiries(): Inquiry[] {
   if (typeof window === "undefined") {
     return mockInquiries;
   }
@@ -217,7 +217,7 @@ function readInquiries(): Inquiry[] {
   return JSON.parse(stored) as Inquiry[];
 }
 
-function writeInquiries(inquiries: Inquiry[]) {
+export function mockWriteInquiries(inquiries: Inquiry[]) {
   if (typeof window !== "undefined") {
     window.localStorage.setItem(INQUIRIES_KEY, JSON.stringify(inquiries));
   }
@@ -253,8 +253,8 @@ export async function mockCreateInquiry(payload: InquiryPayload): Promise<Inquir
     created_at: now,
     updated_at: now,
   };
-  const inquiries = [inquiry, ...readInquiries()];
-  writeInquiries(inquiries);
+  const inquiries = [inquiry, ...mockReadInquiries()];
+  mockWriteInquiries(inquiries);
   return inquiry;
 }
 
@@ -263,7 +263,7 @@ export async function mockListMyInquiries(): Promise<PaginatedInquiries> {
   if (!user) {
     return paginate([]);
   }
-  return paginate(readInquiries().filter((inquiry) => inquiry.interested_user.id === user.id));
+  return paginate(mockReadInquiries().filter((inquiry) => inquiry.interested_user.id === user.id));
 }
 
 export async function mockListReceivedInquiries(): Promise<PaginatedInquiries> {
@@ -271,7 +271,7 @@ export async function mockListReceivedInquiries(): Promise<PaginatedInquiries> {
   if (!user) {
     return paginate([]);
   }
-  return paginate(readInquiries().filter((inquiry) => inquiry.property_owner.id === user.id));
+  return paginate(mockReadInquiries().filter((inquiry) => inquiry.property_owner.id === user.id));
 }
 
 export async function mockUpdateInquiryStatus({
@@ -281,14 +281,14 @@ export async function mockUpdateInquiryStatus({
   inquiryId: string;
   status: InquiryStatus;
 }): Promise<Inquiry> {
-  const inquiries = readInquiries();
+  const inquiries = mockReadInquiries();
   const inquiry = inquiries.find((item) => item.id === inquiryId);
   if (!inquiry) {
     throw new Error("Inquiry not found.");
   }
   inquiry.status = status;
   inquiry.updated_at = new Date().toISOString();
-  writeInquiries(inquiries);
+  mockWriteInquiries(inquiries);
   return inquiry;
 }
 
@@ -299,13 +299,13 @@ export async function mockUpdateInquiryNotes({
   inquiryId: string;
   internalNotes: string;
 }): Promise<Inquiry> {
-  const inquiries = readInquiries();
+  const inquiries = mockReadInquiries();
   const inquiry = inquiries.find((item) => item.id === inquiryId);
   if (!inquiry) {
     throw new Error("Inquiry not found.");
   }
   inquiry.internal_notes = internalNotes;
   inquiry.updated_at = new Date().toISOString();
-  writeInquiries(inquiries);
+  mockWriteInquiries(inquiries);
   return inquiry;
 }

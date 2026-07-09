@@ -1,6 +1,7 @@
 import { USE_MOCKS } from "@/lib/demo-mode";
 import { getDashboardSummary } from "@/lib/api/properties";
 import { listMyInquiries, listReceivedInquiries } from "@/lib/api/inquiries";
+import { listMyViewings, listReceivedViewings } from "@/lib/api/viewings";
 import type { User } from "@/lib/auth/types";
 import {
   getMockDashboardOverview,
@@ -16,9 +17,11 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
   }
 
   const summary = await getDashboardSummary();
-  const [myInquiries, receivedInquiries] = await Promise.all([
+  const [myInquiries, receivedInquiries, myViewings, receivedViewings] = await Promise.all([
     listMyInquiries(),
     listReceivedInquiries(),
+    listMyViewings(),
+    listReceivedViewings(),
   ]);
   const roles = user?.roles.map((role) => role.role.name) ?? [];
   const role = roles.includes("agent") || roles.includes("landlord") ? "agent" : "buyer";
@@ -48,6 +51,16 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
       value: String(summary.received_inquiries_count ?? receivedInquiries.count),
       detail: "Buyer or tenant inquiries on your listings",
     },
+    {
+      label: "My viewings",
+      value: String(summary.my_viewings_count ?? myViewings.count),
+      detail: "Scheduled or requested property viewings",
+    },
+    {
+      label: "Viewing requests",
+      value: String(summary.received_viewings_count ?? receivedViewings.count),
+      detail: "Viewing requests for your properties",
+    },
   ];
 
   return {
@@ -57,8 +70,10 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
     recentlyViewed: [],
     recommendedProperties: [],
     inquiries: myInquiries.results,
+    viewings: myViewings.results,
     activeListings: [],
     leads: receivedInquiries.results,
+    receivedViewings: receivedViewings.results,
     pendingApprovals: [],
     userStats: [],
   };

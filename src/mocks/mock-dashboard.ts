@@ -1,8 +1,10 @@
 import type { User } from "@/lib/auth/types";
 import type { Inquiry } from "@/lib/api/inquiries";
+import type { Viewing } from "@/lib/api/viewings";
 import { mockInquiries } from "@/mocks/mock-inquiries";
 import { mockProperties } from "@/mocks/mock-properties";
 import { mockAgents, mockBuyers, mockUsers } from "@/mocks/mock-users";
+import { mockViewings } from "@/mocks/mock-viewings";
 
 export type MockMetric = {
   label: string;
@@ -17,8 +19,10 @@ export type MockDashboardOverview = {
   recentlyViewed: typeof mockProperties;
   recommendedProperties: typeof mockProperties;
   inquiries: Inquiry[];
+  viewings: Viewing[];
   activeListings: typeof mockProperties;
   leads: Inquiry[];
+  receivedViewings: Viewing[];
   pendingApprovals: typeof mockProperties;
   userStats: MockMetric[];
 };
@@ -62,8 +66,10 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
       recentlyViewed: [],
       recommendedProperties: [],
       inquiries: mockInquiries.slice(0, 5),
+      viewings: mockViewings.slice(0, 4),
       activeListings: mockProperties.slice(0, 6),
       leads: mockInquiries.slice(0, 8),
+      receivedViewings: mockViewings.slice(0, 6),
       pendingApprovals: mockProperties.slice(6, 12),
       userStats: [
         {
@@ -102,8 +108,10 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
       recentlyViewed: [],
       recommendedProperties: [],
       inquiries: mockInquiries.slice(0, 6),
+      viewings: [],
       activeListings: agentListings.length ? agentListings : mockProperties.slice(0, 5),
       leads: mockInquiries.slice(0, 7),
+      receivedViewings: mockViewings.slice(0, 6),
       pendingApprovals: mockProperties.slice(12, 15),
       userStats: [],
     };
@@ -121,8 +129,10 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
     recentlyViewed: mockProperties.slice(3, 7),
     recommendedProperties: mockProperties.slice(7, 11),
     inquiries: mockInquiries.slice(0, 5),
+    viewings: mockViewings.slice(0, 4),
     activeListings: [],
     leads: [],
+    receivedViewings: [],
     pendingApprovals: [],
     userStats: [],
   };

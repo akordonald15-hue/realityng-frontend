@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PropertyCard } from "@/components/properties/property-card";
+import { ViewingRequestButton } from "@/components/properties/viewing-request-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +19,17 @@ import {
   type Inquiry,
   type InquiryStatus,
 } from "@/lib/api/inquiries";
+import {
+  cancelViewing,
+  completeViewing,
+  confirmViewing,
+  formatViewingStatus,
+  formatViewingType,
+  rescheduleViewing,
+  updateViewingNotes,
+  type Viewing,
+  type ViewingDecisionPayload,
+} from "@/lib/api/viewings";
 import { isApprovedProfessional } from "@/lib/auth/permissions";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -56,6 +68,48 @@ function InquiryDate({ value }: { value: string }) {
   );
 }
 
+function ViewingDate({ viewing }: { viewing: Viewing }) {
+  const date = new Intl.DateTimeFormat("en-NG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(viewing.preferred_date));
+  const time = viewing.preferred_time.slice(0, 5);
+
+  return (
+    <span>
+      {date} at {time}
+    </span>
+  );
+}
+
+function toDateTimeLocalValue(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function defaultDecisionDateTime(viewing: Viewing) {
+  if (viewing.confirmed_datetime) {
+    return toDateTimeLocalValue(viewing.confirmed_datetime);
+  }
+  return `${viewing.preferred_date}T${viewing.preferred_time.slice(0, 5) || "10:00"}`;
+}
+
+function buildViewingDecision(form: HTMLFormElement, viewingId: string): ViewingDecisionPayload {
+  const formData = new FormData(form);
+  return {
+    viewingId,
+    confirmed_datetime: String(formData.get("confirmed_datetime") ?? ""),
+    meeting_location: String(formData.get("meeting_location") ?? ""),
+    meeting_link: String(formData.get("meeting_link") ?? ""),
+    notes: String(formData.get("notes") ?? ""),
+  };
+}
+
 function MyInterestsList({ inquiries }: { inquiries: Inquiry[] }) {
   if (inquiries.length === 0) {
     return (
@@ -81,6 +135,67 @@ function MyInterestsList({ inquiries }: { inquiries: Inquiry[] }) {
           </div>
           {inquiry.message ? (
             <p className="mt-3 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
+          ) : null}
+          <ViewingRequestButton
+            disabled={inquiry.status === "closed" || inquiry.status === "converted"}
+            inquiryId={inquiry.id}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MyViewingsList({ viewings }: { viewings: Viewing[] }) {
+  const queryClient = useQueryClient();
+  const cancelMutation = useMutation({
+    mutationFn: cancelViewing,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+
+  if (viewings.length === 0) {
+    return (
+      <Card className="p-5 text-sm text-brand-muted">
+        Requested and confirmed property viewings will appear here.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {viewings.slice(0, 5).map((viewing) => (
+        <div className="rounded-md border border-white/10 p-4" key={viewing.id}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-brand-text">{viewing.property.title}</p>
+              <p className="mt-1 text-sm text-brand-muted">
+                <ViewingDate viewing={viewing} /> - {formatViewingType(viewing.viewing_type)}
+              </p>
+              {viewing.confirmed_datetime ? (
+                <p className="mt-1 text-xs text-brand-muted">
+                  Confirmed:{" "}
+                  {new Intl.DateTimeFormat("en-NG", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(viewing.confirmed_datetime))}
+                </p>
+              ) : null}
+            </div>
+            <Badge variant="muted">{formatViewingStatus(viewing.status)}</Badge>
+          </div>
+          {viewing.notes ? (
+            <p className="mt-3 text-sm leading-6 text-brand-muted">{viewing.notes}</p>
+          ) : null}
+          {viewing.status !== "completed" && viewing.status !== "cancelled" ? (
+            <Button
+              className="mt-3 h-9"
+              disabled={cancelMutation.isPending}
+              onClick={() => cancelMutation.mutate({ viewingId: viewing.id })}
+              type="button"
+              variant="secondary"
+            >
+              Cancel request
+            </Button>
           ) : null}
         </div>
       ))}
@@ -178,6 +293,184 @@ function PropertyInquiryManager({ inquiries }: { inquiries: Inquiry[] }) {
   );
 }
 
+function ViewingRequestsManager({ viewings }: { viewings: Viewing[] }) {
+  const queryClient = useQueryClient();
+  const decisionMutation = useMutation({
+    mutationFn: ({
+      action,
+      payload,
+    }: {
+      action: "confirm" | "reschedule";
+      payload: ViewingDecisionPayload;
+    }) => (action === "confirm" ? confirmViewing(payload) : rescheduleViewing(payload)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+  const cancelMutation = useMutation({
+    mutationFn: cancelViewing,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+  const completeMutation = useMutation({
+    mutationFn: completeViewing,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+  const notesMutation = useMutation({
+    mutationFn: updateViewingNotes,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] }),
+  });
+
+  if (viewings.length === 0) {
+    return (
+      <Card className="p-5 text-sm text-brand-muted">
+        Viewing requests for your properties will appear here.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {viewings.slice(0, 5).map((viewing) => (
+        <div className="rounded-md border border-white/10 p-4" key={viewing.id}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-brand-text">{viewing.requester.full_name}</p>
+              <p className="mt-1 text-sm text-brand-muted">{viewing.property.title}</p>
+              <p className="mt-1 text-xs text-brand-muted">
+                Requested <ViewingDate viewing={viewing} /> -{" "}
+                {formatViewingType(viewing.viewing_type)}
+              </p>
+            </div>
+            <Badge variant="muted">{formatViewingStatus(viewing.status)}</Badge>
+          </div>
+          <form className="mt-4 grid gap-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <label>
+                <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                  Confirmed date and time
+                </span>
+                <input
+                  className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text outline-none transition focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  defaultValue={defaultDecisionDateTime(viewing)}
+                  name="confirmed_datetime"
+                  type="datetime-local"
+                />
+              </label>
+              <label>
+                <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                  Meeting location
+                </span>
+                <input
+                  className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  defaultValue={viewing.meeting_location}
+                  name="meeting_location"
+                  placeholder="Estate gate, sales office, or reception"
+                />
+              </label>
+            </div>
+            <label>
+              <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                Meeting link
+              </span>
+              <input
+                className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                defaultValue={viewing.meeting_link}
+                name="meeting_link"
+                placeholder="Optional virtual viewing link"
+                type="url"
+              />
+            </label>
+            <label>
+              <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                Notes
+              </span>
+              <textarea
+                className="mt-2 min-h-20 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                defaultValue={viewing.notes}
+                name="notes"
+                placeholder="Access instructions, reschedule reason, or private notes"
+              />
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                className="h-9"
+                disabled={decisionMutation.isPending}
+                onClick={(event) => {
+                  const form = event.currentTarget.closest("form");
+                  if (form) {
+                    decisionMutation.mutate({
+                      action: "confirm",
+                      payload: buildViewingDecision(form, viewing.id),
+                    });
+                  }
+                }}
+                type="button"
+              >
+                Confirm
+              </Button>
+              <Button
+                className="h-9"
+                disabled={decisionMutation.isPending}
+                onClick={(event) => {
+                  const form = event.currentTarget.closest("form");
+                  if (form) {
+                    decisionMutation.mutate({
+                      action: "reschedule",
+                      payload: buildViewingDecision(form, viewing.id),
+                    });
+                  }
+                }}
+                type="button"
+                variant="secondary"
+              >
+                Reschedule
+              </Button>
+              <Button
+                className="h-9"
+                disabled={notesMutation.isPending}
+                onClick={(event) => {
+                  const form = event.currentTarget.closest("form");
+                  if (form) {
+                    const formData = new FormData(form);
+                    notesMutation.mutate({
+                      viewingId: viewing.id,
+                      notes: String(formData.get("notes") ?? ""),
+                    });
+                  }
+                }}
+                type="button"
+                variant="ghost"
+              >
+                Save notes
+              </Button>
+              {viewing.status === "confirmed" ? (
+                <Button
+                  className="h-9"
+                  disabled={completeMutation.isPending}
+                  onClick={() => completeMutation.mutate(viewing.id)}
+                  type="button"
+                  variant="secondary"
+                >
+                  Complete
+                </Button>
+              ) : null}
+              {viewing.status !== "completed" && viewing.status !== "cancelled" ? (
+                <Button
+                  className="h-9"
+                  disabled={cancelMutation.isPending}
+                  onClick={() => cancelMutation.mutate({ viewingId: viewing.id })}
+                  type="button"
+                  variant="ghost"
+                >
+                  Cancel
+                </Button>
+              ) : null}
+            </div>
+          </form>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function DashboardContent() {
   const { user } = useAuth();
   const dashboardQuery = useQuery({
@@ -260,8 +553,18 @@ function DashboardContent() {
                 </div>
                 <div className="rounded-md bg-white/5 p-4">
                   <p className="text-sm text-brand-muted">Projected monthly commission</p>
-                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">₦18.5M</p>
+                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">NGN 18.5M</p>
                 </div>
+              </div>
+            </Card>
+          </section>
+          <section className="mt-10">
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                Viewing requests
+              </h2>
+              <div className="mt-5">
+                <ViewingRequestsManager viewings={overview.receivedViewings} />
               </div>
             </Card>
           </section>
@@ -285,6 +588,14 @@ function DashboardContent() {
                 <MyInterestsList inquiries={overview?.inquiries ?? []} />
               </div>
             </Card>
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">My viewings</h2>
+              <div className="mt-5">
+                <MyViewingsList viewings={overview?.viewings ?? []} />
+              </div>
+            </Card>
+          </section>
+          <section className="mt-10">
             <Card className="p-5">
               <h2 className="font-heading text-2xl font-semibold text-brand-text">
                 Recently viewed

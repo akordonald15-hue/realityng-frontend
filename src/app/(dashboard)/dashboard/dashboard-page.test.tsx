@@ -43,8 +43,10 @@ describe("DashboardPage", () => {
       recentlyViewed: [],
       recommendedProperties: [],
       inquiries: [],
+      viewings: [],
       activeListings: [],
       leads: [],
+      receivedViewings: [],
       pendingApprovals: [],
       userStats: [],
     });
@@ -54,6 +56,7 @@ describe("DashboardPage", () => {
     expect(await screen.findByText("Saved properties")).toBeInTheDocument();
     expect(screen.getAllByText("Recently viewed").length).toBeGreaterThan(0);
     expect(screen.getAllByText("My inquiries").length).toBeGreaterThan(0);
+    expect(screen.getByText("My viewings")).toBeInTheDocument();
     expect(screen.getByText("View saved properties")).toBeInTheDocument();
     expect(screen.getByText("Browse properties")).toBeInTheDocument();
     expect(screen.getByText("Edit profile")).toBeInTheDocument();
