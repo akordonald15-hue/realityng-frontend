@@ -3,9 +3,10 @@ import { listMyApplications, listReceivedApplications } from "@/lib/api/applicat
 import { getDashboardSummary } from "@/lib/api/properties";
 import { listMyInquiries, listReceivedInquiries } from "@/lib/api/inquiries";
 import { listMyViewings, listReceivedViewings } from "@/lib/api/viewings";
+import { getActivityFeed, getTransactionCenter } from "@/lib/api/workflow";
 import type { User } from "@/lib/auth/types";
 import {
-  getMockDashboardOverview,
+  getMockDashboardOverviewAsync,
   type MockDashboardOverview,
   type MockMetric,
 } from "@/mocks/mock-dashboard";
@@ -14,7 +15,7 @@ export type DashboardOverview = MockDashboardOverview;
 
 export async function getDashboardOverview(user: User | null): Promise<DashboardOverview> {
   if (USE_MOCKS) {
-    return getMockDashboardOverview(user);
+    return getMockDashboardOverviewAsync(user);
   }
 
   const summary = await getDashboardSummary();
@@ -25,6 +26,8 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
     receivedViewings,
     myApplications,
     receivedApplications,
+    transactions,
+    activity,
   ] = await Promise.all([
     listMyInquiries(),
     listReceivedInquiries(),
@@ -32,6 +35,8 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
     listReceivedViewings(),
     listMyApplications(),
     listReceivedApplications(),
+    getTransactionCenter(),
+    getActivityFeed(),
   ]);
   const roles = user?.roles.map((role) => role.role.name) ?? [];
   const role = roles.includes("agent") || roles.includes("landlord") ? "agent" : "buyer";
@@ -92,6 +97,8 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
     inquiries: myInquiries.results,
     viewings: myViewings.results,
     applications: myApplications.results,
+    transactions,
+    activity,
     activeListings: [],
     leads: receivedInquiries.results,
     receivedViewings: receivedViewings.results,

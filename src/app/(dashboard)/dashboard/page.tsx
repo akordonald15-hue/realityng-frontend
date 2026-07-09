@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
+import { WorkflowStatusBadge } from "@/components/workflow/status-badge";
 import {
   approveApplication,
   formatApplicationStatus,
@@ -39,6 +40,7 @@ import {
   type Viewing,
   type ViewingDecisionPayload,
 } from "@/lib/api/viewings";
+import type { ActivityItem, TransactionItem } from "@/lib/api/workflow";
 import { isApprovedProfessional } from "@/lib/auth/permissions";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -140,7 +142,9 @@ function MyInterestsList({ inquiries }: { inquiries: Inquiry[] }) {
                 {inquiry.property.state}
               </p>
             </div>
-            <Badge variant="muted">{formatInquiryStatus(inquiry.status)}</Badge>
+            <WorkflowStatusBadge status={inquiry.status}>
+              {formatInquiryStatus(inquiry.status)}
+            </WorkflowStatusBadge>
           </div>
           {inquiry.message ? (
             <p className="mt-3 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
@@ -190,7 +194,9 @@ function MyViewingsList({ viewings }: { viewings: Viewing[] }) {
                 </p>
               ) : null}
             </div>
-            <Badge variant="muted">{formatViewingStatus(viewing.status)}</Badge>
+            <WorkflowStatusBadge status={viewing.status}>
+              {formatViewingStatus(viewing.status)}
+            </WorkflowStatusBadge>
           </div>
           {viewing.notes ? (
             <p className="mt-3 text-sm leading-6 text-brand-muted">{viewing.notes}</p>
@@ -232,6 +238,144 @@ function ApplicationDate({ value }: { value: string }) {
   );
 }
 
+function TimelineStep({ label, active }: { label: string; active: boolean }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <span
+        className={
+          active
+            ? "h-2.5 w-2.5 shrink-0 rounded-full bg-brand-secondary"
+            : "h-2.5 w-2.5 shrink-0 rounded-full bg-white/20"
+        }
+      />
+      <span className={active ? "text-xs text-brand-text" : "text-xs text-brand-muted"}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function WorkflowTimeline({ stage }: { stage: string }) {
+  const activeStages = new Set<string>();
+  if (["new", "contacted", "viewing_scheduled"].includes(stage)) {
+    activeStages.add("Inquiry");
+  }
+  if (["requested", "rescheduled", "confirmed", "completed"].includes(stage)) {
+    activeStages.add("Inquiry").add("Viewing");
+  }
+  if (["submitted", "under_review", "approved", "rejected", "withdrawn"].includes(stage)) {
+    activeStages.add("Inquiry").add("Viewing").add("Application");
+  }
+  if (["approved", "rejected"].includes(stage)) {
+    activeStages.add("Decision");
+  }
+  const steps = ["Inquiry", "Viewing", "Application", "Decision"];
+
+  return (
+    <div className="mt-4 grid gap-2 sm:grid-cols-4">
+      {steps.map((step) => (
+        <TimelineStep active={activeStages.has(step)} key={step} label={step} />
+      ))}
+    </div>
+  );
+}
+
+function TransactionCenter({ transactions }: { transactions: TransactionItem[] }) {
+  if (transactions.length === 0) {
+    return (
+      <Card className="p-5 text-sm text-brand-muted">
+        Active property transactions will appear here as users move from interest to viewing and
+        application.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      {transactions.slice(0, 6).map((transaction) => (
+        <div className="rounded-md border border-white/10 p-4" key={transaction.inquiry_id}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-brand-text">{transaction.property.title}</p>
+              <p className="mt-1 text-sm text-brand-muted">
+                {transaction.property.city}, {transaction.property.state}
+              </p>
+            </div>
+            <WorkflowStatusBadge status={transaction.stage}>
+              {transaction.stage_label}
+            </WorkflowStatusBadge>
+          </div>
+          <WorkflowTimeline stage={transaction.stage} />
+          <div className="mt-4 rounded-md bg-white/5 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+              Next action
+            </p>
+            <p className="mt-1 text-sm text-brand-text">{transaction.next_action}</p>
+          </div>
+          {transaction.stage === "completed" ? (
+            <Link
+              className={buttonClasses("primary", "mt-3 h-9")}
+              href={`/apply/${transaction.property.id}?inquiry=${transaction.inquiry_id ?? ""}&viewing=${transaction.viewing_id ?? ""}&slug=${transaction.property.slug}`}
+            >
+              Apply for property
+            </Link>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
+  if (activity.length === 0) {
+    return (
+      <Card className="p-5 text-sm text-brand-muted">
+        Activity will appear here as saves, inquiries, viewings, and applications happen.
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {activity.slice(0, 8).map((item) => (
+        <div className="rounded-md border border-white/10 p-4" key={item.id}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="font-semibold text-brand-text">{item.label}</p>
+            <span className="text-xs text-brand-muted">
+              <ApplicationDate value={item.occurred_at} />
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-brand-muted">{item.entity_type}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function NotificationCenterPlaceholder() {
+  const events = [
+    "Inquiry Created",
+    "Viewing Requested",
+    "Viewing Confirmed",
+    "Application Submitted",
+    "Application Approved",
+    "Application Rejected",
+  ];
+
+  return (
+    <Card className="p-5">
+      <h2 className="font-heading text-2xl font-semibold text-brand-text">Notification center</h2>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {events.map((event) => (
+          <Badge key={event} variant="muted">
+            {event}
+          </Badge>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function MyApplicationsList({ applications }: { applications: RentalApplication[] }) {
   const queryClient = useQueryClient();
   const withdrawMutation = useMutation({
@@ -259,7 +403,9 @@ function MyApplicationsList({ applications }: { applications: RentalApplication[
                 <ApplicationDate value={application.move_in_date} />
               </p>
             </div>
-            <Badge variant="muted">{formatApplicationStatus(application.status)}</Badge>
+            <WorkflowStatusBadge status={application.status}>
+              {formatApplicationStatus(application.status)}
+            </WorkflowStatusBadge>
           </div>
           {application.message ? (
             <p className="mt-3 text-sm leading-6 text-brand-muted">{application.message}</p>
@@ -310,7 +456,9 @@ function PropertyInquiryManager({ inquiries }: { inquiries: Inquiry[] }) {
               <p className="mt-1 text-sm text-brand-muted">{inquiry.interested_user.email}</p>
               <p className="mt-2 text-sm text-brand-muted">{inquiry.property.title}</p>
             </div>
-            <Badge variant="muted">{formatInquiryStatus(inquiry.status)}</Badge>
+            <WorkflowStatusBadge status={inquiry.status}>
+              {formatInquiryStatus(inquiry.status)}
+            </WorkflowStatusBadge>
           </div>
           {inquiry.message ? (
             <p className="mt-3 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
@@ -417,7 +565,9 @@ function ViewingRequestsManager({ viewings }: { viewings: Viewing[] }) {
                 {formatViewingType(viewing.viewing_type)}
               </p>
             </div>
-            <Badge variant="muted">{formatViewingStatus(viewing.status)}</Badge>
+            <WorkflowStatusBadge status={viewing.status}>
+              {formatViewingStatus(viewing.status)}
+            </WorkflowStatusBadge>
           </div>
           <form className="mt-4 grid gap-3">
             <div className="grid gap-3 md:grid-cols-2">
@@ -596,7 +746,9 @@ function ReceivedApplicationsManager({ applications }: { applications: RentalApp
                 <ApplicationDate value={application.move_in_date} />
               </p>
             </div>
-            <Badge variant="muted">{formatApplicationStatus(application.status)}</Badge>
+            <WorkflowStatusBadge status={application.status}>
+              {formatApplicationStatus(application.status)}
+            </WorkflowStatusBadge>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-[1fr_220px]">
             <form
@@ -728,6 +880,21 @@ function DashboardContent() {
           </Link>
         ))}
       </div>
+      <section className="mt-10">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              Current transaction status
+            </h2>
+            <p className="mt-1 text-sm text-brand-muted">
+              Follow each property from inquiry through viewing, application, and decision.
+            </p>
+          </div>
+        </div>
+        <div className="mt-5">
+          <TransactionCenter transactions={overview?.transactions ?? []} />
+        </div>
+      </section>
       {overview?.role === "agent" ? (
         <>
           <section className="mt-10">
@@ -787,6 +954,17 @@ function DashboardContent() {
               </div>
             </Card>
           </section>
+          <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                Recent activity
+              </h2>
+              <div className="mt-5">
+                <ActivityFeed activity={overview?.activity ?? []} />
+              </div>
+            </Card>
+            <NotificationCenterPlaceholder />
+          </section>
         </>
       ) : (
         <>
@@ -844,6 +1022,17 @@ function DashboardContent() {
                 <MyApplicationsList applications={overview?.applications ?? []} />
               </div>
             </Card>
+          </section>
+          <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                Recent activity
+              </h2>
+              <div className="mt-5">
+                <ActivityFeed activity={overview?.activity ?? []} />
+              </div>
+            </Card>
+            <NotificationCenterPlaceholder />
           </section>
         </>
       )}

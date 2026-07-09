@@ -9,8 +9,11 @@ import { Navbar } from "@/components/layout/navbar";
 import { Badge } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { WorkflowStatusBadge } from "@/components/workflow/status-badge";
+import { formatApplicationStatus } from "@/lib/api/applications";
 import { getDashboardOverview } from "@/lib/api/dashboard";
 import { formatInquiryStatus } from "@/lib/api/inquiries";
+import { formatViewingStatus, formatViewingType } from "@/lib/api/viewings";
 import { useAuth } from "@/providers/auth-provider";
 
 function AdminContent() {
@@ -101,10 +104,66 @@ function AdminContent() {
               <div className="rounded-md border border-white/10 p-4" key={lead.id}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="font-semibold text-brand-text">{lead.interested_user.full_name}</p>
-                  <Badge variant="muted">{formatInquiryStatus(lead.status)}</Badge>
+                  <WorkflowStatusBadge status={lead.status}>
+                    {formatInquiryStatus(lead.status)}
+                  </WorkflowStatusBadge>
                 </div>
                 <p className="mt-2 text-sm text-brand-muted">{lead.property.title}</p>
                 <p className="mt-2 text-sm leading-6 text-brand-muted">{lead.message}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </section>
+
+      <section className="mt-10 grid gap-5 lg:grid-cols-2">
+        <Card className="p-5">
+          <h2 className="font-heading text-2xl font-semibold text-brand-text">Upcoming viewings</h2>
+          <div className="mt-5 space-y-4">
+            {overview?.receivedViewings.slice(0, 6).map((viewing) => (
+              <div className="rounded-md border border-white/10 p-4" key={viewing.id}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="font-semibold text-brand-text">{viewing.property.title}</p>
+                  <WorkflowStatusBadge status={viewing.status}>
+                    {formatViewingStatus(viewing.status)}
+                  </WorkflowStatusBadge>
+                </div>
+                <p className="mt-2 text-sm text-brand-muted">
+                  {formatViewingType(viewing.viewing_type)} viewing requested by{" "}
+                  {viewing.requester.full_name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="p-5">
+          <h2 className="font-heading text-2xl font-semibold text-brand-text">
+            Pending applications
+          </h2>
+          <div className="mt-5 space-y-4">
+            {overview?.receivedApplications.slice(0, 6).map((application) => (
+              <div className="rounded-md border border-white/10 p-4" key={application.id}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="font-semibold text-brand-text">{application.full_name}</p>
+                  <WorkflowStatusBadge status={application.status}>
+                    {formatApplicationStatus(application.status)}
+                  </WorkflowStatusBadge>
+                </div>
+                <p className="mt-2 text-sm text-brand-muted">{application.property.title}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </section>
+
+      <section className="mt-10">
+        <Card className="p-5">
+          <h2 className="font-heading text-2xl font-semibold text-brand-text">Recent activity</h2>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {overview?.activity.slice(0, 8).map((item) => (
+              <div className="rounded-md border border-white/10 p-4" key={item.id}>
+                <p className="font-semibold text-brand-text">{item.label}</p>
+                <p className="mt-1 text-sm text-brand-muted">{item.entity_type}</p>
               </div>
             ))}
           </div>

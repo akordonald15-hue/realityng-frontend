@@ -2,11 +2,13 @@ import type { User } from "@/lib/auth/types";
 import type { RentalApplication } from "@/lib/api/applications";
 import type { Inquiry } from "@/lib/api/inquiries";
 import type { Viewing } from "@/lib/api/viewings";
+import type { ActivityItem, TransactionItem } from "@/lib/api/workflow";
 import { mockApplications } from "@/mocks/mock-applications";
 import { mockInquiries } from "@/mocks/mock-inquiries";
 import { mockProperties } from "@/mocks/mock-properties";
 import { mockAgents, mockBuyers, mockUsers } from "@/mocks/mock-users";
 import { mockViewings } from "@/mocks/mock-viewings";
+import { mockGetActivityFeed, mockGetTransactionCenter } from "@/mocks/mock-workflow";
 
 export type MockMetric = {
   label: string;
@@ -27,6 +29,8 @@ export type MockDashboardOverview = {
   leads: Inquiry[];
   receivedViewings: Viewing[];
   receivedApplications: RentalApplication[];
+  transactions: TransactionItem[];
+  activity: ActivityItem[];
   pendingApprovals: typeof mockProperties;
   userStats: MockMetric[];
 };
@@ -76,6 +80,8 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
       leads: mockInquiries.slice(0, 8),
       receivedViewings: mockViewings.slice(0, 6),
       receivedApplications: mockApplications.slice(0, 6),
+      transactions: [],
+      activity: [],
       pendingApprovals: mockProperties.slice(6, 12),
       userStats: [
         {
@@ -120,6 +126,8 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
       leads: mockInquiries.slice(0, 7),
       receivedViewings: mockViewings.slice(0, 6),
       receivedApplications: mockApplications.slice(0, 6),
+      transactions: [],
+      activity: [],
       pendingApprovals: mockProperties.slice(12, 15),
       userStats: [],
     };
@@ -143,7 +151,20 @@ export function getMockDashboardOverview(user: User | null): MockDashboardOvervi
     leads: [],
     receivedViewings: [],
     receivedApplications: [],
+    transactions: [],
+    activity: [],
     pendingApprovals: [],
     userStats: [],
+  };
+}
+
+export async function getMockDashboardOverviewAsync(
+  user: User | null,
+): Promise<MockDashboardOverview> {
+  const overview = getMockDashboardOverview(user);
+  return {
+    ...overview,
+    transactions: await mockGetTransactionCenter(),
+    activity: await mockGetActivityFeed(),
   };
 }
