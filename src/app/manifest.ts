@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "RealityNG",
     short_name: "RealityNG",
     description:
-      "Where dreams find address. Find, verify, buy, rent, build, and manage properties in Nigeria.",
+      "Where dreams find an address. Find, verify, buy, rent, build, and manage properties in Nigeria.",
     start_url: "/",
     display: "standalone",
     background_color: "#081C15",

@@ -8,8 +8,14 @@ import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { useOptionalAuth } from "@/providers/auth-provider";
 
-const publicLinks = [{ href: "/properties", label: "Browse properties" }];
-const protectedLinks = [
+const companyLinks = [
+  { href: "/#overview", label: "Overview" },
+  { href: "/#who-we-are", label: "Who we are" },
+  { href: "/#products", label: "Products" },
+  { href: "/#artisans", label: "Artisans" },
+];
+
+const accountLinks = [
   { href: "/saved-properties", label: "Saved" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/settings/profile", label: "Profile" },
@@ -21,16 +27,10 @@ export function Navbar() {
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const isLoading = auth?.isLoading ?? false;
   const [isOpen, setIsOpen] = useState(false);
-  const listPropertyHref = isAuthenticated
-    ? "/properties/new"
-    : "/auth/sign-up?next=%2Fproperties%2Fnew";
-  const navigationLinks = [
-    ...publicLinks,
-    ...protectedLinks.map((link) => ({
-      ...link,
-      href: isAuthenticated ? link.href : `/auth/sign-up?next=${encodeURIComponent(link.href)}`,
-    })),
-  ];
+  const protectedAccountLinks = accountLinks.map((link) => ({
+    ...link,
+    href: isAuthenticated ? link.href : `/auth/sign-up?next=${encodeURIComponent(link.href)}`,
+  }));
 
   function isActive(href: string) {
     if (href === "/") {
@@ -46,7 +46,7 @@ export function Navbar() {
           <BrandLogo className="h-14 w-auto object-contain sm:h-16" priority />
         </Link>
         <div className="hidden items-center gap-5 text-sm font-medium text-brand-muted lg:flex">
-          {navigationLinks.map((link) => (
+          {companyLinks.map((link) => (
             <Link
               aria-current={isActive(link.href) ? "page" : undefined}
               className={
@@ -60,10 +60,28 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+        </div>
+        <div className="hidden items-center gap-4 text-sm font-medium text-brand-muted lg:flex">
           {!isLoading && isAuthenticated ? (
-            <Button className="h-10" onClick={() => void auth?.signOut()} variant="ghost">
-              Sign out
-            </Button>
+            <>
+              {protectedAccountLinks.map((link) => (
+                <Link
+                  aria-current={isActive(link.href) ? "page" : undefined}
+                  className={
+                    link.href.includes("/settings/profile")
+                      ? buttonClasses("secondary", "h-10")
+                      : "transition hover:text-brand-text"
+                  }
+                  href={link.href}
+                  key={link.href}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Button className="h-10" onClick={() => void auth?.signOut()} variant="ghost">
+                Sign out
+              </Button>
+            </>
           ) : (
             <>
               <Link className="transition hover:text-brand-text" href="/auth/sign-in">
@@ -76,12 +94,6 @@ export function Navbar() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            className={buttonClasses("primary", "hidden h-10 sm:inline-flex")}
-            href={listPropertyHref}
-          >
-            List property
-          </Link>
           <Button
             aria-controls="mobile-navigation"
             aria-expanded={isOpen}
@@ -109,7 +121,7 @@ export function Navbar() {
           >
             Home
           </Link>
-          {navigationLinks.map((link) => (
+          {companyLinks.map((link) => (
             <Link
               className={
                 isActive(link.href)
@@ -123,17 +135,34 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+          <div className="my-2 border-t border-white/10" />
           {!isLoading && isAuthenticated ? (
-            <Button
-              className="w-full justify-start"
-              onClick={() => {
-                setIsOpen(false);
-                void auth?.signOut();
-              }}
-              variant="ghost"
-            >
-              Sign out
-            </Button>
+            <>
+              {protectedAccountLinks.map((link) => (
+                <Link
+                  className={
+                    isActive(link.href)
+                      ? "rounded-md bg-white/10 px-3 py-2 text-brand-text"
+                      : "rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+                  }
+                  href={link.href}
+                  key={link.href}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Button
+                className="w-full justify-start"
+                onClick={() => {
+                  setIsOpen(false);
+                  void auth?.signOut();
+                }}
+                variant="ghost"
+              >
+                Sign out
+              </Button>
+            </>
           ) : (
             <>
               <Link
@@ -152,13 +181,6 @@ export function Navbar() {
               </Link>
             </>
           )}
-          <Link
-            className={buttonClasses("primary", "mt-2 w-full")}
-            href={listPropertyHref}
-            onClick={() => setIsOpen(false)}
-          >
-            List property
-          </Link>
         </div>
       </div>
     </header>

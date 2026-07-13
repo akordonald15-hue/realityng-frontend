@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "RealityNG",
   description:
-    "Where dreams find address. Find, verify, buy, rent, build, and manage properties in Nigeria.",
+    "Where dreams find an address. Find, verify, buy, rent, build, and manage properties in Nigeria.",
   icons: {
     icon: [
       { url: "/icons/realityng-icon-192.png", sizes: "192x192", type: "image/png" },
@@ -35,14 +35,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: "RealityNG",
     description:
-      "Where dreams find address. Discover verified Nigerian property listings with RealityNG.",
+      "Where dreams find an address. Discover verified Nigerian property listings with RealityNG.",
     images: [{ url: "/brand/realityng-social.png", width: 1200, height: 630, alt: "RealityNG" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "RealityNG",
     description:
-      "Where dreams find address. Discover verified Nigerian property listings with RealityNG.",
+      "Where dreams find an address. Discover verified Nigerian property listings with RealityNG.",
     images: ["/brand/realityng-social.png"],
   },
   manifest: "/manifest.webmanifest",

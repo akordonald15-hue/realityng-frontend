@@ -58,7 +58,7 @@ function PropertiesContent() {
                 Filters
               </Button>
               <Link className={buttonClasses("primary")} href="/properties/new">
-                Add listing
+                List property
               </Link>
             </div>
           </div>
