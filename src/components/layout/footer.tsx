@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 
 export function Footer() {
   return (
@@ -10,11 +11,8 @@ export function Footer() {
           <BrandLogo
             className="h-16 w-auto object-contain"
             showTagline
-            taglineClassName="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-brand-secondary"
+            taglineClassName="mt-1 whitespace-nowrap text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-brand-secondary"
           />
-          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-brand-secondary">
-            Nigerian proptech for discovery, trust, and property decisions.
-          </p>
           <p className="mt-3 max-w-md leading-6">
             Trusted Nigerian property discovery for buyers, renters, landlords, and diaspora
             investors.
@@ -29,9 +27,13 @@ export function Footer() {
             <Link className="hover:text-brand-text" href="/saved-properties">
               Saved properties
             </Link>
-            <Link className="hover:text-brand-text" href="/properties/new">
+            <ProtectedActionLink
+              actionLabel="List property"
+              className="hover:text-brand-text"
+              href="/properties/new"
+            >
               List property
-            </Link>
+            </ProtectedActionLink>
           </div>
         </div>
         <div>

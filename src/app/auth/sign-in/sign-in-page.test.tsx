@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import SignInPage from "@/app/auth/sign-in/page";
 
@@ -17,6 +17,11 @@ vi.mock("@/lib/demo-mode", () => ({
 }));
 
 describe("SignInPage", () => {
+  beforeEach(() => {
+    window.history.pushState({}, "", "/auth/sign-in");
+    mocks.signIn.mockReset();
+  });
+
   it("shows demo mode without exposing demo credentials", () => {
     render(<SignInPage />);
 
@@ -48,6 +53,22 @@ describe("SignInPage", () => {
     expect(mocks.signIn).toHaveBeenCalledWith(
       { email: "ada@example.com", password: "Str0ngPass123!" },
       undefined,
+    );
+  });
+
+  it("preserves the selected role when returning to onboarding", async () => {
+    const user = userEvent.setup();
+    mocks.signIn.mockResolvedValueOnce(undefined);
+    window.history.pushState({}, "", "/auth/sign-in?next=%2Fonboarding%2Frole-setup&role=buyer");
+    render(<SignInPage />);
+
+    await user.type(screen.getByLabelText("Email"), "buyer@realityng.com");
+    await user.type(screen.getByLabelText("Password"), "password123");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+
+    expect(mocks.signIn).toHaveBeenCalledWith(
+      { email: "buyer@realityng.com", password: "password123" },
+      "/onboarding/role-setup?role=buyer",
     );
   });
 });

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { CompareButton } from "@/components/properties/compare-button";
 import type { Property } from "@/lib/api/properties";
+import { setTokens } from "@/lib/auth/token-storage";
 import { renderWithQueryClient } from "@/test/render";
 
 function property(index: number): Property {
@@ -28,6 +29,7 @@ function property(index: number): Property {
 describe("CompareButton", () => {
   it("selects up to four properties and allows removal", async () => {
     const user = userEvent.setup();
+    setTokens("access-token", "refresh-token");
     renderWithQueryClient(
       <div>
         {[1, 2, 3, 4, 5].map((index) => (

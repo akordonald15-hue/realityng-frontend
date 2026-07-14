@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { useRoleSelection } from "@/components/auth/role-selection-modal";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
@@ -144,6 +144,7 @@ const heroSlides = [
 
 export default function HomePage() {
   const router = useRouter();
+  const { openRoleSelection } = useRoleSelection();
   const [city, setCity] = useState("");
   const [listingType, setListingType] = useState("");
   const [activeSlide, setActiveSlide] = useState(0);
@@ -196,13 +197,7 @@ export default function HomePage() {
 
           <div className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-7xl flex-col justify-center px-5 py-14 sm:px-6 lg:py-20">
             <div className="max-w-3xl">
-              <BrandLogo
-                className="h-20 w-auto object-contain drop-shadow-[0_8px_26px_rgba(0,0,0,0.55)] sm:h-24"
-                priority
-                showTagline
-                taglineClassName="mt-2 text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-brand-secondary sm:text-xs"
-              />
-              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/85 sm:text-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/85 sm:text-sm">
                 Trusted Nigerian property discovery
               </p>
               <h1
@@ -219,15 +214,21 @@ export default function HomePage() {
                 <Link className={buttonClasses("primary", "w-full sm:w-auto")} href="/properties">
                   Browse properties
                 </Link>
-                <Link
+                <button
                   className={buttonClasses(
                     "secondary",
                     "w-full border-white/70 text-white sm:w-auto",
                   )}
-                  href="/auth/sign-up"
+                  onClick={() =>
+                    openRoleSelection({
+                      actionLabel: "Create free account",
+                      nextPath: "/onboarding/role-setup",
+                    })
+                  }
+                  type="button"
                 >
                   Create free account
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -312,15 +313,25 @@ export default function HomePage() {
                   </h3>
                   <p className="mt-3 leading-7 text-brand-muted">{action.description}</p>
                 </div>
-                <Link
+                <button
                   className={buttonClasses(
                     action.title === "Browse property" ? "primary" : "secondary",
                     "mt-6 w-full sm:w-fit",
                   )}
-                  href={action.href}
+                  onClick={() => {
+                    if (action.title === "Browse property") {
+                      router.push(action.href);
+                      return;
+                    }
+                    openRoleSelection({
+                      actionLabel: "List property",
+                      nextPath: action.href,
+                    });
+                  }}
+                  type="button"
                 >
                   {action.cta}
-                </Link>
+                </button>
               </Card>
             ))}
           </div>
@@ -457,9 +468,18 @@ export default function HomePage() {
               </h2>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link className={buttonClasses("primary", "w-full sm:w-auto")} href="/auth/sign-up">
+              <button
+                className={buttonClasses("primary", "w-full sm:w-auto")}
+                onClick={() =>
+                  openRoleSelection({
+                    actionLabel: "Create account",
+                    nextPath: "/onboarding/role-setup",
+                  })
+                }
+                type="button"
+              >
                 Create account
-              </Link>
+              </button>
               <Link
                 className={buttonClasses(
                   "secondary",

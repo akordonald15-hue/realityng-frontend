@@ -17,7 +17,7 @@ export default function Loading() {
           width={1200}
         />
         <p className="mt-5 text-xs font-semibold uppercase tracking-[0.32em] text-brand-secondary sm:text-sm">
-          ...where dreams find an address
+          Where Dreams Find An Address
         </p>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
+import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { PropertyCard } from "@/components/properties/property-card";
 import { PropertyFilterPanel } from "@/components/properties/property-filter-panel";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -57,9 +58,13 @@ function PropertiesContent() {
               >
                 Filters
               </Button>
-              <Link className={buttonClasses("primary")} href="/properties/new">
+              <ProtectedActionLink
+                actionLabel="List property"
+                className={buttonClasses("primary")}
+                href="/properties/new"
+              >
                 List property
-              </Link>
+              </ProtectedActionLink>
             </div>
           </div>
         </section>

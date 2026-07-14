@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -31,6 +31,7 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState("");
+  const [queryParams, setQueryParams] = useState(() => new URLSearchParams());
   const {
     register,
     handleSubmit,
@@ -45,6 +46,21 @@ export default function SignUpPage() {
       password: "",
     },
   });
+  useEffect(() => {
+    setQueryParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  const selectedRole = queryParams.get("role");
+  const requestedPath = queryParams.get("next");
+  const nextPath =
+    requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+      ? requestedPath
+      : "/onboarding/role-setup";
+  const signInParams = new URLSearchParams();
+  signInParams.set("next", nextPath);
+  if (selectedRole) {
+    signInParams.set("role", selectedRole);
+  }
 
   async function onSubmit(values: SignUpValues) {
     setServerError("");
@@ -54,13 +70,8 @@ export default function SignUpPage() {
         ...values,
         phone_number: values.phone_number || null,
       });
-      setSuccess("Account created. Continue to sign in and choose your role.");
-      const requestedPath = new URLSearchParams(window.location.search).get("next");
-      const nextPath =
-        requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
-          ? requestedPath
-          : "/onboarding/role-setup";
-      router.push(`/auth/sign-in?next=${encodeURIComponent(nextPath)}`);
+      setSuccess("Account created. Continue to sign in.");
+      router.push(`/auth/sign-in?${signInParams.toString()}`);
     } catch (error) {
       setServerError(getApiErrorMessage(error));
     }
@@ -78,6 +89,16 @@ export default function SignUpPage() {
         <p className="mt-2 text-brand-muted">
           Start your RealityNG property journey with a secure account.
         </p>
+        {selectedRole ? (
+          <div className="mt-5 rounded-md border border-brand-secondary/40 bg-brand-secondary/10 px-4 py-3 text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
+              Selected role
+            </p>
+            <p className="mt-1 font-heading text-xl font-semibold capitalize text-brand-text">
+              {selectedRole.replace("_", " ")}
+            </p>
+          </div>
+        ) : null}
         <form className="mt-8 space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField label="First name" error={errors.first_name} {...register("first_name")} />
@@ -113,7 +134,10 @@ export default function SignUpPage() {
         </form>
         <p className="mt-6 text-sm text-brand-muted">
           Already have an account?{" "}
-          <Link className="font-semibold text-brand-secondary" href="/auth/sign-in">
+          <Link
+            className="font-semibold text-brand-secondary"
+            href={`/auth/sign-in?${signInParams.toString()}`}
+          >
             Sign in
           </Link>
         </p>

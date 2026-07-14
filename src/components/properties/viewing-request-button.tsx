@@ -4,9 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { FormEvent } from "react";
 import { useMemo, useState } from "react";
 
+import { useRoleSelection } from "@/components/auth/role-selection-modal";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { createViewing, viewingTypeOptions, type ViewingType } from "@/lib/api/viewings";
+import { useOptionalAuth } from "@/providers/auth-provider";
 
 type ViewingRequestButtonProps = {
   inquiryId: string;
@@ -20,7 +22,9 @@ function tomorrowDate() {
 }
 
 export function ViewingRequestButton({ inquiryId, disabled = false }: ViewingRequestButtonProps) {
+  const auth = useOptionalAuth();
   const queryClient = useQueryClient();
+  const { openRoleSelection } = useRoleSelection();
   const [isOpen, setIsOpen] = useState(false);
   const [viewingType, setViewingType] = useState<ViewingType>("physical");
   const [preferredDate, setPreferredDate] = useState(() => tomorrowDate());
@@ -52,7 +56,16 @@ export function ViewingRequestButton({ inquiryId, disabled = false }: ViewingReq
       <Button
         className="mt-3 h-9"
         disabled={disabled}
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          if (!auth?.isAuthenticated) {
+            openRoleSelection({
+              actionLabel: "Request viewing",
+              nextPath: `${window.location.pathname}${window.location.search}`,
+            });
+            return;
+          }
+          setIsOpen(true);
+        }}
         type="button"
         variant="secondary"
       >

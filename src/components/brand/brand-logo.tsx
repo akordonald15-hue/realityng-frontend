@@ -5,6 +5,7 @@ type BrandLogoProps = {
   className?: string;
   showTagline?: boolean;
   taglineClassName?: string;
+  tagline?: string;
   priority?: boolean;
 };
 
@@ -13,6 +14,7 @@ export function BrandLogo({
   className,
   showTagline = false,
   taglineClassName,
+  tagline = "Where Dreams Find An Address",
   priority = false,
 }: BrandLogoProps) {
   const isFull = variant === "full";
@@ -41,7 +43,7 @@ export function BrandLogo({
           "mt-1 text-[0.58rem] font-semibold uppercase tracking-[0.22em] text-brand-secondary"
         }
       >
-        ...where dreams find an address
+        {tagline}
       </span>
     </span>
   );

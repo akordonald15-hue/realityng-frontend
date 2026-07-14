@@ -3,8 +3,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { useRoleSelection } from "@/components/auth/role-selection-modal";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import {
@@ -32,6 +33,7 @@ export function ShowInterestButton({
   const auth = useOptionalAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { openRoleSelection } = useRoleSelection();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasShownInterest, setHasShownInterest] = useState(false);
   const [inquiryType, setInquiryType] = useState<InquiryType>(() =>
@@ -58,9 +60,24 @@ export function ShowInterestButton({
     },
   });
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (!auth?.isAuthenticated || params.get("action") !== "show-interest") {
+      return;
+    }
+    setIsModalOpen(true);
+    params.delete("action");
+    router.replace(`${window.location.pathname}${params.toString() ? `?${params}` : ""}`, {
+      scroll: false,
+    });
+  }, [auth?.isAuthenticated, router]);
+
   function showInterest() {
     if (!auth?.isAuthenticated) {
-      router.push(`/auth/sign-up?next=${encodeURIComponent(`/properties/${propertySlug}`)}`);
+      openRoleSelection({
+        actionLabel: "Show interest",
+        nextPath: `/properties/${propertySlug}?action=show-interest`,
+      });
       return;
     }
     setIsModalOpen(true);

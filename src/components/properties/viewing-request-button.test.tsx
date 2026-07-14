@@ -7,6 +7,7 @@ import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   createViewing: vi.fn(),
+  openRoleSelection: vi.fn(),
 }));
 
 vi.mock("@/lib/api/viewings", async () => {
@@ -16,6 +17,18 @@ vi.mock("@/lib/api/viewings", async () => {
     createViewing: (payload: unknown) => mocks.createViewing(payload),
   };
 });
+
+vi.mock("@/providers/auth-provider", () => ({
+  useOptionalAuth: () => ({
+    isAuthenticated: true,
+  }),
+}));
+
+vi.mock("@/components/auth/role-selection-modal", () => ({
+  useRoleSelection: () => ({
+    openRoleSelection: mocks.openRoleSelection,
+  }),
+}));
 
 describe("ViewingRequestButton", () => {
   it("opens the viewing modal and submits scheduling preferences", async () => {

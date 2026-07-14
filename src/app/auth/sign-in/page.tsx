@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -26,6 +26,7 @@ export default function SignInPage() {
   const { signIn } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [queryParams, setQueryParams] = useState(() => new URLSearchParams());
   const {
     register,
     handleSubmit,
@@ -34,16 +35,34 @@ export default function SignInPage() {
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
+  useEffect(() => {
+    setQueryParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  const createAccountParams = new URLSearchParams();
+  const requestedPath = queryParams.get("next");
+  const selectedRole = queryParams.get("role");
+  if (requestedPath?.startsWith("/") && !requestedPath.startsWith("//")) {
+    createAccountParams.set("next", requestedPath);
+  }
+  if (selectedRole) {
+    createAccountParams.set("role", selectedRole);
+  }
 
   async function onSubmit(values: SignInValues) {
     setServerError("");
     try {
-      const requestedPath = new URLSearchParams(window.location.search).get("next");
       const safePath =
         requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
           ? requestedPath
           : undefined;
-      await signIn(values, safePath);
+      let redirectPath = safePath;
+      if (redirectPath === "/onboarding/role-setup" && selectedRole) {
+        const roleSetupParams = new URLSearchParams();
+        roleSetupParams.set("role", selectedRole);
+        redirectPath = `${redirectPath}?${roleSetupParams.toString()}`;
+      }
+      await signIn(values, redirectPath);
     } catch (error) {
       setServerError(getApiErrorMessage(error));
     }
@@ -95,7 +114,10 @@ export default function SignInPage() {
           <Link className="font-semibold text-brand-secondary" href="/auth/forgot-password">
             Forgot password?
           </Link>
-          <Link className="font-semibold text-brand-secondary" href="/auth/sign-up">
+          <Link
+            className="font-semibold text-brand-secondary"
+            href={`/auth/sign-up${createAccountParams.toString() ? `?${createAccountParams}` : ""}`}
+          >
             Create account
           </Link>
         </div>

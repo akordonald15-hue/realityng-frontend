@@ -7,12 +7,20 @@ import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   createInquiry: vi.fn(),
+  openRoleSelection: vi.fn(),
   push: vi.fn(),
+  replace: vi.fn(),
   isAuthenticated: true,
 }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mocks.push }),
+  usePathname: () => "/properties/banana-island-duplex",
+  useRouter: () => ({ push: mocks.push, replace: mocks.replace }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("@/components/auth/role-selection-modal", () => ({
+  useRoleSelection: () => ({ openRoleSelection: mocks.openRoleSelection }),
 }));
 
 vi.mock("@/providers/auth-provider", () => ({
@@ -64,7 +72,7 @@ describe("ShowInterestButton", () => {
     ).toBeInTheDocument();
   });
 
-  it("redirects anonymous users to sign up", async () => {
+  it("opens role selection for anonymous users", async () => {
     const user = userEvent.setup();
     mocks.isAuthenticated = false;
 
@@ -78,8 +86,9 @@ describe("ShowInterestButton", () => {
 
     await user.click(screen.getByRole("button", { name: "Show interest" }));
 
-    expect(mocks.push).toHaveBeenCalledWith(
-      "/auth/sign-up?next=%2Fproperties%2Fbanana-island-duplex",
-    );
+    expect(mocks.openRoleSelection).toHaveBeenCalledWith({
+      actionLabel: "Show interest",
+      nextPath: "/properties/banana-island-duplex?action=show-interest",
+    });
   });
 });

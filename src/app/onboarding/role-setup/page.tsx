@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { FormMessage } from "@/components/forms/form-message";
@@ -16,6 +16,7 @@ export default function RoleSetupPage() {
   const { refreshSession, user } = useAuth();
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
   const rolesQuery = useQuery({ queryKey: ["roles"], queryFn: getRoles });
   const mutation = useMutation({
     mutationFn: requestRole,
@@ -36,6 +37,11 @@ export default function RoleSetupPage() {
 
   const ownedRoleNames = new Set(user?.roles.map((role) => role.role.name) ?? []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSelectedRole(params.get("role") ?? "");
+  }, []);
+
   return (
     <ProtectedRoute>
       <main className="mx-auto max-w-4xl px-5 py-10 sm:px-6">
@@ -46,6 +52,16 @@ export default function RoleSetupPage() {
           Tenant, buyer, and landlord roles are approved immediately. Professional roles require
           admin review.
         </p>
+        {selectedRole ? (
+          <div className="mt-5 rounded-md border border-brand-secondary/40 bg-brand-secondary/10 px-4 py-3 text-brand-muted">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
+              Suggested role
+            </p>
+            <p className="mt-1 capitalize text-brand-text">
+              Continue with {selectedRole.replace("_", " ")} or choose another role below.
+            </p>
+          </div>
+        ) : null}
         <div className="mt-6 space-y-3">
           <FormMessage tone="success">{message}</FormMessage>
           <FormMessage tone="error">{error}</FormMessage>
@@ -55,7 +71,12 @@ export default function RoleSetupPage() {
             const alreadyRequested = ownedRoleNames.has(role.name);
             const isAdminRole = role.name === "admin" || role.name === "super_admin";
             return (
-              <Card className="p-4" key={role.id}>
+              <Card
+                className={
+                  role.name === selectedRole ? "border-brand-secondary/70 p-4 shadow-glow" : "p-4"
+                }
+                key={role.id}
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h2 className="text-lg font-semibold capitalize text-brand-text">

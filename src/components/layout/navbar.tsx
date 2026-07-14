@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { useRoleSelection } from "@/components/auth/role-selection-modal";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { useOptionalAuth } from "@/providers/auth-provider";
 
@@ -24,6 +25,7 @@ const accountLinks = [
 export function Navbar() {
   const pathname = usePathname();
   const auth = useOptionalAuth();
+  const { openRoleSelection } = useRoleSelection();
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const isLoading = auth?.isLoading ?? false;
   const [isOpen, setIsOpen] = useState(false);
@@ -41,9 +43,14 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/95 backdrop-blur">
-      <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-6">
+      <nav className="mx-auto flex min-h-24 max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-6">
         <Link aria-label="RealityNG home" className="flex shrink-0 items-center" href="/">
-          <BrandLogo className="h-14 w-auto object-contain sm:h-16" priority />
+          <BrandLogo
+            className="h-14 w-auto object-contain sm:h-16"
+            priority
+            showTagline
+            taglineClassName="mt-1 whitespace-nowrap text-[0.55rem] font-semibold uppercase tracking-[0.18em] text-brand-secondary sm:text-[0.62rem]"
+          />
         </Link>
         <div className="hidden items-center gap-5 text-sm font-medium text-brand-muted lg:flex">
           {companyLinks.map((link) => (
@@ -87,9 +94,18 @@ export function Navbar() {
               <Link className="transition hover:text-brand-text" href="/auth/sign-in">
                 Sign in
               </Link>
-              <Link className={buttonClasses("secondary", "h-10")} href="/auth/sign-up">
+              <button
+                className={buttonClasses("secondary", "h-10")}
+                onClick={() =>
+                  openRoleSelection({
+                    actionLabel: "Create account",
+                    nextPath: "/onboarding/role-setup",
+                  })
+                }
+                type="button"
+              >
                 Create account
-              </Link>
+              </button>
             </>
           )}
         </div>
@@ -172,13 +188,19 @@ export function Navbar() {
               >
                 Sign in
               </Link>
-              <Link
+              <button
                 className="rounded-md px-3 py-2 font-semibold text-brand-secondary transition hover:bg-white/10"
-                href="/auth/sign-up"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  openRoleSelection({
+                    actionLabel: "Create account",
+                    nextPath: "/onboarding/role-setup",
+                  });
+                }}
+                type="button"
               >
                 Create account
-              </Link>
+              </button>
             </>
           )}
         </div>

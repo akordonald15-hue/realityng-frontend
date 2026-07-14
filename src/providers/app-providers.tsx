@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { SignUpPrompt } from "@/components/auth/sign-up-prompt";
+import { RoleSelectionProvider } from "@/components/auth/role-selection-modal";
 import { BrandSplash } from "@/components/brand/brand-splash";
 import { CompareTray } from "@/components/properties/compare-tray";
 import { AuthProvider } from "@/providers/auth-provider";
@@ -26,12 +27,14 @@ export function AppProviders({ children }: Readonly<{ children: React.ReactNode 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <CompareProvider>
-          <BrandSplash />
-          {children}
-          <CompareTray />
-          <SignUpPrompt />
-        </CompareProvider>
+        <RoleSelectionProvider>
+          <CompareProvider>
+            <BrandSplash />
+            {children}
+            <CompareTray />
+            <SignUpPrompt />
+          </CompareProvider>
+        </RoleSelectionProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

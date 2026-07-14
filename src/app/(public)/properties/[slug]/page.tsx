@@ -10,6 +10,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { CompareButton } from "@/components/properties/compare-button";
 import { FavoriteButton } from "@/components/properties/favorite-button";
 import { ShowInterestButton } from "@/components/properties/show-interest-button";
+import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { Badge } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -218,12 +219,13 @@ export default function PropertyDetailPage() {
                     propertyId={property.id}
                     propertySlug={property.slug}
                   />
-                  <Link
+                  <ProtectedActionLink
+                    actionLabel="Apply for property"
                     className={buttonClasses("secondary", "mt-3 w-full")}
                     href={`/apply/${property.id}?slug=${property.slug}`}
                   >
                     Apply for this property
-                  </Link>
+                  </ProtectedActionLink>
                 </Card>
               </aside>
             </section>

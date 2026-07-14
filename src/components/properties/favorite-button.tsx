@@ -2,12 +2,13 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { createFavorite, deleteFavorite } from "@/lib/api/properties";
 import { getAccessToken } from "@/lib/auth/token-storage";
+import { useOptionalAuth } from "@/providers/auth-provider";
+import { useRoleSelection } from "@/components/auth/role-selection-modal";
 
 type FavoriteButtonProps = {
   propertyId: string;
@@ -41,7 +42,8 @@ export function FavoriteButton({
   className,
   compact = false,
 }: FavoriteButtonProps) {
-  const router = useRouter();
+  const auth = useOptionalAuth();
+  const { openRoleSelection } = useRoleSelection();
   const queryClient = useQueryClient();
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
 
@@ -76,9 +78,12 @@ export function FavoriteButton({
   });
 
   function toggleFavorite() {
-    if (!getAccessToken()) {
+    if (!auth?.isAuthenticated && !getAccessToken()) {
       const nextPath = propertySlug ? `/properties/${propertySlug}` : "/properties";
-      router.push(`/auth/sign-up?next=${encodeURIComponent(nextPath)}`);
+      openRoleSelection({
+        actionLabel: "Save property",
+        nextPath,
+      });
       return;
     }
     mutation.mutate(!isFavorited);
