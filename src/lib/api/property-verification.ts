@@ -60,3 +60,20 @@ export async function createPropertyVerificationRequest(
   );
   return response.data;
 }
+
+export type PaginatedPropertyVerifications = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: PropertyVerification[];
+};
+
+export async function listPropertyVerifications(
+  page = 1
+): Promise<PaginatedPropertyVerifications> {
+  const response = await apiClient.get<PaginatedPropertyVerifications>(
+    "/property-verifications/",
+    { params: { page } }
+  );
+  return response.data;
+}

@@ -35,3 +35,20 @@ export async function createVerificationRequest(
   );
   return response.data;
 }
+
+export type PaginatedVerificationRequests = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: VerificationRequest[];
+};
+
+export async function listVerificationRequests(
+  page = 1
+): Promise<PaginatedVerificationRequests> {
+  const response = await apiClient.get<PaginatedVerificationRequests>(
+    "/verifications/",
+    { params: { page } }
+  );
+  return response.data;
+}
