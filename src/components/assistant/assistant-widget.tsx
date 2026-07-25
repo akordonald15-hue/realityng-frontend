@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,10 @@ import { Input } from "@/components/ui/input";
 import {
   createConversation,
   sendMessage,
+  listConversations,
+  getConversation,
   type AIMessage,
+  type AIConversation,
 } from "@/lib/api/assistant";
 import { ToolResultCards } from "@/components/assistant/result-cards";
 
@@ -21,6 +24,25 @@ export function AssistantWidget() {
   const [unavailable, setUnavailable] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const [showHistory, setShowHistory] = useState(false);
+  const conversationHistory = useQuery({
+    queryKey: ["assistant-conversations"],
+    queryFn: listConversations,
+    enabled: showHistory,
+  });
+
+  async function loadConversation(id: string) {
+    const conversation = await getConversation(id);
+    setConversationId(conversation.id);
+    setMessages(conversation.messages);
+    setShowHistory(false);
+  }
+
+  function startNewConversation() {
+    setConversationId(null);
+    setMessages([]);
+    setShowHistory(false);
+  }
 
   const ensureConversation = useMutation({
     mutationFn: createConversation,
@@ -95,16 +117,61 @@ export function AssistantWidget() {
         <h2 className="font-heading text-sm font-semibold text-brand-text">
           RealityNG Assistant
         </h2>
-        <button
-          type="button"
-          onClick={() => setIsOpen(false)}
-          className="text-brand-muted transition hover:text-brand-text"
-          aria-label="Close assistant"
-        >
-          <CloseIcon />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowHistory((prev) => !prev)}
+            className="text-brand-muted transition hover:text-brand-text"
+            aria-label={showHistory ? "Hide conversation history" : "Show conversation history"}
+          >
+            <HistoryIcon />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="text-brand-muted transition hover:text-brand-text"
+            aria-label="Close assistant"
+          >
+            <CloseIcon />
+          </button>
+        </div>
       </div>
 
+      {showHistory && (
+        <div className="flex-1 space-y-2 overflow-y-auto px-4 py-3">
+          <button
+            type="button"
+            onClick={startNewConversation}
+            className="w-full rounded-md border border-brand-secondary/70 px-3 py-1.5 text-xs text-brand-secondary transition hover:bg-brand-secondary/10"
+          >
+            New Conversation
+          </button>
+          {conversationHistory.isLoading && (
+            <p className="text-sm text-brand-muted">Loading conversations…</p>
+          )}
+          {conversationHistory.isError && (
+            <p className="text-sm text-brand-muted">Couldn't load conversation history.</p>
+          )}
+          {conversationHistory.data?.length === 0 && (
+            <p className="text-sm text-brand-muted">No previous conversations yet.</p>
+          )}
+          {conversationHistory.data?.map((conversation: AIConversation) => (
+            <button
+              key={conversation.id}
+              type="button"
+              onClick={() => loadConversation(conversation.id)}
+              className="block w-full rounded-md border border-white/10 px-3 py-2 text-left text-sm text-brand-text transition hover:bg-white/5"
+            >
+              <div className="truncate">{conversation.title ?? "Untitled conversation"}</div>
+              <div className="text-xs text-brand-muted">
+                {new Date(conversation.updated_at).toLocaleString()} · {conversation.status}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!showHistory && (
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
         {messages.length === 0 && !ensureConversation.isPending && (
           <div className="space-y-2">
@@ -150,6 +217,7 @@ export function AssistantWidget() {
         )}
       </div>
 
+      )}
       <div className="flex items-center gap-2 border-t border-white/10 p-3">
         <Input
           value={draft}
@@ -202,6 +270,25 @@ const SUGGESTED_PROMPTS = [
   "Compare properties I've saved",
   "How do I schedule a viewing?",
 ];
+
+function HistoryIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      className="h-5 w-5"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  );
+}
 
 function ChatIcon() {
   return (
