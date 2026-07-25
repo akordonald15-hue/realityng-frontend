@@ -1,0 +1,238 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { clsx } from "clsx";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  createConversation,
+  sendMessage,
+  type AIMessage,
+} from "@/lib/api/assistant";
+import { ToolResultCards } from "@/components/assistant/result-cards";
+
+export function AssistantWidget() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<AIMessage[]>([]);
+  const [draft, setDraft] = useState("");
+  const [unavailable, setUnavailable] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
+  const ensureConversation = useMutation({
+    mutationFn: createConversation,
+    onSuccess: (conversation) => {
+      setConversationId(conversation.id);
+    },
+  });
+
+  const send = useMutation({
+    mutationFn: sendMessage,
+    onMutate: async ({ content }) => {
+      const optimisticUserMessage: AIMessage = {
+        id: `optimistic-${Date.now()}`,
+        role: "user",
+        content,
+        tool_calls: null,
+        tool_results: null,
+        token_count: null,
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, optimisticUserMessage]);
+      setDraft("");
+    },
+    onSuccess: (response) => {
+      setMessages((prev) => [
+        ...prev.filter((m) => !m.id.startsWith("optimistic-")),
+        response.user_message,
+        response.assistant_message,
+      ]);
+      setUnavailable(false);
+    },
+    onError: () => {
+      setUnavailable(true);
+    },
+  });
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+  }, [messages]);
+
+  function handleOpen() {
+    setIsOpen(true);
+    if (!conversationId && !ensureConversation.isPending) {
+      ensureConversation.mutate();
+    }
+  }
+
+  function handleSend() {
+    const content = draft.trim();
+    if (!content || !conversationId || send.isPending) {
+      return;
+    }
+    send.mutate({ conversationId, content });
+  }
+
+  if (!isOpen) {
+    return (
+      <button
+        type="button"
+        onClick={handleOpen}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-secondary text-brand-background shadow-glow transition hover:bg-[#e4b12b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2"
+        aria-label="Open RealityNG assistant"
+      >
+        <ChatIcon />
+      </button>
+    );
+  }
+
+  return (
+    <Card className="fixed bottom-6 right-6 z-50 flex h-[32rem] w-[22rem] flex-col p-0">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <h2 className="font-heading text-sm font-semibold text-brand-text">
+          RealityNG Assistant
+        </h2>
+        <button
+          type="button"
+          onClick={() => setIsOpen(false)}
+          className="text-brand-muted transition hover:text-brand-text"
+          aria-label="Close assistant"
+        >
+          <CloseIcon />
+        </button>
+      </div>
+
+      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+        {messages.length === 0 && !ensureConversation.isPending && (
+          <div className="space-y-2">
+            <p className="text-sm text-brand-muted">
+              Ask me to find a property, compare listings, or answer questions
+              about RealityNG.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTED_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => setDraft(prompt)}
+                  className="rounded-md border border-brand-secondary/70 bg-transparent px-3 py-1.5 text-xs text-brand-secondary transition hover:bg-brand-secondary/10"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {ensureConversation.isPending && (
+          <p className="text-sm text-brand-muted">Starting conversation…</p>
+        )}
+
+        {messages.map((message) => (
+          <MessageBubble key={message.id} message={message} />
+        ))}
+
+        {send.isPending && (
+          <p className="text-sm text-brand-muted">Thinking…</p>
+        )}
+
+        {unavailable && (
+          <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-brand-muted">
+            The assistant is temporarily unavailable.{" "}
+            <a href="/properties" className="text-brand-secondary underline">
+              Use standard search instead
+            </a>
+            .
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 border-t border-white/10 p-3">
+        <Input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="Ask about a property…"
+          disabled={!conversationId || send.isPending}
+          className="flex-1"
+        />
+        <Button
+          type="button"
+          onClick={handleSend}
+          disabled={!draft.trim() || !conversationId || send.isPending}
+        >
+          Send
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function MessageBubble({ message }: { message: AIMessage }) {
+  const isUser = message.role === "user";
+  return (
+    <div className={clsx("flex", isUser ? "justify-end" : "justify-start")}>
+      <div
+        className={clsx(
+          "max-w-[85%] rounded-md px-3 py-2 text-sm",
+          isUser
+            ? "bg-brand-secondary text-brand-background"
+            : "border border-white/10 bg-white/5 text-brand-text",
+        )}
+      >
+        {message.content}
+        {!isUser && message.tool_results && message.tool_results.length > 0 && (
+          <ToolResultCards toolResults={message.tool_results} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+const SUGGESTED_PROMPTS = [
+  "2-bedroom apartments in Lekki",
+  "Compare properties I've saved",
+  "How do I schedule a viewing?",
+];
+
+function ChatIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      className="h-6 w-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.5 0-2.91-.32-4.14-.89L3 20l1.06-3.18C3.39 15.66 3 14.36 3 13c0-4.418 4.03-8 9-8s9 3.582 9 7.99Z"
+      />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      className="h-5 w-5"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  );
+}

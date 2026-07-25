@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { ProtectedRoute } from "@/components/auth/protected-route";
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { PropertyImageManager } from "@/components/properties/property-image-manager";
@@ -182,7 +181,6 @@ export default function NewPropertyPage() {
   const selectClass = "mt-2";
 
   return (
-    <ProtectedRoute>
       <main className="min-h-screen bg-brand-background px-6 py-8 text-brand-text">
         <div className="mx-auto max-w-5xl border-b border-white/10 pb-6">
           <h1 className="font-heading text-4xl font-semibold text-brand-text">Add a property</h1>
@@ -373,6 +371,5 @@ export default function NewPropertyPage() {
           </form>
         )}
       </main>
-    </ProtectedRoute>
   );
 }
