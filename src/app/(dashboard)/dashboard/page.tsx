@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PropertyCard } from "@/components/properties/property-card";
 import { ViewingRequestButton } from "@/components/properties/viewing-request-button";
 import { Badge } from "@/components/ui/badge";
@@ -1042,8 +1041,6 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute>
       <DashboardContent />
-    </ProtectedRoute>
   );
 }
