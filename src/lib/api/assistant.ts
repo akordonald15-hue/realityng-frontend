@@ -6,6 +6,16 @@ export type AIConversationStatus = "active" | "closed" | "archived";
 
 export type AIMessageRole = "user" | "assistant" | "system";
 
+export type AssistantProviderMode = "disabled" | "demo" | "anthropic";
+
+export type AssistantConfig = {
+  enabled: boolean;
+  provider_mode: AssistantProviderMode;
+  label: string;
+  supported_topics: string[];
+  suggested_prompts: string[];
+};
+
 export type SearchPropertiesResult = {
   result_count: number;
   results: Property[];
@@ -53,6 +63,10 @@ export type AIConversationDetail = AIConversation & {
 export type SendMessageResponse = {
   user_message: AIMessage;
   assistant_message: AIMessage;
+  provider_metadata?: {
+    provider: string;
+    mode: string;
+  };
 };
 
 export type AISearchResult = {
@@ -72,6 +86,30 @@ function mockConversation(overrides: Partial<AIConversation> = {}): AIConversati
     updated_at: new Date().toISOString(),
     ...overrides,
   };
+}
+
+export async function getAssistantConfig(): Promise<AssistantConfig> {
+  if (USE_MOCKS) {
+    return {
+      enabled: true,
+      provider_mode: "demo",
+      label: "RealityNG Demo Assistant",
+      supported_topics: [
+        "Property search guidance",
+        "Viewing request guidance",
+        "Rental application guidance",
+        "Verification guidance",
+        "Support and contact guidance",
+      ],
+      suggested_prompts: [
+        "Hello, what can you help me with?",
+        "How do I find properties in Lagos?",
+        "How do I request a viewing?",
+      ],
+    };
+  }
+  const response = await apiClient.get<AssistantConfig>("/assistant/config/");
+  return response.data;
 }
 
 function mockMessageId(prefix: string) {
@@ -129,6 +167,7 @@ export async function sendMessage({
         token_count: null,
         created_at: new Date().toISOString(),
       },
+      provider_metadata: { provider: "demo", mode: "demo" },
     };
   }
   const response = await apiClient.post<SendMessageResponse>(

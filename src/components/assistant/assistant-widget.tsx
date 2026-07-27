@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   createConversation,
+  getAssistantConfig,
   sendMessage,
   listConversations,
   getConversation,
@@ -28,6 +29,10 @@ export function AssistantWidget() {
   const [unavailable, setUnavailable] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const assistantConfig = useQuery({
+    queryKey: ["assistant-config"],
+    queryFn: getAssistantConfig,
+  });
   const conversationHistory = useQuery({
     queryKey: ["assistant-conversations"],
     queryFn: listConversations,
@@ -91,11 +96,17 @@ export function AssistantWidget() {
   });
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    if (typeof scrollRef.current?.scrollTo === "function") {
+      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight });
+    }
   }, [messages]);
 
   function handleOpen() {
     setIsOpen(true);
+    if (assistantConfig.data?.enabled === false) {
+      setUnavailable(true);
+      return;
+    }
     if (!conversationId && !ensureConversation.isPending) {
       ensureConversation.mutate();
     }
@@ -125,9 +136,16 @@ export function AssistantWidget() {
   return (
     <Card className="fixed bottom-4 left-4 right-4 z-50 flex h-[min(32rem,calc(100vh-2rem))] w-auto flex-col p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[22rem]">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <h2 className="font-heading text-sm font-semibold text-brand-text">
-          RealityNG Assistant
-        </h2>
+        <div>
+          <h2 className="font-heading text-sm font-semibold text-brand-text">
+            {assistantConfig.data?.label ?? "RealityNG Assistant"}
+          </h2>
+          {assistantConfig.data?.provider_mode === "demo" ? (
+            <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+              Guided demo mode
+            </p>
+          ) : null}
+        </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -187,11 +205,24 @@ export function AssistantWidget() {
           {messages.length === 0 && !ensureConversation.isPending && (
             <div className="space-y-2">
               <p className="text-sm text-brand-muted">
-                Ask me to find a property, compare listings, or answer questions
-                about RealityNG.
+                {assistantConfig.data?.provider_mode === "demo"
+                  ? "I can guide you through selected RealityNG workflows while live AI approval is pending."
+                  : "Ask me to find a property, compare listings, or answer questions about RealityNG."}
               </p>
+              {assistantConfig.data?.supported_topics?.length ? (
+                <div className="rounded-md border border-white/10 bg-white/5 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+                    Supported topics
+                  </p>
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-brand-muted">
+                    {assistantConfig.data.supported_topics.slice(0, 6).map((topic) => (
+                      <li key={topic}>{topic}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
               <div className="flex flex-wrap gap-2">
-                {SUGGESTED_PROMPTS.map((prompt) => (
+                {(assistantConfig.data?.suggested_prompts ?? SUGGESTED_PROMPTS).map((prompt) => (
                   <button
                     key={prompt}
                     type="button"
