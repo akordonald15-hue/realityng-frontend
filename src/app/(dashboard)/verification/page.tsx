@@ -90,7 +90,7 @@ export default function VerificationCenterPage() {
           ) : (
             <p className="text-sm text-brand-muted">
               No property verification requests yet. Start one from a
-              property's page.
+              property&apos;s page.
             </p>
           )}
         </section>

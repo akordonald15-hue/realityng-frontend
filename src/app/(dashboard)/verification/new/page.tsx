@@ -10,33 +10,66 @@ import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import {
   createVerificationRequest,
   type VerificationRequestPayload,
+  type VerificationType,
 } from "@/lib/api/verification";
 
-const verificationSchema = z.object({
-  verification_type: z.enum([
-    "agent",
-    "landlord",
-    "artisan",
-    "identity",
-    "property_ownership",
-    "property_listing",
-  ]),
-  business_name: z.string().min(2, "Business name is required."),
-  cac_registration_number: z
-    .string()
-    .min(2, "CAC registration number is required."),
-  trade_category: z.string().min(2, "Trade category is required."),
-  years_experience: z.coerce
-    .number()
-    .nonnegative("Years of experience cannot be negative."),
-  phone_number: z.string().min(7, "Enter a valid phone number."),
-  contact_address: z.string().min(5, "Contact address is required."),
-  city: z.string().min(1, "City is required."),
-});
+const verificationTypes: Array<{ value: VerificationType; label: string }> = [
+  { value: "agent", label: "Agent" },
+  { value: "landlord", label: "Landlord" },
+  { value: "artisan", label: "Artisan" },
+];
+
+const optionalText = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.string().trim().optional(),
+);
+
+const verificationSchema = z
+  .object({
+    verification_type: z.enum(["agent", "landlord", "artisan"]),
+    business_name: optionalText,
+    cac_registration_number: optionalText,
+    trade_category: optionalText,
+    years_experience: z.preprocess(
+      (value) => (value === "" || value === undefined ? undefined : Number(value)),
+      z.number().int().nonnegative("Years of experience cannot be negative.").optional(),
+    ),
+    phone_number: optionalText,
+    contact_address: optionalText,
+    city: optionalText,
+  })
+  .superRefine((values, context) => {
+    const requireText = (field: keyof VerificationFormValues, message: string) => {
+      if (!values[field]) {
+        context.addIssue({ code: "custom", path: [field], message });
+      }
+    };
+
+    requireText("phone_number", "Enter a valid phone number.");
+    requireText("contact_address", "Contact address is required.");
+    requireText("city", "City is required.");
+
+    if (values.verification_type === "agent") {
+      requireText("business_name", "Business or agency name is required.");
+      requireText("cac_registration_number", "CAC registration number is required.");
+    }
+
+    if (values.verification_type === "artisan") {
+      requireText("trade_category", "Trade category is required.");
+      if (values.years_experience === undefined) {
+        context.addIssue({
+          code: "custom",
+          path: ["years_experience"],
+          message: "Years of experience is required.",
+        });
+      }
+    }
+  });
 
 type VerificationFormValues = z.infer<typeof verificationSchema>;
 
@@ -45,9 +78,21 @@ export default function NewVerificationRequestPage() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<VerificationFormValues>({
     resolver: zodResolver(verificationSchema),
+    defaultValues: {
+      verification_type: "agent",
+      business_name: "",
+      cac_registration_number: "",
+      trade_category: "",
+      phone_number: "",
+      contact_address: "",
+      city: "",
+    },
   });
+
+  const verificationType = watch("verification_type");
 
   const mutation = useMutation({
     mutationFn: (values: VerificationRequestPayload) =>
@@ -72,28 +117,54 @@ export default function NewVerificationRequestPage() {
             </FormMessage>
 
             <div className="grid gap-4">
-              <TextField
-                label="Business name"
-                error={errors.business_name}
-                {...register("business_name")}
-              />
-              <TextField
-                label="CAC registration number"
-                error={errors.cac_registration_number}
-                {...register("cac_registration_number")}
-              />
-              <TextField
-                label="Trade category"
-                error={errors.trade_category}
-                {...register("trade_category")}
-              />
-              <TextField
-                label="Years of experience"
-                type="number"
-                min="0"
-                error={errors.years_experience}
-                {...register("years_experience")}
-              />
+              <label className="block text-sm font-medium text-brand-text">
+                Verification type
+                <Select className="mt-2" {...register("verification_type")}>
+                  {verificationTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </Select>
+                {errors.verification_type ? (
+                  <span className="mt-1 block text-sm text-red-300">
+                    {errors.verification_type.message}
+                  </span>
+                ) : null}
+              </label>
+
+              {verificationType === "agent" ? (
+                <>
+                  <TextField
+                    label="Business or agency name"
+                    error={errors.business_name}
+                    {...register("business_name")}
+                  />
+                  <TextField
+                    label="CAC registration number"
+                    error={errors.cac_registration_number}
+                    {...register("cac_registration_number")}
+                  />
+                </>
+              ) : null}
+
+              {verificationType === "artisan" ? (
+                <>
+                  <TextField
+                    label="Trade category"
+                    error={errors.trade_category}
+                    {...register("trade_category")}
+                  />
+                  <TextField
+                    label="Years of experience"
+                    type="number"
+                    min="0"
+                    error={errors.years_experience}
+                    {...register("years_experience")}
+                  />
+                </>
+              ) : null}
+
               <TextField
                 label="Phone number"
                 error={errors.phone_number}

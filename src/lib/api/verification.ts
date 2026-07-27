@@ -4,20 +4,17 @@ import type { VerificationStatus } from "@/components/verification/verification-
 export type VerificationType =
   | "agent"
   | "landlord"
-  | "artisan"
-  | "identity"
-  | "property_ownership"
-  | "property_listing";
+  | "artisan";
 
 export type VerificationRequestPayload = {
   verification_type: VerificationType;
-  business_name: string;
-  cac_registration_number: string;
-  trade_category: string;
-  years_experience: number;
-  phone_number: string;
-  contact_address: string;
-  city: string;
+  business_name?: string;
+  cac_registration_number?: string;
+  trade_category?: string;
+  years_experience?: number;
+  phone_number?: string;
+  contact_address?: string;
+  city?: string;
 };
 
 export type VerificationRequest = VerificationRequestPayload & {

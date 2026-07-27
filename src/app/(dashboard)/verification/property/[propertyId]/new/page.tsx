@@ -17,6 +17,10 @@ import {
   type VerificationDocumentType,
 } from "@/lib/api/property-verification";
 
+const MAX_EVIDENCE_FILE_SIZE = 10 * 1024 * 1024;
+const ACCEPTED_EVIDENCE_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+const ACCEPTED_EVIDENCE_EXTENSIONS = ".pdf,.jpg,.jpeg,.png";
+
 type EvidenceFiles = {
   ownership_evidence: File | null;
   location_evidence: File | null;
@@ -70,8 +74,12 @@ export default function NewPropertyVerificationPage() {
 
   const mutation = useMutation({
     mutationFn: async () => {
+      if (!propertyQuery.data?.id) {
+        throw new Error("Property details are not available yet.");
+      }
+
       const request = await createPropertyVerificationRequest({
-        property: propertySlug,
+        property: propertyQuery.data.id,
       });
 
       for (const field of EVIDENCE_FIELDS) {
@@ -106,6 +114,20 @@ export default function NewPropertyVerificationPage() {
     event: React.ChangeEvent<HTMLInputElement>
   ) {
     const file = event.target.files?.[0] ?? null;
+
+    if (file && !ACCEPTED_EVIDENCE_TYPES.includes(file.type)) {
+      setUploadError("Upload a PDF, JPG, or PNG evidence file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file && file.size > MAX_EVIDENCE_FILE_SIZE) {
+      setUploadError("Evidence files must be 10 MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+
+    setUploadError("");
     setFiles((prev) => ({ ...prev, [key]: file }));
   }
 
@@ -141,6 +163,7 @@ export default function NewPropertyVerificationPage() {
                   </p>
                   <input
                     type="file"
+                    accept={ACCEPTED_EVIDENCE_EXTENSIONS}
                     className="mt-2 block w-full text-sm"
                     onChange={(event) => handleFileChange(field.key, event)}
                   />

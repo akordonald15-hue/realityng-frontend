@@ -16,8 +16,9 @@ export type AdminVerificationAction =
   | "expire";
 
 export type AdminActionPayload = {
-  reason?: string;
-  note?: string;
+  rejection_reason?: string;
+  review_notes?: string;
+  expiry_date?: string | null;
 };
 
 export async function listAdminVerificationRequests(

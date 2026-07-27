@@ -15,6 +15,7 @@ import {
   listAdminPropertyVerifications,
   performVerificationAction,
   performPropertyVerificationAction,
+  type AdminActionPayload,
   type AdminVerificationAction,
 } from "@/lib/api/admin-verification";
 
@@ -69,9 +70,38 @@ export default function AdminVerificationsPage() {
 
   const isLoading = businessQuery.isLoading || propertyQuery.isLoading;
 
+  function getActionPayload(action: AdminVerificationAction): AdminActionPayload | null {
+    if (action === "reject") {
+      const reason = window.prompt("Enter the rejection reason.");
+      if (!reason?.trim()) return null;
+      return { rejection_reason: reason.trim(), review_notes: reason.trim() };
+    }
+
+    if (action === "request-info") {
+      const note = window.prompt("Enter the information needed from the submitter.");
+      if (!note?.trim()) return null;
+      return { rejection_reason: note.trim(), review_notes: note.trim() };
+    }
+
+    if (action === "suspend" || action === "expire") {
+      const note = window.prompt("Optional review note.");
+      if (note === null) return null;
+      return note.trim() ? { review_notes: note.trim() } : {};
+    }
+
+    return {};
+  }
+
   const businessMutation = useMutation({
-    mutationFn: ({ id, action }: { id: string; action: AdminVerificationAction }) =>
-      performVerificationAction(id, action),
+    mutationFn: ({
+      id,
+      action,
+      payload,
+    }: {
+      id: string;
+      action: AdminVerificationAction;
+      payload: AdminActionPayload;
+    }) => performVerificationAction(id, action, payload),
     onMutate: ({ id, action }) => {
       setActionError("");
       setPendingId(id);
@@ -86,8 +116,15 @@ export default function AdminVerificationsPage() {
   });
 
   const propertyMutation = useMutation({
-    mutationFn: ({ id, action }: { id: string; action: AdminVerificationAction }) =>
-      performPropertyVerificationAction(id, action),
+    mutationFn: ({
+      id,
+      action,
+      payload,
+    }: {
+      id: string;
+      action: AdminVerificationAction;
+      payload: AdminActionPayload;
+    }) => performPropertyVerificationAction(id, action, payload),
     onMutate: ({ id, action }) => {
       setActionError("");
       setPendingId(id);
@@ -132,7 +169,11 @@ export default function AdminVerificationsPage() {
                   </p>
                   <ActionButtons
                     pendingAction={pendingId === request.id ? pendingAction : null}
-                    onAction={(action) => businessMutation.mutate({ id: request.id, action })}
+                    onAction={(action) => {
+                      const payload = getActionPayload(action);
+                      if (payload === null) return;
+                      businessMutation.mutate({ id: request.id, action, payload });
+                    }}
                   />
                 </Card>
               ))}
@@ -157,7 +198,11 @@ export default function AdminVerificationsPage() {
                   </div>
                   <ActionButtons
                     pendingAction={pendingId === verification.id ? pendingAction : null}
-                    onAction={(action) => propertyMutation.mutate({ id: verification.id, action })}
+                    onAction={(action) => {
+                      const payload = getActionPayload(action);
+                      if (payload === null) return;
+                      propertyMutation.mutate({ id: verification.id, action, payload });
+                    }}
                   />
                 </Card>
               ))}
