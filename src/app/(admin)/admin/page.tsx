@@ -177,7 +177,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-brand-background text-brand-text">
       <Navbar />
-      <ProtectedRoute>
+      <ProtectedRoute requireAdmin>
         <AdminContent />
       </ProtectedRoute>
       <Footer />
