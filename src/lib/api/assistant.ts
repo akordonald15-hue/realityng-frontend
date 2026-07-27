@@ -74,6 +74,10 @@ function mockConversation(overrides: Partial<AIConversation> = {}): AIConversati
   };
 }
 
+function mockMessageId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export async function listConversations(): Promise<AIConversation[]> {
   if (USE_MOCKS) {
     return [mockConversation()];
@@ -108,7 +112,7 @@ export async function sendMessage({
   if (USE_MOCKS) {
     return {
       user_message: {
-        id: "mock-user-msg",
+        id: mockMessageId("mock-user-msg"),
         role: "user",
         content,
         tool_calls: null,
@@ -117,7 +121,7 @@ export async function sendMessage({
         created_at: new Date().toISOString(),
       },
       assistant_message: {
-        id: "mock-assistant-msg",
+        id: mockMessageId("mock-assistant-msg"),
         role: "assistant",
         content: "This is a mocked assistant reply.",
         tool_calls: null,

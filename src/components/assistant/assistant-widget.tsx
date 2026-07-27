@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,10 @@ import {
 } from "@/lib/api/assistant";
 import { ToolResultCards } from "@/components/assistant/result-cards";
 
+function createMockId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export function AssistantWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -23,7 +27,6 @@ export function AssistantWidget() {
   const [draft, setDraft] = useState("");
   const [unavailable, setUnavailable] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const queryClient = useQueryClient();
   const [showHistory, setShowHistory] = useState(false);
   const conversationHistory = useQuery({
     queryKey: ["assistant-conversations"],
@@ -42,12 +45,20 @@ export function AssistantWidget() {
     setConversationId(null);
     setMessages([]);
     setShowHistory(false);
+    setUnavailable(false);
+    if (!ensureConversation.isPending) {
+      ensureConversation.mutate();
+    }
   }
 
   const ensureConversation = useMutation({
     mutationFn: createConversation,
     onSuccess: (conversation) => {
       setConversationId(conversation.id);
+      setUnavailable(false);
+    },
+    onError: () => {
+      setUnavailable(true);
     },
   });
 
@@ -55,7 +66,7 @@ export function AssistantWidget() {
     mutationFn: sendMessage,
     onMutate: async ({ content }) => {
       const optimisticUserMessage: AIMessage = {
-        id: `optimistic-${Date.now()}`,
+        id: createMockId("optimistic"),
         role: "user",
         content,
         tool_calls: null,
@@ -112,7 +123,7 @@ export function AssistantWidget() {
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 z-50 flex h-[32rem] w-[22rem] flex-col p-0">
+    <Card className="fixed bottom-4 left-4 right-4 z-50 flex h-[min(32rem,calc(100vh-2rem))] w-auto flex-col p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[22rem]">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
         <h2 className="font-heading text-sm font-semibold text-brand-text">
           RealityNG Assistant
@@ -147,10 +158,10 @@ export function AssistantWidget() {
             New Conversation
           </button>
           {conversationHistory.isLoading && (
-            <p className="text-sm text-brand-muted">Loading conversations…</p>
+            <p className="text-sm text-brand-muted">Loading conversations...</p>
           )}
           {conversationHistory.isError && (
-            <p className="text-sm text-brand-muted">Couldn't load conversation history.</p>
+            <p className="text-sm text-brand-muted">Could not load conversation history.</p>
           )}
           {conversationHistory.data?.length === 0 && (
             <p className="text-sm text-brand-muted">No previous conversations yet.</p>
@@ -164,7 +175,7 @@ export function AssistantWidget() {
             >
               <div className="truncate">{conversation.title ?? "Untitled conversation"}</div>
               <div className="text-xs text-brand-muted">
-                {new Date(conversation.updated_at).toLocaleString()} · {conversation.status}
+                {new Date(conversation.updated_at).toLocaleString()} - {conversation.status}
               </div>
             </button>
           ))}
@@ -172,50 +183,50 @@ export function AssistantWidget() {
       )}
 
       {!showHistory && (
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
-        {messages.length === 0 && !ensureConversation.isPending && (
-          <div className="space-y-2">
-            <p className="text-sm text-brand-muted">
-              Ask me to find a property, compare listings, or answer questions
-              about RealityNG.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {SUGGESTED_PROMPTS.map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  onClick={() => setDraft(prompt)}
-                  className="rounded-md border border-brand-secondary/70 bg-transparent px-3 py-1.5 text-xs text-brand-secondary transition hover:bg-brand-secondary/10"
-                >
-                  {prompt}
-                </button>
-              ))}
+        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+          {messages.length === 0 && !ensureConversation.isPending && (
+            <div className="space-y-2">
+              <p className="text-sm text-brand-muted">
+                Ask me to find a property, compare listings, or answer questions
+                about RealityNG.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {SUGGESTED_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => setDraft(prompt)}
+                    className="rounded-md border border-brand-secondary/70 bg-transparent px-3 py-1.5 text-xs text-brand-secondary transition hover:bg-brand-secondary/10"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {ensureConversation.isPending && (
-          <p className="text-sm text-brand-muted">Starting conversation…</p>
-        )}
+          {ensureConversation.isPending && (
+            <p className="text-sm text-brand-muted">Starting conversation...</p>
+          )}
 
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
+          {messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
 
-        {send.isPending && (
-          <p className="text-sm text-brand-muted">Thinking…</p>
-        )}
+          {send.isPending && (
+            <p className="text-sm text-brand-muted">Thinking...</p>
+          )}
 
-        {unavailable && (
-          <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-brand-muted">
-            The assistant is temporarily unavailable.{" "}
-            <a href="/properties" className="text-brand-secondary underline">
-              Use standard search instead
-            </a>
-            .
-          </div>
-        )}
-      </div>
+          {unavailable && (
+            <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-brand-muted">
+              The assistant is temporarily unavailable.{" "}
+              <a href="/properties" className="text-brand-secondary underline">
+                Use standard search instead
+              </a>
+              .
+            </div>
+          )}
+        </div>
 
       )}
       <div className="flex items-center gap-2 border-t border-white/10 p-3">
@@ -228,7 +239,7 @@ export function AssistantWidget() {
               handleSend();
             }
           }}
-          placeholder="Ask about a property…"
+          placeholder="Ask about a property..."
           disabled={!conversationId || send.isPending}
           className="flex-1"
         />
