@@ -52,7 +52,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/95 shadow-[0_10px_40px_rgba(0,0,0,0.14)] backdrop-blur">
-      <nav className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-5 py-2 sm:px-6 lg:min-h-[4.75rem]">
+      <nav className="flex min-h-16 w-full items-center justify-between gap-4 px-3 py-2 sm:px-4 lg:min-h-[4.75rem]">
         <Link aria-label="RealityNG home" className="hidden shrink-0 items-center lg:flex" href="/">
           <BrandLogo
             className="h-12 w-auto object-contain xl:h-14"
@@ -68,7 +68,7 @@ export function Navbar() {
             showTagline={false}
           />
         </Link>
-        <div className="hidden items-center gap-4 text-sm font-semibold text-brand-muted lg:flex xl:gap-5">
+        <div className="hidden flex-1 items-center justify-center gap-5 text-sm font-semibold text-brand-muted lg:flex xl:gap-7">
           {marketplaceLinks.map((link) => (
             <Link
               className="rounded-sm py-2 transition hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
@@ -102,7 +102,7 @@ export function Navbar() {
             </div>
           </details>
         </div>
-        <div className="hidden items-center gap-4 text-sm font-medium text-brand-muted lg:flex">
+        <div className="hidden min-w-[8.75rem] items-center justify-end gap-4 text-sm font-medium text-brand-muted lg:flex">
           {!isLoading && isAuthenticated ? (
             <>
               {protectedAccountLinks.slice(0, 1).map((link) => (
@@ -141,7 +141,7 @@ export function Navbar() {
             </>
           ) : (
             <Link
-              className="rounded-full bg-brand-secondary px-5 py-2.5 text-sm font-semibold text-brand-background shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition hover:bg-brand-lightGold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background"
+              className="rounded-full bg-brand-secondary px-5 py-2.5 text-sm font-semibold text-brand-background shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition hover:bg-brand-lightGold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background xl:px-6"
               href="/auth/sign-in"
             >
               Join / Sign in
@@ -167,10 +167,10 @@ export function Navbar() {
         </div>
       </nav>
       <div
-        className={isOpen ? "border-t border-white/10 px-5 py-4 lg:hidden" : "hidden"}
+        className={isOpen ? "border-t border-white/10 px-3 py-4 sm:px-4 lg:hidden" : "hidden"}
         id="mobile-navigation"
       >
-        <div className="mx-auto grid max-w-7xl gap-2 text-sm font-medium">
+        <div className="grid w-full gap-2 text-sm font-medium">
           <Link
             className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
             href="/"
