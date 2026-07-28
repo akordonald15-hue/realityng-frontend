@@ -29,3 +29,209 @@ a {
   background: #d4a017;
   color: #081c15;
 }
+
+.assistant-orb {
+  transform: translateZ(0);
+  filter: drop-shadow(0 0 22px rgba(88, 213, 255, 0.45));
+  animation: assistant-orb-float 5.8s ease-in-out infinite;
+}
+
+.assistant-orb-core {
+  position: absolute;
+  inset: 13%;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.95) 0 10%, transparent 24%),
+    radial-gradient(circle at 62% 68%, rgba(37, 204, 255, 0.95) 0 14%, transparent 39%),
+    radial-gradient(circle at 50% 50%, #f8fdff 0 9%, #8fe8ff 28%, #36baf1 55%, #102f48 100%);
+  box-shadow:
+    inset 0 0 18px rgba(255, 255, 255, 0.82),
+    inset -8px -10px 24px rgba(5, 26, 48, 0.62),
+    0 0 28px rgba(97, 219, 255, 0.76),
+    0 0 58px rgba(201, 154, 61, 0.18);
+}
+
+.assistant-orb-halo {
+  position: absolute;
+  inset: -23%;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle, rgba(185, 244, 255, 0.18), rgba(50, 201, 255, 0.1) 34%, transparent 67%),
+    conic-gradient(from 110deg, transparent, rgba(102, 224, 255, 0.4), transparent, rgba(255, 255, 255, 0.22), transparent);
+  opacity: 0.74;
+  animation: assistant-orb-halo 8s linear infinite;
+}
+
+.assistant-orb-ripple {
+  position: absolute;
+  inset: -16%;
+  border: 1px solid rgba(155, 235, 255, 0.42);
+  border-radius: 9999px;
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+.assistant-orb-particle {
+  position: absolute;
+  height: 0.23rem;
+  width: 0.23rem;
+  border-radius: 9999px;
+  background: rgba(220, 250, 255, 0.9);
+  box-shadow: 0 0 10px rgba(125, 231, 255, 0.85);
+  opacity: 0.75;
+}
+
+.assistant-orb-particle-one {
+  right: 6%;
+  top: 17%;
+  animation: assistant-orb-particle-one 4.8s ease-in-out infinite;
+}
+
+.assistant-orb-particle-two {
+  bottom: 12%;
+  left: 9%;
+  animation: assistant-orb-particle-two 5.7s ease-in-out infinite;
+}
+
+.assistant-orb-particle-three {
+  right: 18%;
+  bottom: 3%;
+  animation: assistant-orb-particle-three 6.2s ease-in-out infinite;
+}
+
+.assistant-orb-idle .assistant-orb-core {
+  animation: assistant-orb-pulse 4.8s ease-in-out infinite;
+}
+
+.assistant-orb-speaking .assistant-orb-core {
+  animation: assistant-orb-speaking 1.45s ease-in-out infinite;
+  box-shadow:
+    inset 0 0 22px rgba(255, 255, 255, 0.9),
+    inset -8px -10px 24px rgba(5, 26, 48, 0.58),
+    0 0 36px rgba(126, 233, 255, 0.92),
+    0 0 74px rgba(201, 154, 61, 0.24);
+}
+
+.assistant-orb-listening .assistant-orb-ripple {
+  animation: assistant-orb-listen-ripple 1.8s ease-out infinite;
+}
+
+.assistant-orb-listening .assistant-orb-halo {
+  opacity: 0.92;
+}
+
+.assistant-glass-panel {
+  border: 1px solid rgba(185, 244, 255, 0.2);
+  background:
+    linear-gradient(145deg, rgba(9, 34, 47, 0.84), rgba(6, 39, 31, 0.78)),
+    radial-gradient(circle at top right, rgba(66, 208, 255, 0.18), transparent 36%);
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34), 0 0 38px rgba(75, 210, 255, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.assistant-fade-scale {
+  animation: assistant-fade-scale 480ms ease-out both;
+}
+
+@keyframes assistant-fade-scale {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes assistant-orb-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -7px, 0);
+  }
+}
+
+@keyframes assistant-orb-pulse {
+  0%,
+  82%,
+  100% {
+    transform: scale(1);
+  }
+  90% {
+    transform: scale(1.045);
+  }
+}
+
+@keyframes assistant-orb-speaking {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.075);
+  }
+  68% {
+    transform: scale(0.965);
+  }
+}
+
+@keyframes assistant-orb-listen-ripple {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.78);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes assistant-orb-halo {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes assistant-orb-particle-one {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-8px, 9px, 0);
+  }
+}
+
+@keyframes assistant-orb-particle-two {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(10px, -7px, 0);
+  }
+}
+
+@keyframes assistant-orb-particle-three {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(6px, 8px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-fade-scale,
+  .assistant-orb,
+  .assistant-orb-core,
+  .assistant-orb-halo,
+  .assistant-orb-ripple,
+  .assistant-orb-particle {
+    animation: none !important;
+  }
+}

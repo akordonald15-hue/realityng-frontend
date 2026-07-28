@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -102,7 +102,8 @@ describe("AssistantWidget", () => {
 
     expect(api.sendMessage).toHaveBeenCalledTimes(1);
 
-    resolveSend({
+    await act(async () => {
+      resolveSend({
       user_message: {
         id: "user-message-1",
         role: "user",
@@ -121,6 +122,7 @@ describe("AssistantWidget", () => {
         token_count: null,
         created_at: "2026-07-27T00:00:02Z",
       },
+      });
     });
   });
 });

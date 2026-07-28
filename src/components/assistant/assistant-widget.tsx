@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
+import { AssistantOrb } from "@/components/assistant/assistant-orb";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ export function AssistantWidget() {
   const [unavailable, setUnavailable] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const assistantConfig = useQuery({
     queryKey: ["assistant-config"],
     queryFn: getAssistantConfig,
@@ -125,26 +127,32 @@ export function AssistantWidget() {
       <button
         type="button"
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-secondary text-brand-background shadow-glow transition hover:bg-[#e4b12b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2"
+        className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background"
         aria-label="Open RealityNG assistant"
       >
-        <ChatIcon />
+        <AssistantOrb state="idle" size="md" />
       </button>
     );
   }
 
   return (
-    <Card className="fixed bottom-4 left-4 right-4 z-50 flex h-[min(32rem,calc(100vh-2rem))] w-auto flex-col p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[22rem]">
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <div>
-          <h2 className="font-heading text-sm font-semibold text-brand-text">
-            {assistantConfig.data?.label ?? "RealityNG Assistant"}
-          </h2>
-          {assistantConfig.data?.provider_mode === "demo" ? (
-            <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-brand-secondary">
-              Guided demo mode
-            </p>
-          ) : null}
+    <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex h-[min(32rem,calc(100vh-2rem))] w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]">
+      <div className="flex items-center justify-between border-b border-cyan-100/10 bg-white/5 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <AssistantOrb
+            state={send.isPending ? "speaking" : isInputFocused ? "listening" : "idle"}
+            size="sm"
+          />
+          <div>
+            <h2 className="font-heading text-sm font-semibold text-brand-text">
+              {assistantConfig.data?.label ?? "RealityNG Assistant"}
+            </h2>
+            {assistantConfig.data?.provider_mode === "demo" ? (
+              <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+                Guided demo mode
+              </p>
+            ) : null}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -263,7 +271,9 @@ export function AssistantWidget() {
       <div className="flex items-center gap-2 border-t border-white/10 p-3">
         <Input
           value={draft}
+          onBlur={() => setIsInputFocused(false)}
           onChange={(e) => setDraft(e.target.value)}
+          onFocus={() => setIsInputFocused(true)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -327,25 +337,6 @@ function HistoryIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  );
-}
-
-function ChatIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      className="h-6 w-6"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.5 0-2.91-.32-4.14-.89L3 20l1.06-3.18C3.39 15.66 3 14.36 3 13c0-4.418 4.03-8 9-8s9 3.582 9 7.99Z"
       />
     </svg>
   );

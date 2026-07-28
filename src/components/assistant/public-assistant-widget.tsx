@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { AssistantOrb } from "@/components/assistant/assistant-orb";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -74,16 +75,22 @@ function publicAssistantReply(input: string, isAuthenticated: boolean) {
 
 export function PublicAssistantWidget() {
   const auth = useOptionalAuth();
-  const [isOpen, setIsOpen] = useState(true);
+  const [hasAppeared, setHasAppeared] = useState(false);
+  const [showGreeting, setShowGreeting] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isResponding, setIsResponding] = useState(false);
   const [messages, setMessages] = useState<PublicMessage[]>([
     {
       id: "intro",
       role: "assistant",
       content:
-        "Hi, I am RealityNG AI. I can walk you through the platform, explain how search works, and guide you to the right next step. How can I help you?",
+        "Welcome to RealityNG. I'm your AI property assistant. I can help you find verified properties, answer your questions, guide you through buying or renting, and make navigating the platform easier.",
     },
   ]);
+  const hasInteractedRef = useRef(false);
+  const responseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isAuthenticated = Boolean(auth?.isAuthenticated);
   const helperText = useMemo(
     () =>
@@ -92,11 +99,45 @@ export function PublicAssistantWidget() {
         : "Public walkthrough. No account required.",
     [isAuthenticated],
   );
+  const orbState = isResponding
+    ? "speaking"
+    : isInputFocused || isOpen
+      ? "listening"
+      : showGreeting
+        ? "speaking"
+        : "idle";
+
+  useEffect(() => {
+    const appearTimer = setTimeout(() => {
+      setHasAppeared(true);
+      setShowGreeting(true);
+    }, 1400);
+    const minimizeTimer = setTimeout(() => {
+      if (!hasInteractedRef.current) {
+        setShowGreeting(false);
+      }
+    }, 9500);
+
+    return () => {
+      clearTimeout(appearTimer);
+      clearTimeout(minimizeTimer);
+      if (responseTimerRef.current) {
+        clearTimeout(responseTimerRef.current);
+      }
+    };
+  }, []);
 
   function submitMessage(content: string) {
     const value = content.trim();
     if (!value) return;
 
+    hasInteractedRef.current = true;
+    setShowGreeting(false);
+    setIsResponding(true);
+    if (responseTimerRef.current) {
+      clearTimeout(responseTimerRef.current);
+    }
+    responseTimerRef.current = setTimeout(() => setIsResponding(false), 1200);
     setMessages((previous) => [
       ...previous,
       { id: createMessageId("user"), role: "user", content: value },
@@ -109,31 +150,55 @@ export function PublicAssistantWidget() {
     setDraft("");
   }
 
+  function openAssistant() {
+    hasInteractedRef.current = true;
+    setShowGreeting(false);
+    setIsOpen(true);
+  }
+
   if (!isOpen) {
     return (
-      <button
-        aria-label="Open RealityNG AI"
-        className="fixed bottom-5 right-5 z-50 rounded-full bg-brand-secondary px-4 py-3 text-sm font-semibold text-brand-background shadow-glow transition hover:bg-brand-lightGold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background"
-        onClick={() => setIsOpen(true)}
-        type="button"
+      <div
+        className={
+          hasAppeared
+            ? "pointer-events-none fixed bottom-5 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-end gap-3 sm:right-6"
+            : "hidden"
+        }
       >
-        RealityNG AI
-      </button>
+        {showGreeting ? (
+          <div className="assistant-fade-scale assistant-glass-panel pointer-events-auto max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-brand-text shadow-2xl sm:max-w-xs">
+            <p className="font-semibold text-cyan-100">RealityNG AI</p>
+            <p className="mt-2 text-brand-muted">{messages[0].content}</p>
+          </div>
+        ) : null}
+        <button
+          aria-label="Open RealityNG AI"
+          className="assistant-fade-scale pointer-events-auto group relative flex h-16 w-16 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background sm:h-[4.5rem] sm:w-[4.5rem]"
+          onClick={openAssistant}
+          type="button"
+        >
+          <AssistantOrb state={orbState} size="md" />
+          <span className="sr-only">RealityNG AI</span>
+        </button>
+      </div>
     );
   }
 
   return (
-    <Card className="fixed bottom-4 left-4 right-4 z-50 flex max-h-[min(34rem,calc(100svh-2rem))] flex-col overflow-hidden p-0 shadow-2xl sm:left-auto sm:right-6 sm:w-[23rem]">
-      <div className="flex items-start justify-between gap-3 border-b border-white/10 bg-brand-background/80 px-4 py-3">
-        <div>
-          <h2 className="font-heading text-lg font-semibold text-brand-text">RealityNG AI</h2>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-secondary">
-            {helperText}
-          </p>
+    <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex max-h-[min(35rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-2xl p-0 shadow-2xl sm:left-auto sm:right-6 sm:w-[24rem]">
+      <div className="flex items-start justify-between gap-3 border-b border-cyan-100/10 bg-white/5 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <AssistantOrb state={orbState} size="sm" />
+          <div>
+            <h2 className="font-heading text-lg font-semibold text-brand-text">RealityNG AI</h2>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+              {helperText}
+            </p>
+          </div>
         </div>
         <button
           aria-label="Close RealityNG AI"
-          className="rounded-md px-2 py-1 text-brand-muted transition hover:bg-white/10 hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
+          className="rounded-md px-2 py-1 text-brand-muted transition hover:bg-white/10 hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
           onClick={() => setIsOpen(false)}
           type="button"
         >
@@ -151,7 +216,7 @@ export function PublicAssistantWidget() {
               className={
                 message.role === "user"
                   ? "max-w-[86%] rounded-md bg-brand-secondary px-3 py-2 text-sm leading-6 text-brand-background"
-                  : "max-w-[92%] rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm leading-6 text-brand-muted"
+                  : "max-w-[92%] rounded-md border border-cyan-100/10 bg-white/5 px-3 py-2 text-sm leading-6 text-brand-muted"
               }
             >
               {message.content}
@@ -195,7 +260,9 @@ export function PublicAssistantWidget() {
         <Input
           aria-label="Ask RealityNG AI"
           className="flex-1"
+          onBlur={() => setIsInputFocused(false)}
           onChange={(event) => setDraft(event.target.value)}
+          onFocus={() => setIsInputFocused(true)}
           placeholder="Ask how RealityNG works..."
           value={draft}
         />

@@ -80,7 +80,6 @@ describe("HomePage", () => {
     expect(await screen.findByText("Approved Lekki Apartment")).toBeInTheDocument();
     expect(document.querySelector("#realityng-organization-jsonld")).toBeInTheDocument();
     expect(document.querySelector("#realityng-website-jsonld")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "RealityNG AI" })).toBeInTheDocument();
   });
 
   it("builds a supported property-search URL from the hero form", async () => {
