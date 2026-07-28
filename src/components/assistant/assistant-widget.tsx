@@ -127,7 +127,7 @@ export function AssistantWidget() {
       <button
         type="button"
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background"
+        className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lightGold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background"
         aria-label="Open RealityNG assistant"
       >
         <AssistantOrb state="idle" size="md" />
@@ -137,7 +137,7 @@ export function AssistantWidget() {
 
   return (
     <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex h-[min(32rem,calc(100vh-2rem))] w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]">
-      <div className="flex items-center justify-between border-b border-cyan-100/10 bg-white/5 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-brand-secondary/20 bg-white/5 px-4 py-3">
         <div className="flex items-center gap-3">
           <AssistantOrb
             state={send.isPending ? "speaking" : isInputFocused ? "listening" : "idle"}
