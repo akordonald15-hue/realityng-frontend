@@ -359,14 +359,18 @@ export default function HomePage() {
                 <p className="text-sm leading-6 text-[#52675f]">{activeGoal.helper}</p>
               </div>
 
-              <div className="mt-5 flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Property goals">
+              <div
+                className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:flex xl:flex-wrap"
+                role="tablist"
+                aria-label="Property goals"
+              >
                 {searchGoals.map((goal) => (
                   <button
                     aria-selected={activeGoal.label === goal.label}
                     className={
                       activeGoal.label === goal.label
-                        ? "shrink-0 rounded-md bg-brand-primary px-4 py-2 text-sm font-semibold text-white"
-                        : "shrink-0 rounded-md border border-black/10 px-4 py-2 text-sm font-semibold text-brand-main transition hover:border-brand-secondary hover:text-brand-primary"
+                        ? "min-h-11 rounded-md bg-brand-primary px-3 py-2 text-sm font-semibold text-white xl:w-auto"
+                        : "min-h-11 rounded-md border border-black/10 px-3 py-2 text-sm font-semibold text-brand-main transition hover:border-brand-secondary hover:text-brand-primary xl:w-auto"
                     }
                     key={goal.label}
                     onClick={() => setActiveGoal(goal)}
