@@ -55,15 +55,18 @@ describe("DashboardPage", () => {
 
     renderWithQueryClient(<DashboardPage />);
 
-    expect(await screen.findByText("Saved properties")).toBeInTheDocument();
+    expect(await screen.findByText("Buyer and tenant workspace")).toBeInTheDocument();
+    expect(screen.getByText("Your property journey")).toBeInTheDocument();
+    expect(screen.getByText("Continue where you left off")).toBeInTheDocument();
+    expect((await screen.findAllByText("2")).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Saved properties").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recently viewed").length).toBeGreaterThan(0);
     expect(screen.getAllByText("My inquiries").length).toBeGreaterThan(0);
     expect(screen.getByText("My viewings")).toBeInTheDocument();
     expect(screen.getByText("My applications")).toBeInTheDocument();
-    expect(screen.getByText("View saved properties")).toBeInTheDocument();
-    expect(screen.getByText("Browse properties")).toBeInTheDocument();
-    expect(screen.getByText("Edit profile")).toBeInTheDocument();
-    expect(await screen.findByText("2")).toBeInTheDocument();
+    expect(screen.getAllByText("Search properties").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Verification centre").length).toBeGreaterThan(0);
+    expect(screen.getByText("Profile and contact")).toBeInTheDocument();
     expect(screen.getByText("8")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
   });

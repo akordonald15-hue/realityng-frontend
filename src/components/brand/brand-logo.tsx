@@ -14,7 +14,7 @@ export function BrandLogo({
   className,
   showTagline = false,
   taglineClassName,
-  tagline = "Where Dreams Find An Address",
+  tagline = "Where Dreams Find an Address",
   priority = false,
 }: BrandLogoProps) {
   const isFull = variant === "full";

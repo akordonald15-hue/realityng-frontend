@@ -3,7 +3,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { SignUpPrompt } from "@/components/auth/sign-up-prompt";
 import { RoleSelectionProvider } from "@/components/auth/role-selection-modal";
 import { BrandSplash } from "@/components/brand/brand-splash";
 import { CompareTray } from "@/components/properties/compare-tray";
@@ -32,7 +31,6 @@ export function AppProviders({ children }: Readonly<{ children: React.ReactNode 
             <BrandSplash />
             {children}
             <CompareTray />
-            <SignUpPrompt />
           </CompareProvider>
         </RoleSelectionProvider>
       </AuthProvider>

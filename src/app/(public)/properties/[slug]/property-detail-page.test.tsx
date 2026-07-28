@@ -18,7 +18,7 @@ vi.mock("@/lib/api/properties", async () => {
 });
 
 describe("PropertyDetailPage", () => {
-  it("renders gallery, price, details, amenities, and show interest action", async () => {
+  it("renders gallery, price, trust details, representative, and conversion actions", async () => {
     mocks.getPublicProperty.mockResolvedValue({
       id: "property-1",
       title: "Approved Lekki Apartment",
@@ -62,9 +62,17 @@ describe("PropertyDetailPage", () => {
       await screen.findByRole("heading", { name: "Approved Lekki Apartment" }),
     ).toBeInTheDocument();
     expect(screen.getByText(/2,500,000/)).toBeInTheDocument();
-    expect(screen.getByText("Property details")).toBeInTheDocument();
-    expect(screen.getByText("Amenities")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "About this property" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Amenities and utilities" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Trust signals and current limitations" }))
+      .toBeInTheDocument();
+    expect(screen.getByText("Public approval")).toBeInTheDocument();
+    expect(screen.getByText("Safety and reporting")).toBeInTheDocument();
     expect(screen.getByText("Tunde Balogun")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show interest" })).toBeInTheDocument();
+    expect(screen.getAllByText("Apply for this property")[0]).toBeInTheDocument();
+    const jsonLd = document.querySelector("#realityng-property-jsonld");
+    expect(jsonLd).toBeInTheDocument();
+    expect(jsonLd?.textContent).toContain("Approved Lekki Apartment");
   });
 });

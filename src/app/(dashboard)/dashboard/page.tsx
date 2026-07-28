@@ -40,7 +40,7 @@ import {
   type ViewingDecisionPayload,
 } from "@/lib/api/viewings";
 import type { ActivityItem, TransactionItem } from "@/lib/api/workflow";
-import { isApprovedProfessional } from "@/lib/auth/permissions";
+import { isAdmin, isApprovedProfessional } from "@/lib/auth/permissions";
 import { useAuth } from "@/providers/auth-provider";
 
 const dashboardLinks = [
@@ -63,6 +63,61 @@ const dashboardLinks = [
     href: "/settings/profile",
     title: "Edit profile",
     description: "Keep contact and identity details current for property workflows.",
+  },
+];
+
+const buyerActionLinks = [
+  {
+    href: "/properties",
+    title: "Search properties",
+    description: "Browse approved homes, land, shortlets, and commercial listings.",
+  },
+  {
+    href: "/saved-properties",
+    title: "Saved properties",
+    description: "Continue reviewing properties you shortlisted while browsing.",
+  },
+  {
+    href: "/verification",
+    title: "Verification centre",
+    description: "Start or review identity and trust verification where required.",
+  },
+  {
+    href: "/settings/profile",
+    title: "Profile and contact",
+    description: "Keep your details current for inquiries, viewings, and applications.",
+  },
+];
+
+const supplyActionLinks = [
+  ...dashboardLinks,
+  {
+    href: "/verification",
+    title: "Verification centre",
+    description: "Manage professional, ownership, or listing verification requests.",
+  },
+];
+
+const adminActionLinks = [
+  {
+    href: "/admin",
+    title: "Admin workspace",
+    description: "Review platform operations, queues, and moderation tasks.",
+  },
+  {
+    href: "/admin/verifications",
+    title: "Verification queue",
+    description: "Inspect private documents and approve or reject verification requests.",
+  },
+  {
+    href: "/properties",
+    title: "Public marketplace",
+    description: "Check the live browsing experience for approved properties.",
+  },
+  {
+    href: "/dashboard",
+    title: "Transaction centre",
+    description: "Monitor workflow activity across inquiries, viewings, and applications.",
   },
 ];
 
@@ -831,6 +886,151 @@ function ReceivedApplicationsManager({ applications }: { applications: RentalApp
   );
 }
 
+function metricValue(
+  metrics: { label: string; value: string }[] | undefined,
+  labels: string | string[],
+) {
+  const labelSet = new Set((Array.isArray(labels) ? labels : [labels]).map((label) => label.toLowerCase()));
+  return metrics?.find((metric) => labelSet.has(metric.label.toLowerCase()))?.value ?? "0";
+}
+
+function SectionHeader({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow?: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="max-w-3xl">
+      {eyebrow ? (
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-secondary">
+          {eyebrow}
+        </p>
+      ) : null}
+      <h2 className="mt-2 font-heading text-2xl font-semibold text-brand-text">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-brand-muted">{description}</p>
+    </div>
+  );
+}
+
+function MetricGrid({
+  isLoading,
+  metrics,
+}: {
+  isLoading: boolean;
+  metrics: { label: string; value: string; detail: string }[];
+}) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {metrics.map((item) => (
+        <Card className="p-5" key={item.label}>
+          <p className="text-sm text-brand-muted">{item.label}</p>
+          <p className="mt-3 font-heading text-4xl font-semibold text-brand-secondary">
+            {isLoading ? "-" : item.value}
+          </p>
+          <p className="mt-2 text-xs leading-5 text-brand-muted">{item.detail}</p>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function ActionGrid({
+  actions,
+}: {
+  actions: { href: string; title: string; description: string }[];
+}) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {actions.map((item) => (
+        <Link className="group block focus:outline-none" href={item.href} key={item.href}>
+          <Card className="h-full p-5 transition group-hover:border-brand-secondary/60 group-focus-visible:ring-2 group-focus-visible:ring-brand-secondary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-brand-background">
+            <h3 className="text-base font-semibold text-brand-text">{item.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-brand-muted">{item.description}</p>
+          </Card>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function BuyerJourneySummary({
+  metrics,
+  variant = "buyer",
+}: {
+  metrics: { label: string; value: string; detail: string }[] | undefined;
+  variant?: "buyer" | "supply";
+}) {
+  const stages =
+    variant === "supply"
+      ? [
+          {
+            label: "Listings",
+            value: metricValue(metrics, "Active listings"),
+            description: "Approved listings visible in the marketplace.",
+          },
+          {
+            label: "Leads",
+            value: metricValue(metrics, ["Property inquiries", "Leads"]),
+            description: "Buyer or tenant interest requiring follow-up.",
+          },
+          {
+            label: "Viewings",
+            value: metricValue(metrics, "Viewing requests"),
+            description: "Requested, confirmed, or completed property visits.",
+          },
+          {
+            label: "Applications",
+            value: metricValue(metrics, "Received applications"),
+            description: "Rental applications awaiting owner review.",
+          },
+        ]
+      : [
+          {
+            label: "Saved",
+            value: metricValue(metrics, "Saved properties"),
+            description: "Properties shortlisted for closer review.",
+          },
+          {
+            label: "Interests",
+            value: metricValue(metrics, "My interests"),
+            description: "Structured inquiries sent to owners or agents.",
+          },
+          {
+            label: "Viewings",
+            value: metricValue(metrics, "My viewings"),
+            description: "Requested or confirmed property visits.",
+          },
+          {
+            label: "Applications",
+            value: metricValue(metrics, "My applications"),
+            description: "Rental applications under review.",
+          },
+        ];
+
+  return (
+    <div className="grid gap-3 md:grid-cols-4">
+      {stages.map((stage, index) => (
+        <Card className="relative p-4" key={stage.label}>
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted">
+            Step {index + 1}
+          </span>
+          <div className="mt-3 flex items-end justify-between gap-3">
+            <p className="font-heading text-xl font-semibold text-brand-text">{stage.label}</p>
+            <p className="font-heading text-3xl font-semibold text-brand-secondary">
+              {stage.value}
+            </p>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-brand-muted">{stage.description}</p>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 function DashboardContent() {
   const { user } = useAuth();
   const dashboardQuery = useQuery({
@@ -839,46 +1039,87 @@ function DashboardContent() {
   });
   const overview = dashboardQuery.data;
   const isAgent = isApprovedProfessional(user);
+  const isAdminUser = isAdmin(user) || overview?.role === "admin";
+  const isSupplyUser = isAgent || overview?.role === "agent";
+  const dashboardLabel = isAdminUser
+    ? "Admin operations"
+    : isSupplyUser
+      ? "Owner and agent workspace"
+      : "Buyer and tenant workspace";
+  const dashboardDescription = isAdminUser
+    ? "Review marketplace operations, verification queues, and platform activity."
+    : isSupplyUser
+      ? "Manage listings, leads, viewings, applications, and verification from one place."
+      : "Track saved properties, inquiries, viewings, applications, and next actions.";
+  const primaryActions = isAdminUser
+    ? adminActionLinks
+    : isSupplyUser
+      ? supplyActionLinks
+      : buyerActionLinks;
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-6">
-      <div className="max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-secondary">
-          {overview?.role === "agent" ? "Agent dashboard" : "Buyer dashboard"}
-        </p>
-        <h1 className="mt-3 font-heading text-3xl font-semibold text-brand-text">
-          Welcome back{user?.first_name ? `, ${user.first_name}` : ""}.
-        </h1>
-        <p className="mt-2 text-brand-muted">
-          {isAgent
-            ? "Track listing performance, leads, views, and conversion activity."
-            : "Review saved properties, recent activity, inquiries, and recommendations."}
-        </p>
-      </div>
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        {(overview?.metrics ?? []).map((item) => (
-          <Card className="p-5" key={item.label}>
-            <p className="text-sm text-brand-muted">{item.label}</p>
-            <p className="mt-3 font-heading text-4xl font-semibold text-brand-secondary">
-              {dashboardQuery.isLoading ? "-" : item.value}
+    <main className="mx-auto max-w-7xl px-5 py-8 sm:px-6 lg:py-10">
+      <section className="rounded-md border border-white/10 bg-brand-surface/70 p-5 shadow-glow sm:p-7">
+        <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-secondary">
+              {dashboardLabel}
             </p>
-            <p className="mt-2 text-xs leading-5 text-brand-muted">{item.detail}</p>
-          </Card>
-        ))}
-      </div>
+            <h1 className="mt-3 font-heading text-3xl font-semibold text-brand-text md:text-4xl">
+              Welcome back{user?.first_name ? `, ${user.first_name}` : ""}.
+            </h1>
+            <p className="mt-3 max-w-2xl leading-7 text-brand-muted">{dashboardDescription}</p>
+          </div>
+          <div className="rounded-md border border-brand-secondary/25 bg-brand-background/70 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-secondary">
+              Next best actions
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+              {primaryActions.slice(0, 3).map((action) => (
+                <Link
+                  className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-brand-text transition hover:border-brand-secondary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
+                  href={action.href}
+                  key={action.href}
+                >
+                  {action.title}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <MetricGrid isLoading={dashboardQuery.isLoading} metrics={overview?.metrics ?? []} />
+      </section>
       {dashboardQuery.isError ? (
         <Card className="mt-4 p-4 text-sm text-red-200">Dashboard stats could not be loaded.</Card>
       ) : null}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {dashboardLinks.map((item) => (
-          <Link className="group block focus:outline-none" href={item.href} key={item.href}>
-            <Card className="h-full p-5 transition group-hover:border-brand-secondary/60 group-focus-visible:ring-2 group-focus-visible:ring-brand-secondary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-brand-background">
-              <h2 className="text-lg font-semibold text-brand-text">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-brand-muted">{item.description}</p>
-            </Card>
-          </Link>
-        ))}
-      </div>
+
+      {!isAdminUser ? (
+        <section className="mt-10">
+          <SectionHeader
+            description="The marketplace journey stays connected from discovery to decision, so you can return to the right step quickly."
+            eyebrow="Transaction lifecycle"
+            title={isSupplyUser ? "Pipeline visibility" : "Your property journey"}
+          />
+          <div className="mt-5">
+            <BuyerJourneySummary metrics={overview?.metrics} variant={isSupplyUser ? "supply" : "buyer"} />
+          </div>
+        </section>
+      ) : null}
+
+      <section className="mt-10">
+        <SectionHeader
+          description="Use these shortcuts for the tasks that should happen after a user has signed in."
+          eyebrow="Workspace shortcuts"
+          title="Continue where you left off"
+        />
+        <div className="mt-5">
+          <ActionGrid actions={primaryActions} />
+        </div>
+      </section>
+
       <section className="mt-10">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -894,15 +1135,85 @@ function DashboardContent() {
           <TransactionCenter transactions={overview?.transactions ?? []} />
         </div>
       </section>
-      {overview?.role === "agent" ? (
+
+      {isAdminUser ? (
+        <>
+          <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                Admin review queues
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-brand-muted">
+                Verification, listing moderation, and platform activity stay separated from normal
+                user dashboards.
+              </p>
+              <div className="mt-5 grid gap-3">
+                {overview?.pendingApprovals.slice(0, 4).map((property) => (
+                  <Link
+                    className="rounded-md border border-white/10 p-4 transition hover:border-brand-secondary/60"
+                    href={`/properties/${property.slug}`}
+                    key={property.id}
+                  >
+                    <p className="font-semibold text-brand-text">{property.title}</p>
+                    <p className="mt-1 text-sm text-brand-muted">
+                      {property.city}, {property.state}
+                    </p>
+                  </Link>
+                ))}
+                {(overview?.pendingApprovals.length ?? 0) === 0 ? (
+                  <p className="rounded-md border border-white/10 p-4 text-sm text-brand-muted">
+                    No listing approvals are waiting in this dashboard summary.
+                  </p>
+                ) : null}
+              </div>
+            </Card>
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                User statistics
+              </h2>
+              <div className="mt-5 grid gap-4">
+                {(overview?.userStats ?? []).map((metric) => (
+                  <div className="rounded-md bg-white/5 p-4" key={metric.label}>
+                    <p className="text-sm text-brand-muted">{metric.label}</p>
+                    <p className="mt-2 text-3xl font-semibold text-brand-secondary">
+                      {metric.value}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-brand-muted">{metric.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </section>
+          <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+            <Card className="p-5">
+              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                Recent activity
+              </h2>
+              <div className="mt-5">
+                <ActivityFeed activity={overview?.activity ?? []} />
+              </div>
+            </Card>
+            <NotificationCenterPlaceholder />
+          </section>
+        </>
+      ) : isSupplyUser ? (
         <>
           <section className="mt-10">
-            <h2 className="font-heading text-2xl font-semibold text-brand-text">Active listings</h2>
+            <SectionHeader
+              description="Keep your approved inventory visible and move buyers through the workflow."
+              title="Listing inventory"
+            />
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {overview.activeListings.slice(0, 3).map((property) => (
+              {(overview?.activeListings ?? []).slice(0, 3).map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
             </div>
+            {(overview?.activeListings.length ?? 0) === 0 ? (
+              <Card className="mt-5 p-5 text-sm text-brand-muted">
+                Your active listings will appear here after approval. Create a draft listing to get
+                started.
+              </Card>
+            ) : null}
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
             <Card className="p-5">
@@ -910,7 +1221,7 @@ function DashboardContent() {
                 Property inquiries
               </h2>
               <div className="mt-5">
-                <PropertyInquiryManager inquiries={overview.leads} />
+                <PropertyInquiryManager inquiries={overview?.leads ?? []} />
               </div>
             </Card>
             <Card className="p-5">
@@ -919,16 +1230,26 @@ function DashboardContent() {
               </h2>
               <div className="mt-5 grid gap-4">
                 <div className="rounded-md bg-white/5 p-4">
-                  <p className="text-sm text-brand-muted">Inquiry response rate</p>
-                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">94%</p>
+                  <p className="text-sm text-brand-muted">Active leads</p>
+                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">
+                    {overview?.leads.length ?? 0}
+                  </p>
                 </div>
                 <div className="rounded-md bg-white/5 p-4">
-                  <p className="text-sm text-brand-muted">Average days to negotiation</p>
-                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">6.4</p>
+                  <p className="text-sm text-brand-muted">Viewing requests</p>
+                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">
+                    {overview?.receivedViewings.length ?? 0}
+                  </p>
                 </div>
                 <div className="rounded-md bg-white/5 p-4">
-                  <p className="text-sm text-brand-muted">Projected monthly commission</p>
-                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">NGN 18.5M</p>
+                  <p className="text-sm text-brand-muted">Pending applications</p>
+                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">
+                    {
+                      (overview?.receivedApplications ?? []).filter((item) =>
+                        ["submitted", "under_review"].includes(item.status),
+                      ).length
+                    }
+                  </p>
                 </div>
               </div>
             </Card>
@@ -939,7 +1260,7 @@ function DashboardContent() {
                 Viewing requests
               </h2>
               <div className="mt-5">
-                <ViewingRequestsManager viewings={overview.receivedViewings} />
+                <ViewingRequestsManager viewings={overview?.receivedViewings ?? []} />
               </div>
             </Card>
           </section>
@@ -949,7 +1270,7 @@ function DashboardContent() {
                 Received applications
               </h2>
               <div className="mt-5">
-                <ReceivedApplicationsManager applications={overview.receivedApplications} />
+                <ReceivedApplicationsManager applications={overview?.receivedApplications ?? []} />
               </div>
             </Card>
           </section>
@@ -968,14 +1289,20 @@ function DashboardContent() {
       ) : (
         <>
           <section className="mt-10">
-            <h2 className="font-heading text-2xl font-semibold text-brand-text">
-              Recommended properties
-            </h2>
+            <SectionHeader
+              description="Use recommendations as a starting point, then refine your search by city, price, property type, and listing purpose."
+              title="Recommended properties"
+            />
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {overview?.recommendedProperties.slice(0, 4).map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
             </div>
+            {(overview?.recommendedProperties.length ?? 0) === 0 ? (
+              <Card className="mt-5 p-5 text-sm text-brand-muted">
+                Recommendations will appear as you browse and save properties.
+              </Card>
+            ) : null}
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-2">
             <Card className="p-5">
@@ -1041,6 +1368,6 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-      <DashboardContent />
+    <DashboardContent />
   );
 }

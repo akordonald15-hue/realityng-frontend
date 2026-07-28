@@ -57,6 +57,14 @@ const roles = [
   },
 ];
 
+const supportedTopics = [
+  "Save and compare properties",
+  "Request viewings or send inquiries",
+  "Submit applications",
+  "List and manage properties",
+  "Start verification",
+];
+
 function safeNextPath(nextPath?: string) {
   if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
     return "/";
@@ -98,7 +106,7 @@ export function RoleSelectionProvider({ children }: Readonly<{ children: React.R
           className="fixed inset-0 z-[90] flex items-end justify-center bg-black/75 p-4 backdrop-blur-sm sm:items-center"
           role="dialog"
         >
-          <div className="w-full max-w-3xl rounded-md border border-brand-secondary/30 bg-brand-background p-5 text-brand-text shadow-2xl sm:p-7">
+          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-md border border-brand-secondary/30 bg-brand-background p-5 text-brand-text shadow-2xl sm:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <BrandLogo className="h-14 w-auto object-contain" />
@@ -131,6 +139,21 @@ export function RoleSelectionProvider({ children }: Readonly<{ children: React.R
               >
                 x
               </button>
+            </div>
+            <div className="mt-5 rounded-md border border-white/10 bg-white/5 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
+                Your account unlocks
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {supportedTopics.map((topic) => (
+                  <span
+                    className="rounded-full border border-white/10 bg-brand-surface px-3 py-1 text-xs text-brand-muted"
+                    key={topic}
+                  >
+                    {topic}
+                  </span>
+                ))}
+              </div>
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {roles.map((role) => (

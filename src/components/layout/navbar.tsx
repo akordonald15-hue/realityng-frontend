@@ -5,15 +5,28 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { useRoleSelection } from "@/components/auth/role-selection-modal";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { useOptionalAuth } from "@/providers/auth-provider";
 
-const companyLinks = [
-  { href: "/#overview", label: "Overview" },
-  { href: "/#who-we-are", label: "Who we are" },
-  { href: "/#products", label: "Products" },
+const marketplaceLinks = [
+  { href: "/properties?listing_type=sale", label: "Buy" },
+  { href: "/properties?listing_type=rent", label: "Rent" },
+  { href: "/properties?property_type=shortlet", label: "Shortlets" },
+  { href: "/properties?property_type=land", label: "Land" },
+  { href: "/properties?property_type=commercial", label: "Commercial" },
+];
+
+const moreLinks = [
+  { href: "/about", label: "About RealityNG" },
+  { href: "/verification-standards", label: "Verification standards" },
+  { href: "/listing-standards", label: "Listing standards" },
+  { href: "/safety", label: "Safety" },
+  { href: "/#diaspora", label: "Diaspora services" },
   { href: "/#artisans", label: "Artisans" },
+  { href: "/help", label: "Help" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const accountLinks = [
@@ -35,59 +48,98 @@ export function Navbar() {
   }));
 
   function isActive(href: string) {
-    if (href === "/") {
-      return pathname === href;
-    }
-    return pathname.startsWith(href);
+    const targetPath = href.split("?")[0].split("#")[0];
+    return pathname === targetPath;
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/95 backdrop-blur">
-      <nav className="mx-auto flex min-h-24 max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-6">
-        <Link aria-label="RealityNG home" className="flex shrink-0 items-center" href="/">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/95 shadow-[0_10px_40px_rgba(0,0,0,0.18)] backdrop-blur">
+      <nav className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-6 lg:min-h-[5.75rem]">
+        <Link aria-label="RealityNG home" className="hidden shrink-0 items-center lg:flex" href="/">
           <BrandLogo
-            className="h-14 w-auto object-contain sm:h-16"
+            className="h-14 w-auto object-contain xl:h-16"
             priority
             showTagline
-            taglineClassName="mt-1 whitespace-nowrap text-[0.55rem] font-semibold uppercase tracking-[0.18em] text-brand-secondary sm:text-[0.62rem]"
+            taglineClassName="mt-1 whitespace-nowrap text-[0.58rem] font-semibold tracking-[0.18em] text-brand-secondary xl:text-[0.64rem]"
           />
         </Link>
-        <div className="hidden items-center gap-5 text-sm font-medium text-brand-muted lg:flex">
-          {companyLinks.map((link) => (
+        <Link aria-label="RealityNG home" className="flex shrink-0 items-center lg:hidden" href="/">
+          <BrandLogo
+            className="h-11 w-auto object-contain sm:h-12"
+            priority
+            showTagline={false}
+          />
+        </Link>
+        <div className="hidden items-center gap-4 text-sm font-semibold text-brand-muted lg:flex xl:gap-5">
+          {marketplaceLinks.map((link) => (
             <Link
-              aria-current={isActive(link.href) ? "page" : undefined}
-              className={
-                isActive(link.href)
-                  ? "text-brand-text transition hover:text-brand-text"
-                  : "transition hover:text-brand-text"
-              }
+              className="rounded-sm py-2 transition hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
               href={link.href}
               key={link.href}
             >
               {link.label}
             </Link>
           ))}
-        </div>
-        <div className="hidden items-center gap-4 text-sm font-medium text-brand-muted lg:flex">
-          {!isLoading && isAuthenticated ? (
-            <>
-              {protectedAccountLinks.map((link) => (
+          <ProtectedActionLink
+            actionLabel="List property"
+            className="rounded-sm py-2 transition hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
+            href="/properties/new"
+          >
+            List a Property
+          </ProtectedActionLink>
+          <details className="group relative">
+            <summary className="list-none rounded-sm py-2 text-brand-muted transition hover:cursor-pointer hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary">
+              More
+            </summary>
+            <div className="absolute right-0 top-full mt-3 w-64 rounded-md border border-white/10 bg-brand-surface p-2 shadow-glow">
+              {moreLinks.map((link) => (
                 <Link
-                  aria-current={isActive(link.href) ? "page" : undefined}
-                  className={
-                    link.href.includes("/settings/profile")
-                      ? buttonClasses("secondary", "h-10")
-                      : "transition hover:text-brand-text"
-                  }
+                  className="block rounded-sm px-3 py-2 text-sm text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
                   href={link.href}
                   key={link.href}
                 >
                   {link.label}
                 </Link>
               ))}
-              <Button className="h-10" onClick={() => void auth?.signOut()} variant="ghost">
-                Sign out
-              </Button>
+            </div>
+          </details>
+        </div>
+        <div className="hidden items-center gap-4 text-sm font-medium text-brand-muted lg:flex">
+          {!isLoading && isAuthenticated ? (
+            <>
+              {protectedAccountLinks.slice(0, 1).map((link) => (
+                <Link
+                  aria-current={isActive(link.href) ? "page" : undefined}
+                  className="transition hover:text-brand-text"
+                  href={link.href}
+                  key={link.href}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <details className="group relative">
+                <summary className={buttonClasses("secondary", "h-10 list-none hover:cursor-pointer")}>
+                  Account
+                </summary>
+                <div className="absolute right-0 top-full mt-3 w-52 rounded-md border border-white/10 bg-brand-surface p-2 shadow-glow">
+                  {protectedAccountLinks.slice(1).map((link) => (
+                    <Link
+                      className="block rounded-sm px-3 py-2 text-sm text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+                      href={link.href}
+                      key={link.href}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <button
+                    className="block w-full rounded-sm px-3 py-2 text-left text-sm text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+                    onClick={() => void auth?.signOut()}
+                    type="button"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </details>
             </>
           ) : (
             <>
@@ -109,7 +161,7 @@ export function Navbar() {
             </>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 lg:hidden">
           <Button
             aria-controls="mobile-navigation"
             aria-expanded={isOpen}
@@ -119,8 +171,10 @@ export function Navbar() {
             type="button"
             variant="ghost"
           >
-            <span aria-hidden="true" className="text-lg leading-none">
-              {isOpen ? "x" : "="}
+            <span aria-hidden="true" className="grid gap-1">
+              <span className={isOpen ? "h-0.5 w-5 translate-y-1.5 rotate-45 bg-current" : "h-0.5 w-5 bg-current"} />
+              <span className={isOpen ? "h-0.5 w-5 opacity-0" : "h-0.5 w-5 bg-current"} />
+              <span className={isOpen ? "h-0.5 w-5 -translate-y-1.5 -rotate-45 bg-current" : "h-0.5 w-5 bg-current"} />
             </span>
           </Button>
         </div>
@@ -137,13 +191,28 @@ export function Navbar() {
           >
             Home
           </Link>
-          {companyLinks.map((link) => (
+          {marketplaceLinks.map((link) => (
             <Link
-              className={
-                isActive(link.href)
-                  ? "rounded-md bg-white/10 px-3 py-2 text-brand-text"
-                  : "rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
-              }
+              className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+              href={link.href}
+              key={link.href}
+              onClick={() => setIsOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <ProtectedActionLink
+            actionLabel="List property"
+            className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+            href="/properties/new"
+            onClick={() => setIsOpen(false)}
+          >
+            List a Property
+          </ProtectedActionLink>
+          <div className="my-2 border-t border-white/10" />
+          {moreLinks.map((link) => (
+            <Link
+              className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
               href={link.href}
               key={link.href}
               onClick={() => setIsOpen(false)}

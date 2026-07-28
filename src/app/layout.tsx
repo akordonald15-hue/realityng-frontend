@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 
 import { AppProviders } from "@/providers/app-providers";
+import { SITE_URL } from "@/lib/seo";
 
 import "./globals.css";
 
@@ -15,15 +16,28 @@ const playfair = Playfair_Display({
   variable: "--font-heading",
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://realityng.com");
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: "RealityNG",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "RealityNG | Nigerian Property Discovery",
+    template: "%s | RealityNG",
+  },
   description:
     "Where dreams find an address. Find, verify, buy, rent, build, and manage properties in Nigeria.",
+  applicationName: "RealityNG",
+  keywords: [
+    "Nigeria property",
+    "Nigerian real estate",
+    "Lagos apartments",
+    "Abuja property",
+    "property verification Nigeria",
+    "diaspora property Nigeria",
+    "shortlets Nigeria",
+    "land for sale Nigeria",
+  ],
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: [
       { url: "/icons/realityng-icon-192.png", sizes: "192x192", type: "image/png" },
@@ -33,7 +47,10 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
-    title: "RealityNG",
+    type: "website",
+    url: "/",
+    siteName: "RealityNG",
+    title: "RealityNG | Nigerian Property Discovery",
     description:
       "Where dreams find an address. Discover verified Nigerian property listings with RealityNG.",
     images: [{ url: "/brand/realityng-social.png", width: 1200, height: 630, alt: "RealityNG" }],

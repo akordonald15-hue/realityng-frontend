@@ -6,6 +6,18 @@ import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   getPublicProperties: vi.fn(),
+  replace: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  useParams: () => ({ slug: "approved-lekki-apartment" }),
+  usePathname: () => "/properties",
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: mocks.replace,
+    refresh: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock("@/lib/api/properties", async () => {
@@ -21,6 +33,7 @@ vi.mock("@/lib/api/properties", async () => {
 
 describe("PropertiesPage", () => {
   it("renders approved listings and sends filters to the API", async () => {
+    mocks.replace.mockReset();
     mocks.getPublicProperties.mockResolvedValue({
       count: 1,
       next: null,
@@ -62,5 +75,11 @@ describe("PropertiesPage", () => {
         expect.objectContaining({ city: "Lagos", listing_type: "rent" }),
       ),
     );
+    expect(mocks.replace).toHaveBeenLastCalledWith(
+      "/properties?city=Lagos&listing_type=rent",
+      { scroll: false },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "List" }));
+    expect(screen.getByRole("button", { name: "List" })).toHaveClass("bg-brand-secondary");
   });
 });

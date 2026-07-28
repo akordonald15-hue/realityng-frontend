@@ -30,6 +30,14 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
   return (
     <Card className="p-4">
       <form className="space-y-4" onSubmit={submit}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-heading text-xl font-semibold text-brand-text">Refine search</p>
+            <p className="mt-1 text-xs leading-5 text-brand-muted">
+              These filters are supported by the current public listings API.
+            </p>
+          </div>
+        </div>
         <div>
           <label className="text-sm font-medium text-brand-text" htmlFor="property-search">
             Search
@@ -38,7 +46,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
             className="mt-2"
             id="property-search"
             onChange={(event) => update("search", event.target.value)}
-            placeholder="Title"
+            placeholder="Title or keyword"
             value={filters.search ?? ""}
           />
         </div>
@@ -133,8 +141,10 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           </Select>
         </div>
         <div className="flex gap-3">
-          <Button type="submit">Apply</Button>
-          <Button onClick={clearFilters} type="button" variant="secondary">
+          <Button className="flex-1" type="submit">
+            Apply
+          </Button>
+          <Button className="flex-1" onClick={clearFilters} type="button" variant="secondary">
             Clear
           </Button>
         </div>
