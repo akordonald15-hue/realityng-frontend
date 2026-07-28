@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useRoleSelection } from "@/components/auth/role-selection-modal";
+import { PublicAssistantWidget } from "@/components/assistant/public-assistant-widget";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
@@ -707,6 +708,7 @@ export default function HomePage() {
           </div>
         </section>
       </main>
+      <PublicAssistantWidget />
       <Footer />
     </div>
   );
