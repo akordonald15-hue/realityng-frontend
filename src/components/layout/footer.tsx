@@ -36,7 +36,7 @@ export function Footer() {
           <BrandLogo
             className="h-16 w-auto object-contain"
             showTagline
-            taglineClassName="mt-1 whitespace-nowrap text-[0.62rem] font-semibold tracking-[0.18em] text-brand-secondary"
+            taglineClassName="mt-0.5 text-[0.58rem]"
           />
           <p className="mt-3 max-w-md leading-6">
             Trusted Nigerian property discovery for buyers, renters, landlords, and diaspora

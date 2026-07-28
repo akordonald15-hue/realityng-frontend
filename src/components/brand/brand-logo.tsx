@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { clsx } from "clsx";
 
 type BrandLogoProps = {
   variant?: "full" | "icon";
@@ -38,10 +39,10 @@ export function BrandLogo({
     <span className="inline-flex flex-col items-start">
       {logo}
       <span
-        className={
-          taglineClassName ??
-          "mt-1 text-[0.58rem] font-semibold uppercase tracking-[0.22em] text-brand-secondary"
-        }
+        className={clsx(
+          "ml-[31%] block whitespace-nowrap font-body text-[0.55rem] font-medium tracking-[0.16em] text-brand-secondary",
+          taglineClassName,
+        )}
       >
         {tagline}
       </span>
