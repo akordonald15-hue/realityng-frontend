@@ -67,9 +67,9 @@ describe("HomePage", () => {
   it("renders search-first discovery sections and approved listings", async () => {
     renderWithQueryClient(<HomePage />);
 
-    expect(screen.getByRole("heading", { name: "Find property you can trust in Nigeria." }))
+    expect(screen.getByRole("heading", { name: "Find property in Nigeria with confidence." }))
       .toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Start with what you need." })).toBeInTheDocument();
+    expect(screen.getByLabelText("Property goals")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Lagos.*View listings/i })).toHaveAttribute(
       "href",
       "/properties?city=Lagos",
@@ -89,8 +89,6 @@ describe("HomePage", () => {
     fireEvent.change(screen.getByLabelText("Search city or area"), {
       target: { value: "Lagos" },
     });
-    fireEvent.change(screen.getByLabelText("Property type"), { target: { value: "apartment" } });
-    fireEvent.change(screen.getByLabelText("Maximum price"), { target: { value: "3000000" } });
     fireEvent.click(screen.getByRole("button", { name: "Search properties" }));
 
     await waitFor(() => expect(mocks.push).toHaveBeenCalledTimes(1));
@@ -98,7 +96,5 @@ describe("HomePage", () => {
     expect(url).toContain("/properties?");
     expect(url).toContain("city=Lagos");
     expect(url).toContain("listing_type=rent");
-    expect(url).toContain("property_type=apartment");
-    expect(url).toContain("max_price=3000000");
   });
 });

@@ -6,7 +6,6 @@ import { useState } from "react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { ProtectedActionLink } from "@/components/auth/protected-action-link";
-import { useRoleSelection } from "@/components/auth/role-selection-modal";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { useOptionalAuth } from "@/providers/auth-provider";
 
@@ -38,7 +37,6 @@ const accountLinks = [
 export function Navbar() {
   const pathname = usePathname();
   const auth = useOptionalAuth();
-  const { openRoleSelection } = useRoleSelection();
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const isLoading = auth?.isLoading ?? false;
   const [isOpen, setIsOpen] = useState(false);
@@ -53,14 +51,14 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/95 shadow-[0_10px_40px_rgba(0,0,0,0.18)] backdrop-blur">
-      <nav className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-6 lg:min-h-[5.75rem]">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-background/95 shadow-[0_10px_40px_rgba(0,0,0,0.14)] backdrop-blur">
+      <nav className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-5 py-2 sm:px-6 lg:min-h-[4.75rem]">
         <Link aria-label="RealityNG home" className="hidden shrink-0 items-center lg:flex" href="/">
           <BrandLogo
-            className="h-14 w-auto object-contain xl:h-16"
+            className="h-12 w-auto object-contain xl:h-14"
             priority
             showTagline
-            taglineClassName="text-[0.54rem] xl:text-[0.6rem]"
+            taglineClassName="text-[0.48rem] xl:text-[0.54rem]"
           />
         </Link>
         <Link aria-label="RealityNG home" className="flex shrink-0 items-center lg:hidden" href="/">
@@ -142,23 +140,12 @@ export function Navbar() {
               </details>
             </>
           ) : (
-            <>
-              <Link className="transition hover:text-brand-text" href="/auth/sign-in">
-                Sign in
-              </Link>
-              <button
-                className={buttonClasses("secondary", "h-10")}
-                onClick={() =>
-                  openRoleSelection({
-                    actionLabel: "Create account",
-                    nextPath: "/onboarding/role-setup",
-                  })
-                }
-                type="button"
-              >
-                Create account
-              </button>
-            </>
+            <Link
+              className="rounded-full bg-brand-secondary px-5 py-2.5 text-sm font-semibold text-brand-background shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition hover:bg-brand-lightGold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background"
+              href="/auth/sign-in"
+            >
+              Join / Sign in
+            </Link>
           )}
         </div>
         <div className="flex items-center gap-2 lg:hidden">
@@ -251,25 +238,12 @@ export function Navbar() {
           ) : (
             <>
               <Link
-                className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+                className="rounded-md px-3 py-2 font-semibold text-brand-secondary transition hover:bg-white/10"
                 href="/auth/sign-in"
                 onClick={() => setIsOpen(false)}
               >
-                Sign in
+                Join / Sign in
               </Link>
-              <button
-                className="rounded-md px-3 py-2 font-semibold text-brand-secondary transition hover:bg-white/10"
-                onClick={() => {
-                  setIsOpen(false);
-                  openRoleSelection({
-                    actionLabel: "Create account",
-                    nextPath: "/onboarding/role-setup",
-                  });
-                }}
-                type="button"
-              >
-                Create account
-              </button>
             </>
           )}
         </div>

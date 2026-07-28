@@ -16,7 +16,6 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/ui/section-header";
-import { Select } from "@/components/ui/select";
 import { getPublicProperties } from "@/lib/api/properties";
 import type { PropertyFilters } from "@/lib/api/properties";
 import { organizationJsonLd, websiteSearchJsonLd } from "@/lib/seo";
@@ -42,7 +41,7 @@ const searchGoals: Array<{
     helper: "Serviced stays and hospitality-ready apartments.",
   },
   {
-    label: "Apartment Share",
+    label: "Share",
     filters: { listing_type: "apartment_share" },
     helper: "Shared apartments and rooms for flexible city living.",
   },
@@ -235,9 +234,6 @@ export default function HomePage() {
   const router = useRouter();
   const { openRoleSelection } = useRoleSelection();
   const [location, setLocation] = useState("");
-  const [propertyType, setPropertyType] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
   const [activeGoal, setActiveGoal] = useState(searchGoals[0]);
   const [activeSlide, setActiveSlide] = useState(0);
   const featuredQuery = useQuery({
@@ -263,15 +259,6 @@ export default function HomePage() {
     if (location.trim()) {
       params.set("city", location.trim());
     }
-    if (propertyType) {
-      filters.property_type = propertyType;
-    }
-    if (minPrice.trim()) {
-      filters.min_price = minPrice.trim();
-    }
-    if (maxPrice.trim()) {
-      filters.max_price = maxPrice.trim();
-    }
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
@@ -288,7 +275,7 @@ export default function HomePage() {
       <JsonLd data={websiteSearchJsonLd()} id="realityng-website-jsonld" />
       <Navbar />
       <main>
-        <section className="relative isolate overflow-hidden">
+        <section className="relative isolate overflow-hidden bg-brand-background">
           <div aria-hidden="true" className="absolute inset-0">
             {heroSlides.map((slide, index) => (
               <Image
@@ -303,65 +290,30 @@ export default function HomePage() {
                 src={slide.src}
               />
             ))}
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,39,31,0.96)_0%,rgba(6,39,31,0.84)_48%,rgba(6,39,31,0.45)_100%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,39,31,0.16)_0%,rgba(6,39,31,0.72)_100%)]" />
+            <div className="absolute inset-0 bg-black/36" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,39,31,0.12)_0%,rgba(6,39,31,0.25)_48%,rgba(6,39,31,0.5)_100%)]" />
           </div>
 
-          <div className="relative mx-auto grid min-h-[calc(100svh-5rem)] max-w-7xl gap-10 px-5 py-14 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:py-20">
+          <div className="relative mx-auto flex min-h-[31rem] max-w-7xl flex-col justify-center px-5 py-12 sm:min-h-[34rem] sm:px-6 lg:min-h-[35rem]">
             <div className="max-w-3xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-lightGold sm:text-sm">
-                Trusted Nigerian property discovery
-              </p>
               <h1
-                className="mt-5 max-w-4xl font-heading text-4xl font-semibold leading-tight text-white sm:text-6xl lg:text-7xl"
+                className="max-w-2xl font-heading text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-[3.4rem]"
                 style={{ textShadow: "0 4px 28px rgba(0,0,0,0.55)" }}
               >
-                Find property you can trust in Nigeria.
+                Find property in Nigeria with confidence.
               </h1>
-              <p className="mt-6 max-w-2xl text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
-                Search homes, shortlets, land, commercial spaces, and apartment shares before you
-                create an account. Sign up only when you are ready to save, inquire, view, apply, or
-                list.
+              <p className="mt-4 max-w-xl text-base leading-7 text-white/90">
+                Search verified homes, shortlets, land, and commercial spaces.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link className={buttonClasses("primary", "w-full sm:w-auto")} href="/properties">
-                  Browse properties
-                </Link>
-                <button
-                  className={buttonClasses(
-                    "secondary",
-                    "w-full border-white/70 text-white sm:w-auto",
-                  )}
-                  onClick={() =>
-                    openRoleSelection({
-                      actionLabel: "Create free account",
-                      nextPath: "/onboarding/role-setup",
-                    })
-                  }
-                  type="button"
-                >
-                  Create free account
-                </button>
-              </div>
             </div>
 
-            <Card
+            <div
               aria-labelledby="property-search-title"
-              className="bg-white p-4 text-brand-main shadow-[0_28px_90px_rgba(0,0,0,0.32)] sm:p-6"
+              className="mt-7 w-full max-w-[42rem] text-brand-main"
               id="overview"
             >
-              <div className="flex flex-col gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-primary">
-                  Search first
-                </p>
-                <h2 className="font-heading text-3xl font-semibold text-brand-main" id="property-search-title">
-                  Start with what you need.
-                </h2>
-                <p className="text-sm leading-6 text-[#52675f]">{activeGoal.helper}</p>
-              </div>
-
               <div
-                className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:flex xl:flex-wrap"
+                className="flex flex-wrap items-end gap-0"
                 role="tablist"
                 aria-label="Property goals"
               >
@@ -370,8 +322,8 @@ export default function HomePage() {
                     aria-selected={activeGoal.label === goal.label}
                     className={
                       activeGoal.label === goal.label
-                        ? "min-h-11 rounded-md bg-brand-primary px-3 py-2 text-sm font-semibold text-white xl:w-auto"
-                        : "min-h-11 rounded-md border border-black/10 px-3 py-2 text-sm font-semibold text-brand-main transition hover:border-brand-secondary hover:text-brand-primary xl:w-auto"
+                        ? "min-h-11 rounded-t-md bg-white px-4 py-2.5 text-sm font-bold text-brand-main shadow-[0_-5px_18px_rgba(0,0,0,0.12)]"
+                        : "min-h-11 rounded-t-md border border-white/50 bg-white/82 px-4 py-2.5 text-sm font-medium text-brand-main backdrop-blur transition hover:bg-white"
                     }
                     key={goal.label}
                     onClick={() => setActiveGoal(goal)}
@@ -383,68 +335,40 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="mt-5 grid gap-3">
+              <div className="flex rounded-b-md rounded-tr-md bg-white p-2 shadow-[0_18px_60px_rgba(0,0,0,0.32)]">
                 <Input
                   aria-label="Search city or area"
-                  className="h-12 border-black/15 bg-black/5 text-brand-main placeholder:text-[#61736c]"
+                  className="h-14 flex-1 border-0 bg-white px-4 text-base text-brand-main placeholder:text-[#61736c] focus:ring-0"
                   onChange={(event) => setLocation(event.target.value)}
-                  placeholder="City or area, for example Lagos or Uyo"
+                  placeholder="City, area, estate, or landmark"
                   value={location}
                 />
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <Select
-                    aria-label="Property type"
-                    className="border-black/15 bg-black/5 text-brand-main"
-                    onChange={(event) => setPropertyType(event.target.value)}
-                    value={propertyType}
+                <Button
+                  aria-label="Search properties"
+                  className="h-14 w-14 shrink-0 rounded-md px-0 text-xl sm:w-16"
+                  onClick={() => searchProperties()}
+                >
+                  <svg
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2.4"
+                    viewBox="0 0 24 24"
                   >
-                    <option value="">Any type</option>
-                    <option value="apartment">Apartment</option>
-                    <option value="house">House</option>
-                    <option value="duplex">Duplex</option>
-                    <option value="land">Land</option>
-                    <option value="shortlet">Shortlet</option>
-                    <option value="commercial">Commercial</option>
-                    <option value="hotel">Hotel</option>
-                  </Select>
-                  <Input
-                    aria-label="Minimum price"
-                    className="border-black/15 bg-black/5 text-brand-main placeholder:text-[#61736c]"
-                    inputMode="numeric"
-                    onChange={(event) => setMinPrice(event.target.value)}
-                    placeholder="Min price"
-                    value={minPrice}
-                  />
-                  <Input
-                    aria-label="Maximum price"
-                    className="border-black/15 bg-black/5 text-brand-main placeholder:text-[#61736c]"
-                    inputMode="numeric"
-                    onChange={(event) => setMaxPrice(event.target.value)}
-                    placeholder="Max price"
-                    value={maxPrice}
-                  />
-                </div>
-                <Button className="h-12 w-full" onClick={() => searchProperties()}>
-                  Search properties
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m16.5 16.5 4 4" />
+                  </svg>
                 </Button>
               </div>
+            </div>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                {popularLocations.slice(0, 4).map((locationOption) => (
-                  <button
-                    className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold text-brand-primary transition hover:border-brand-secondary"
-                    key={locationOption.city}
-                    onClick={() => searchProperties({ city: locationOption.city })}
-                    type="button"
-                  >
-                    {locationOption.city}
-                  </button>
-                ))}
-              </div>
-            </Card>
-
-            <div className="col-span-full flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-medium text-white/85">{heroSlides[activeSlide].label}</p>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/82">
+                {heroSlides[activeSlide].label}
+              </p>
               <div className="flex gap-2" role="tablist" aria-label="Featured property slideshow">
                 {heroSlides.map((slide, index) => (
                   <button
