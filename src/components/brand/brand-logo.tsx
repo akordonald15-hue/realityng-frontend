@@ -40,7 +40,7 @@ export function BrandLogo({
       {logo}
       <span
         className={clsx(
-          "ml-[31%] block whitespace-nowrap font-body text-[0.55rem] font-medium tracking-[0.16em] text-brand-secondary",
+          "ml-[36%] -mt-1 block whitespace-nowrap font-body text-[0.55rem] font-medium tracking-[0.16em] text-brand-secondary",
           taglineClassName,
         )}
       >

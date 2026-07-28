@@ -60,7 +60,7 @@ export function Navbar() {
             className="h-14 w-auto object-contain xl:h-16"
             priority
             showTagline
-            taglineClassName="mt-0.5 text-[0.54rem] xl:text-[0.6rem]"
+            taglineClassName="text-[0.54rem] xl:text-[0.6rem]"
           />
         </Link>
         <Link aria-label="RealityNG home" className="flex shrink-0 items-center lg:hidden" href="/">
