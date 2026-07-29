@@ -313,7 +313,7 @@ export default function HomePage() {
               id="overview"
             >
               <div
-                className="flex flex-wrap items-end gap-0 rounded-t-md bg-white/95 p-1 shadow-[0_-6px_24px_rgba(0,0,0,0.2)]"
+                className="flex flex-wrap items-end gap-0"
                 role="tablist"
                 aria-label="Property goals"
               >
@@ -322,8 +322,8 @@ export default function HomePage() {
                     aria-selected={activeGoal.label === goal.label}
                     className={
                       activeGoal.label === goal.label
-                        ? "min-h-11 rounded-md bg-white px-4 py-2.5 text-sm font-bold text-brand-main shadow-[0_8px_20px_rgba(0,0,0,0.12)]"
-                        : "min-h-11 rounded-md border border-black/10 bg-brand-warm px-4 py-2.5 text-sm font-semibold text-brand-main transition hover:bg-white hover:text-brand-primary"
+                        ? "min-h-11 rounded-t-md bg-white px-4 py-2.5 text-sm font-extrabold text-brand-main shadow-[0_-5px_18px_rgba(0,0,0,0.12)]"
+                        : "min-h-11 rounded-t-md border border-white/65 bg-white/82 px-4 py-2.5 text-sm font-bold text-brand-main backdrop-blur transition hover:bg-white hover:text-brand-primary"
                     }
                     key={goal.label}
                     onClick={() => setActiveGoal(goal)}
@@ -335,10 +335,10 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="flex rounded-b-md bg-white p-2 shadow-[0_18px_60px_rgba(0,0,0,0.36)]">
+              <div className="flex rounded-b-md rounded-tr-md bg-white/96 p-2 shadow-[0_18px_60px_rgba(0,0,0,0.36)] backdrop-blur">
                 <Input
                   aria-label="Search city or area"
-                  className="h-14 flex-1 border-0 bg-white px-4 text-base text-brand-main placeholder:text-[#61736c] focus:ring-0"
+                  className="h-14 flex-1 border-0 bg-white/95 px-4 text-base font-semibold text-brand-main placeholder:font-semibold placeholder:text-[#52675f] focus:ring-0"
                   onChange={(event) => setLocation(event.target.value)}
                   placeholder="City, area, estate, or landmark"
                   value={location}
