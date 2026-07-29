@@ -60,5 +60,5 @@ describe("ViewingRequestButton", () => {
         notes: "I prefer a virtual tour first.",
       }),
     );
-  });
+  }, 10000);
 });

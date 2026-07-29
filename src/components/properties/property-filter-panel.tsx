@@ -51,6 +51,18 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           />
         </div>
         <div>
+          <label className="text-sm font-medium text-brand-text" htmlFor="property-state">
+            State
+          </label>
+          <Input
+            className="mt-2"
+            id="property-state"
+            onChange={(event) => update("state", event.target.value)}
+            placeholder="Lagos"
+            value={filters.state ?? ""}
+          />
+        </div>
+        <div>
           <label className="text-sm font-medium text-brand-text" htmlFor="property-city">
             City
           </label>
@@ -61,6 +73,32 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
             placeholder="Lagos"
             value={filters.city ?? ""}
           />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-sm font-medium text-brand-text" htmlFor="property-lga">
+              LGA
+            </label>
+            <Input
+              className="mt-2"
+              id="property-lga"
+              onChange={(event) => update("lga", event.target.value)}
+              placeholder="Eti-Osa"
+              value={filters.lga ?? ""}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-brand-text" htmlFor="property-area">
+              Area
+            </label>
+            <Input
+              className="mt-2"
+              id="property-area"
+              onChange={(event) => update("neighborhood", event.target.value)}
+              placeholder="Lekki Phase 1"
+              value={filters.neighborhood ?? ""}
+            />
+          </div>
         </div>
         <div>
           <label className="text-sm font-medium text-brand-text" htmlFor="property-type">

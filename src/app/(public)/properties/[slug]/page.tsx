@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
+import { PropertyMapPanel } from "@/components/maps/property-map-panel";
 import { CompareButton } from "@/components/properties/compare-button";
 import { FavoriteButton } from "@/components/properties/favorite-button";
 import { ShowInterestButton } from "@/components/properties/show-interest-button";
@@ -289,19 +290,34 @@ export default function PropertyDetailPage() {
 
                 <section>
                   <h2 className="font-heading text-3xl font-semibold text-brand-text">
-                    Location and disclosure
+                    Location intelligence
                   </h2>
-                  <Card className="mt-4 p-5">
-                    <p className="text-sm leading-7 text-brand-muted">
-                      Public location is shown from the listing address fields available today:
-                      <span className="font-semibold text-brand-text">
-                        {" "}
-                        {property.city}, {property.state}, {property.country}.
-                      </span>{" "}
-                      Exact access details, landmark context, and inspection instructions should be
-                      confirmed through a structured inquiry or viewing workflow.
-                    </p>
-                  </Card>
+                  <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_320px]">
+                    <PropertyMapPanel properties={[property]} selectedPropertyId={property.id} />
+                    <Card className="p-5">
+                      <Badge>Privacy-first location</Badge>
+                      <p className="mt-4 text-sm leading-7 text-brand-muted">
+                        Public map pins may be approximate to protect owners and occupants. Exact
+                        access details, landmark context, and inspection instructions should be
+                        confirmed through a structured inquiry or viewing workflow.
+                      </p>
+                      <div className="mt-4 space-y-3 text-sm text-brand-muted">
+                        <p>
+                          <span className="font-semibold text-brand-text">Display area:</span>{" "}
+                          {property.display_location || `${property.city}, ${property.state}`}
+                        </p>
+                        <p>
+                          <span className="font-semibold text-brand-text">Precision:</span>{" "}
+                          {property.location_metadata?.precision_label ?? "Not available"}
+                        </p>
+                        <p>
+                          <span className="font-semibold text-brand-text">Nearby context:</span>{" "}
+                          Schools, hospitals, supermarkets, banks, and transport routes will appear
+                          when Google Places data is configured and available for this area.
+                        </p>
+                      </div>
+                    </Card>
+                  </div>
                 </section>
 
                 <section>

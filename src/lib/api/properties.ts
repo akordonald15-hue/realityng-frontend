@@ -43,7 +43,21 @@ export type Property = {
   country: string;
   state: string;
   city: string;
+  lga?: string;
+  neighborhood?: string;
+  landmark?: string;
   address: string;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
+  location_precision?: "exact" | "neighborhood" | "city" | "hidden";
+  approximate_location?: boolean;
+  geocoding_status?: "not_geocoded" | "pending" | "geocoded" | "failed" | "manual";
+  display_location?: string;
+  location_metadata?: {
+    has_map_location: boolean;
+    precision_label: string;
+    privacy_note: string;
+  };
   bedrooms?: number | null;
   bathrooms?: number | null;
   parking_spaces?: number | null;
@@ -85,7 +99,16 @@ export type PropertyPayload = {
   country: string;
   state: string;
   city: string;
+  lga?: string;
+  neighborhood?: string;
+  landmark?: string;
   address: string;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
+  location_precision?: "exact" | "neighborhood" | "city" | "hidden";
+  show_exact_location?: boolean;
+  geocoding_status?: "not_geocoded" | "pending" | "geocoded" | "failed" | "manual";
+  display_location?: string;
   bedrooms?: number | null;
   bathrooms?: number | null;
   parking_spaces?: number | null;
@@ -95,11 +118,19 @@ export type PropertyPayload = {
 
 export type PropertyFilters = {
   search?: string;
+  state?: string;
   city?: string;
+  lga?: string;
+  neighborhood?: string;
   property_type?: string;
   listing_type?: string;
   min_price?: string;
   max_price?: string;
+  min_lat?: string;
+  max_lat?: string;
+  min_lng?: string;
+  max_lng?: string;
+  has_map_location?: string;
   ordering?: string;
 };
 

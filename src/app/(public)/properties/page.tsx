@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { ProtectedActionLink } from "@/components/auth/protected-action-link";
+import { PropertyMapPanel } from "@/components/maps/property-map-panel";
 import { PropertyCard } from "@/components/properties/property-card";
 import { PropertyFilterPanel } from "@/components/properties/property-filter-panel";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -18,7 +19,10 @@ import { getPublicProperties, type PropertyFilters } from "@/lib/api/properties"
 function filtersFromParams(params: URLSearchParams): PropertyFilters {
   return {
     search: params.get("search") ?? "",
+    state: params.get("state") ?? "",
     city: params.get("city") ?? "",
+    lga: params.get("lga") ?? "",
+    neighborhood: params.get("neighborhood") ?? "",
     property_type: params.get("property_type") ?? "",
     listing_type: params.get("listing_type") ?? "",
     min_price: params.get("min_price") ?? "",
@@ -36,7 +40,10 @@ function cleanFilters(filters: PropertyFilters): PropertyFilters {
 function filterLabel(key: string, value: string) {
   const labels: Record<string, string> = {
     search: `Search: ${value}`,
+    state: `State: ${value}`,
     city: `City: ${value}`,
+    lga: `LGA: ${value}`,
+    neighborhood: `Area: ${value}`,
     property_type: `Type: ${value.replaceAll("_", " ")}`,
     listing_type: `Listing: ${value.replaceAll("_", " ")}`,
     min_price: `Min: ${value}`,
@@ -52,9 +59,10 @@ function PropertiesContent() {
   const initialFilters = useMemo(() => filtersFromParams(searchParams), [searchParams]);
   const [filters, setFilters] = useState<PropertyFilters>(initialFilters);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "map" | "split">("grid");
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const activeFilters = Object.entries(cleanFilters(filters)).filter(
-    ([key, value]) => key !== "ordering" && value,
+    ([key, value]) => !["ordering", "min_lat", "max_lat", "min_lng", "max_lng"].includes(key) && value,
   );
   const propertiesQuery = useQuery({
     queryKey: ["public-properties", filters],
@@ -78,6 +86,70 @@ function PropertiesContent() {
     router.replace(`/properties${params.toString() ? `?${params.toString()}` : ""}`, {
       scroll: false,
     });
+  }
+
+  const properties = propertiesQuery.data?.results ?? [];
+  const mapReadyCount = properties.filter((property) => property.latitude && property.longitude)
+    .length;
+  const listingGridClass =
+    viewMode === "list" || viewMode === "split"
+      ? "grid gap-5"
+      : "grid gap-5 md:grid-cols-2 xl:grid-cols-3";
+
+  function viewButton(label: string, nextViewMode: typeof viewMode) {
+    return (
+      <Button
+        className={viewMode === nextViewMode ? "h-10" : "h-10 border-white/20"}
+        key={nextViewMode}
+        onClick={() => setViewMode(nextViewMode)}
+        variant={viewMode === nextViewMode ? "primary" : "secondary"}
+      >
+        {label}
+      </Button>
+    );
+  }
+
+  function renderListings() {
+    if (propertiesQuery.isLoading) {
+      return (
+        <div className={listingGridClass}>
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <div
+              className={
+                viewMode === "list" || viewMode === "split"
+                  ? "h-64 animate-pulse rounded-md bg-white/10"
+                  : "h-96 animate-pulse rounded-md bg-white/10"
+              }
+              key={item}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    if (properties.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className={listingGridClass}>
+        {properties.map((property) => (
+          <div
+            className={
+              selectedPropertyId === property.id
+                ? "rounded-md ring-2 ring-brand-secondary ring-offset-2 ring-offset-brand-background"
+                : "rounded-md"
+            }
+            id={`property-result-${property.id}`}
+            key={property.id}
+            onFocus={() => setSelectedPropertyId(property.id)}
+            onMouseEnter={() => setSelectedPropertyId(property.id)}
+          >
+            <PropertyCard property={property} variant={viewMode === "grid" ? "grid" : "list"} />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   function removeFilter(key: keyof PropertyFilters) {
@@ -157,23 +229,17 @@ function PropertiesContent() {
                     Public results only include approved properties.
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    className={viewMode === "grid" ? "h-10" : "h-10 border-white/20"}
-                    onClick={() => setViewMode("grid")}
-                    variant={viewMode === "grid" ? "primary" : "secondary"}
-                  >
-                    Grid
-                  </Button>
-                  <Button
-                    className={viewMode === "list" ? "h-10" : "h-10 border-white/20"}
-                    onClick={() => setViewMode("list")}
-                    variant={viewMode === "list" ? "primary" : "secondary"}
-                  >
-                    List
-                  </Button>
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Property view mode">
+                  {viewButton("Grid", "grid")}
+                  {viewButton("List", "list")}
+                  {viewButton("Map", "map")}
+                  <span className="hidden lg:inline-flex">{viewButton("Split", "split")}</span>
                 </div>
               </div>
+              <p className="mt-3 text-xs text-brand-muted">
+                {mapReadyCount} listing{mapReadyCount === 1 ? "" : "s"} include public map
+                metadata. Pins may be approximate to protect seller privacy.
+              </p>
               {activeFilters.length > 0 ? (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {activeFilters.map(([key, value]) => (
@@ -196,42 +262,32 @@ function PropertiesContent() {
                 </div>
               ) : null}
             </div>
-            {propertiesQuery.isLoading ? (
-              <div
-                className={
-                  viewMode === "list"
-                    ? "grid gap-5"
-                    : "grid gap-5 md:grid-cols-2 xl:grid-cols-3"
-                }
-              >
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <div
-                    className={
-                      viewMode === "list"
-                        ? "h-64 animate-pulse rounded-md bg-white/10"
-                        : "h-96 animate-pulse rounded-md bg-white/10"
-                    }
-                    key={item}
-                  />
-                ))}
-              </div>
-            ) : null}
             {propertiesQuery.isError ? (
               <Card className="p-6 text-sm text-red-200">Properties could not be loaded.</Card>
             ) : null}
-            {propertiesQuery.data && propertiesQuery.data.results.length > 0 ? (
-              <div
-                className={
-                  viewMode === "list"
-                    ? "grid gap-5"
-                    : "grid gap-5 md:grid-cols-2 xl:grid-cols-3"
-                }
-              >
-                {propertiesQuery.data.results.map((property) => (
-                  <PropertyCard key={property.id} property={property} variant={viewMode} />
-                ))}
+            {propertiesQuery.isLoading ? renderListings() : null}
+            {viewMode === "map" && properties.length > 0 && !propertiesQuery.isLoading ? (
+              <PropertyMapPanel
+                onSelectProperty={(propertyId) => setSelectedPropertyId(propertyId || null)}
+                properties={properties}
+                selectedPropertyId={selectedPropertyId}
+              />
+            ) : null}
+            {viewMode === "split" && properties.length > 0 && !propertiesQuery.isLoading ? (
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_440px]">
+                <div>{renderListings()}</div>
+                <div className="xl:sticky xl:top-28 xl:self-start">
+                  <PropertyMapPanel
+                    onSelectProperty={(propertyId) => setSelectedPropertyId(propertyId || null)}
+                    properties={properties}
+                    selectedPropertyId={selectedPropertyId}
+                  />
+                </div>
               </div>
             ) : null}
+            {viewMode !== "map" && viewMode !== "split" && !propertiesQuery.isLoading
+              ? renderListings()
+              : null}
             {propertiesQuery.data?.results.length === 0 ? (
               <Card className="p-8">
                 <h2 className="font-heading text-2xl font-semibold text-brand-text">

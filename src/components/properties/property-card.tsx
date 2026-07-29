@@ -102,8 +102,15 @@ export function PropertyCard({ property, variant = "grid" }: PropertyCardProps) 
           </h3>
         </Link>
         <p className="mt-1 text-sm text-brand-muted">
-          {property.city}, {property.state}
+          {property.display_location || `${property.city}, ${property.state}`}
         </p>
+        {property.location_metadata?.has_map_location ? (
+          <p className="mt-2 text-xs font-semibold text-brand-muted">
+            {property.approximate_location
+              ? "Approximate map location"
+              : "Exact map location approved"}
+          </p>
+        ) : null}
         <p className="mt-3 text-2xl font-semibold text-brand-secondary">
           {formatPrice(property)}
         </p>

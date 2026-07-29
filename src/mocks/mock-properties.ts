@@ -40,6 +40,9 @@ type PropertySeed = {
   state: string;
   city: string;
   address: string;
+  lga?: string;
+  neighborhood?: string;
+  landmark?: string;
   bedrooms: number | null;
   bathrooms: number | null;
   parking_spaces: number | null;
@@ -52,6 +55,24 @@ type PropertySeed = {
   views_count: number;
   inquiry_count: number;
 };
+
+const cityCoordinates: Record<string, { latitude: number; longitude: number }> = {
+  Lagos: { latitude: 6.4698, longitude: 3.5852 },
+  Abuja: { latitude: 9.0765, longitude: 7.3986 },
+  "Port Harcourt": { latitude: 4.8156, longitude: 7.0498 },
+  Uyo: { latitude: 5.0377, longitude: 7.9128 },
+  Enugu: { latitude: 6.5244, longitude: 7.5086 },
+  Ibadan: { latitude: 7.3775, longitude: 3.947 },
+};
+
+function coordinatesFor(seed: PropertySeed, index: number) {
+  const base = cityCoordinates[seed.city] ?? { latitude: 9.082, longitude: 8.6753 };
+  const offset = (index % 5) * 0.008;
+  return {
+    latitude: Number((base.latitude + offset).toFixed(6)),
+    longitude: Number((base.longitude + offset / 2).toFixed(6)),
+  };
+}
 
 const propertySeeds: PropertySeed[] = [
   {
@@ -560,6 +581,10 @@ export const mockProperties: Property[] = propertySeeds.map((seed, index) => {
   const id = `property-${index + 1}`;
   const agent = mockAgents[seed.agentIndex % mockAgents.length];
   const gallery = galleryFor(id, seed.imageOffset);
+  const coordinates = coordinatesFor(seed, index);
+  const displayLocation = seed.neighborhood
+    ? `${seed.neighborhood}, ${seed.city}`
+    : seed.address;
   return {
     id,
     title: seed.title,
@@ -572,7 +597,21 @@ export const mockProperties: Property[] = propertySeeds.map((seed, index) => {
     country: "Nigeria",
     state: seed.state,
     city: seed.city,
-    address: seed.address,
+    lga: seed.lga,
+    neighborhood: seed.neighborhood ?? seed.address.split(",")[0],
+    landmark: seed.landmark,
+    address: displayLocation,
+    latitude: coordinates.latitude,
+    longitude: coordinates.longitude,
+    location_precision: "neighborhood",
+    approximate_location: true,
+    geocoding_status: "manual",
+    display_location: displayLocation,
+    location_metadata: {
+      has_map_location: true,
+      precision_label: "Neighborhood",
+      privacy_note: "Location is approximate for privacy.",
+    },
     bedrooms: seed.bedrooms,
     bathrooms: seed.bathrooms,
     parking_spaces: seed.parking_spaces,
@@ -614,6 +653,20 @@ function applyFilters(properties: Property[], filters: PropertyFilters): Propert
     const city = filters.city.toLowerCase();
     filtered = filtered.filter((property) => property.city.toLowerCase().includes(city));
   }
+  if (filters.state) {
+    const state = filters.state.toLowerCase();
+    filtered = filtered.filter((property) => property.state.toLowerCase().includes(state));
+  }
+  if (filters.lga) {
+    const lga = filters.lga.toLowerCase();
+    filtered = filtered.filter((property) => property.lga?.toLowerCase().includes(lga));
+  }
+  if (filters.neighborhood) {
+    const neighborhood = filters.neighborhood.toLowerCase();
+    filtered = filtered.filter((property) =>
+      property.neighborhood?.toLowerCase().includes(neighborhood),
+    );
+  }
   if (filters.property_type) {
     filtered = filtered.filter((property) => property.property_type === filters.property_type);
   }
@@ -625,6 +678,21 @@ function applyFilters(properties: Property[], filters: PropertyFilters): Propert
   }
   if (filters.max_price) {
     filtered = filtered.filter((property) => Number(property.price) <= Number(filters.max_price));
+  }
+  if (filters.has_map_location === "true") {
+    filtered = filtered.filter((property) => property.latitude && property.longitude);
+  }
+  if (filters.min_lat) {
+    filtered = filtered.filter((property) => Number(property.latitude) >= Number(filters.min_lat));
+  }
+  if (filters.max_lat) {
+    filtered = filtered.filter((property) => Number(property.latitude) <= Number(filters.max_lat));
+  }
+  if (filters.min_lng) {
+    filtered = filtered.filter((property) => Number(property.longitude) >= Number(filters.min_lng));
+  }
+  if (filters.max_lng) {
+    filtered = filtered.filter((property) => Number(property.longitude) <= Number(filters.max_lng));
   }
   const ordering = filters.ordering ?? "-featured";
   filtered.sort((first, second) => {
@@ -681,6 +749,20 @@ export async function mockCreateProperty(payload: PropertyPayload): Promise<Prop
     id,
     slug,
     ...payload,
+    lga: payload.lga,
+    neighborhood: payload.neighborhood,
+    landmark: payload.landmark,
+    latitude: payload.latitude ?? null,
+    longitude: payload.longitude ?? null,
+    location_precision: payload.location_precision ?? "neighborhood",
+    approximate_location: payload.location_precision !== "exact" || !payload.show_exact_location,
+    geocoding_status: payload.geocoding_status ?? "not_geocoded",
+    display_location: payload.display_location ?? `${payload.city}, ${payload.state}`,
+    location_metadata: {
+      has_map_location: Boolean(payload.latitude && payload.longitude),
+      precision_label: "Neighborhood",
+      privacy_note: "Location is approximate for privacy.",
+    },
     status: "draft",
     featured: false,
     cover_image_url: galleryPool[0],

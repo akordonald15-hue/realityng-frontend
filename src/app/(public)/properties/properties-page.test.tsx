@@ -51,7 +51,21 @@ describe("PropertiesPage", () => {
           country: "Nigeria",
           state: "Lagos",
           city: "Lagos",
+          lga: "Eti-Osa",
+          neighborhood: "Lekki Phase 1",
+          landmark: "Admiralty Way",
           address: "Lekki Phase 1",
+          latitude: "6.470",
+          longitude: "3.585",
+          location_precision: "neighborhood",
+          approximate_location: true,
+          geocoding_status: "manual",
+          display_location: "Lekki Phase 1, Lagos",
+          location_metadata: {
+            has_map_location: true,
+            precision_label: "Neighborhood",
+            privacy_note: "Location is approximate for privacy.",
+          },
           bedrooms: 3,
           bathrooms: 3,
           parking_spaces: 2,
@@ -81,5 +95,8 @@ describe("PropertiesPage", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "List" }));
     expect(screen.getByRole("button", { name: "List" })).toHaveClass("bg-brand-secondary");
+
+    fireEvent.click(screen.getByRole("button", { name: "Map" }));
+    expect(await screen.findByText("Map preview is ready.")).toBeInTheDocument();
   });
 });
