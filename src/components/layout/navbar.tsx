@@ -15,6 +15,7 @@ const marketplaceLinks = [
   { href: "/properties?property_type=shortlet", label: "Shortlets" },
   { href: "/properties?property_type=land", label: "Land" },
   { href: "/properties?property_type=commercial", label: "Commercial" },
+  { href: "/services", label: "Services" },
 ];
 
 const moreLinks = [
@@ -23,7 +24,7 @@ const moreLinks = [
   { href: "/listing-standards", label: "Listing standards" },
   { href: "/safety", label: "Safety" },
   { href: "/#diaspora", label: "Diaspora services" },
-  { href: "/#artisans", label: "Artisans" },
+  { href: "/services", label: "Services marketplace" },
   { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact" },
 ];
