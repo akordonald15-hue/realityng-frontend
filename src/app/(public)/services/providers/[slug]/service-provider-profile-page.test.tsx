@@ -1,10 +1,12 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ServiceProviderProfilePage from "@/app/(public)/services/providers/[slug]/page";
 import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
+  createQuoteRequest: vi.fn(),
   getServiceProvider: vi.fn(),
 }));
 
@@ -19,12 +21,15 @@ vi.mock("@/lib/api/services", async () => {
   );
   return {
     ...actual,
+    createQuoteRequest: (slug: string, payload: unknown) =>
+      mocks.createQuoteRequest(slug, payload),
     getServiceProvider: (slug: string) => mocks.getServiceProvider(slug),
   };
 });
 
 describe("ServiceProviderProfilePage", () => {
   beforeEach(() => {
+    mocks.createQuoteRequest.mockResolvedValue({});
     mocks.getServiceProvider.mockResolvedValue({
       id: "provider-1",
       slug: "bright-spark-electrical",
@@ -73,10 +78,7 @@ describe("ServiceProviderProfilePage", () => {
           service_radius_km: 15,
         },
       ],
-      portfolio: {
-        items: [],
-        message: "Portfolio uploads will be available in Sprint 9.2.",
-      },
+      portfolio: { items: [], message: "Portfolio images will appear after approval." },
       reviews_summary: {
         average_rating: "4.70",
         completed_jobs_count: 12,
@@ -87,14 +89,37 @@ describe("ServiceProviderProfilePage", () => {
     });
   });
 
-  it("renders provider profile with disabled future quote action", async () => {
+  it("renders provider profile and submits quote request details", async () => {
+    const user = userEvent.setup();
     renderWithQueryClient(<ServiceProviderProfilePage />);
 
     expect(await screen.findByRole("heading", { name: "Bright Spark Electrical" }))
       .toBeInTheDocument();
     expect(screen.getAllByText("Identity Verified").length).toBeGreaterThan(0);
-    expect(screen.getByText("Portfolio uploads will be available in Sprint 9.2."))
-      .toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Request Quote" })).toBeDisabled();
+    expect(screen.getByText("Portfolio images will appear after approval.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Request Quote" }));
+    await user.type(screen.getByLabelText("Project title"), "Fix inverter wiring");
+    await user.type(
+      screen.getByLabelText("Project details"),
+      "The inverter trips when the estate generator comes on.",
+    );
+    await user.type(screen.getByLabelText("Your name"), "Ada Okoro");
+    await user.type(screen.getByLabelText("Phone"), "08012345678");
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+
+    await user.click(screen.getByRole("button", { name: "Send quote request" }));
+
+    await waitFor(() => {
+      expect(mocks.createQuoteRequest).toHaveBeenCalledWith(
+        "bright-spark-electrical",
+        expect.objectContaining({
+          customer_name: "Ada Okoro",
+          phone: "08012345678",
+          project_title: "Fix inverter wiring",
+        }),
+      );
+    });
+    expect(await screen.findByText("Your request has been sent.")).toBeInTheDocument();
   });
 });

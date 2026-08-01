@@ -27,11 +27,16 @@ export default function AdminServiceProvidersPage() {
   return (
     <ProtectedRoute requireAdmin>
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <SectionHeader
-          eyebrow="Admin"
-          title="Service provider moderation"
-          description="Review profile submissions, requested changes, suspensions, and public marketplace readiness."
-        />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <SectionHeader
+            eyebrow="Admin"
+            title="Service provider moderation"
+            description="Review profile submissions, requested changes, suspensions, and public marketplace readiness."
+          />
+          <Link className={buttonClasses("secondary")} href="/admin/services/quote-requests">
+            Quote requests
+          </Link>
+        </div>
         <Card className="mt-6 grid gap-3 p-4 md:grid-cols-4">
           <Input
             onChange={(event) => updateFilter("search", event.target.value)}

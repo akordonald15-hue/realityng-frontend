@@ -9,9 +9,9 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { EmptyMarketplaceState, LoadingPlaceholder } from "@/components/services/marketplace-states";
 import { ProviderProfileHeader } from "@/components/services/provider-profile-header";
+import { RequestQuoteButton } from "@/components/services/request-quote-button";
 import { VerificationBadgeStack } from "@/components/services/verification-badge-stack";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getServiceProvider } from "@/lib/api/services";
@@ -141,12 +141,12 @@ export default function ServiceProviderProfilePage() {
             </p>
             <h2 className="mt-3 font-heading text-2xl font-semibold">Request Quote</h2>
             <p className="mt-3 text-sm leading-6 text-brand-muted">
-              Quote requests are planned for Sprint 9.3. This button is intentionally disabled
-              during the marketplace foundation release.
+              Share your project scope, contact details, and preferred start date. This is a
+              quotation request only, not a booking or payment.
             </p>
-            <Button className="mt-5 w-full" disabled>
-              Request Quote
-            </Button>
+            <div className="mt-5">
+              <RequestQuoteButton provider={provider} />
+            </div>
             <Link
               className="mt-4 block text-center text-sm font-semibold text-brand-secondary"
               href="/services"
