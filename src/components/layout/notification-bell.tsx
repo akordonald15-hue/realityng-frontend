@@ -51,8 +51,8 @@ export function NotificationBell() {
   async function handleOpen() {
     setIsLoading(true);
     try {
-      const response = await listNotifications({ page: 1 });
-      setNotifications(response.results.slice(0, 8));
+      const response = await listNotifications();
+      setNotifications(response.slice(0, 8));
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +91,7 @@ export function NotificationBell() {
           <span>Notifications</span>
           <Link
             className="text-xs font-medium text-brand-secondary hover:underline"
-            href="/notifications"
+            href="/dashboard/notifications"
           >
             View all
           </Link>

@@ -31,36 +31,20 @@ export type Notification = {
   created_at: string;
 };
 
-export type PaginatedResponse<T> = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
-};
-
 export type NotificationListParams = {
   is_read?: boolean;
   notification_type?: NotificationType;
-  page?: number;
 };
 
-const EMPTY_NOTIFICATIONS: PaginatedResponse<Notification> = {
-  count: 0,
-  next: null,
-  previous: null,
-  results: [],
-};
+const EMPTY_NOTIFICATIONS: Notification[] = [];
 
-export async function listNotifications(
-  params?: NotificationListParams,
-): Promise<PaginatedResponse<Notification>> {
+export async function listNotifications(params?: NotificationListParams): Promise<Notification[]> {
   if (USE_MOCKS) {
     return EMPTY_NOTIFICATIONS;
   }
-  const response = await apiClient.get<PaginatedResponse<Notification>>(
-    "/notifications/",
-    { params },
-  );
+  const response = await apiClient.get<Notification[]>("/notifications/", {
+    params,
+  });
   return response.data;
 }
 
@@ -68,15 +52,11 @@ export async function getUnreadNotificationCount(): Promise<number> {
   if (USE_MOCKS) {
     return 0;
   }
-  const response = await apiClient.get<{ count: number }>(
-    "/notifications/unread-count/",
-  );
+  const response = await apiClient.get<{ count: number }>("/notifications/unread-count/");
   return response.data.count;
 }
 
-export async function markNotificationRead(
-  notificationId: string,
-): Promise<Notification> {
+export async function markNotificationRead(notificationId: string): Promise<Notification> {
   const response = await apiClient.post<Notification>(
     `/notifications/${notificationId}/mark-read/`,
   );
@@ -84,8 +64,6 @@ export async function markNotificationRead(
 }
 
 export async function markAllNotificationsRead(): Promise<{ marked: number }> {
-  const response = await apiClient.post<{ marked: number }>(
-    "/notifications/mark-all-read/",
-  );
+  const response = await apiClient.post<{ marked: number }>("/notifications/mark-all-read/");
   return response.data;
 }

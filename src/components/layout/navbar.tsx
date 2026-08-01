@@ -221,6 +221,13 @@ export function Navbar() {
           <div className="my-2 border-t border-white/10" />
           {!isLoading && isAuthenticated ? (
             <>
+              <Link
+                className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+                href="/dashboard/notifications"
+                onClick={() => setIsOpen(false)}
+              >
+                Notifications
+              </Link>
               {protectedAccountLinks.map((link) => (
                 <Link
                   className={
