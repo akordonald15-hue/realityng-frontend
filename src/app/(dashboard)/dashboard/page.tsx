@@ -92,6 +92,11 @@ const buyerActionLinks = [
 const supplyActionLinks = [
   ...dashboardLinks,
   {
+    href: "/dashboard/artisan",
+    title: "Provider profile",
+    description: "Manage trades, service areas, portfolio samples, and moderation status.",
+  },
+  {
     href: "/verification",
     title: "Verification centre",
     description: "Manage professional, ownership, or listing verification requests.",
@@ -108,6 +113,11 @@ const adminActionLinks = [
     href: "/admin/verifications",
     title: "Verification queue",
     description: "Inspect private documents and approve or reject verification requests.",
+  },
+  {
+    href: "/admin/services/providers",
+    title: "Service provider queue",
+    description: "Moderate artisan profiles, service areas, and portfolio readiness.",
   },
   {
     href: "/properties",
