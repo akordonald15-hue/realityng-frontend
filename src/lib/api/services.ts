@@ -6,8 +6,11 @@ import {
   mockAdminListProviders,
   mockAdminReactivateProvider,
   mockAdminRejectProvider,
+  mockAdminCloseQuoteRequest,
+  mockAdminListQuoteRequests,
   mockAdminRequestProviderInfo,
   mockAdminSuspendProvider,
+  mockCreateQuoteRequest,
   mockCreatePortfolioImage,
   mockCreateProviderProfile,
   mockCreateProviderTrade,
@@ -22,9 +25,13 @@ import {
   mockGetTradeCategories,
   mockListPortfolioImages,
   mockListProviderTrades,
+  mockListProviderQuoteRequests,
   mockListServiceAreas,
   mockReorderPortfolioImages,
   mockSetPortfolioCover,
+  mockMarkQuoteRequestClosed,
+  mockMarkQuoteRequestResponded,
+  mockMarkQuoteRequestViewed,
   mockSubmitProviderProfile,
   mockUpdateMyProviderProfile,
   mockUpdatePortfolioImage,
@@ -215,6 +222,65 @@ export type AdminProviderDecisionPayload = {
   review_notes?: string;
 };
 
+export type QuoteRequestStatus = "submitted" | "viewed" | "responded" | "closed" | "cancelled";
+export type PreferredContactMethod = "phone" | "email" | "whatsapp";
+
+export type QuoteRequestPayload = {
+  service_category_id?: string;
+  customer_name?: string;
+  project_title: string;
+  project_description: string;
+  budget_range?: string;
+  preferred_contact_method: PreferredContactMethod;
+  phone?: string;
+  email?: string;
+  property_address?: string;
+  state: string;
+  lga?: string;
+  preferred_start_date?: string;
+};
+
+export type QuoteRequest = {
+  id: string;
+  customer: string | null;
+  customer_name: string;
+  customer_email?: string;
+  provider: Pick<
+    ServiceProvider,
+    "id" | "slug" | "business_name" | "provider_type" | "display_location"
+  >;
+  service_category: TradeCategory | null;
+  project_title: string;
+  project_description: string;
+  budget_range: string;
+  preferred_contact_method: PreferredContactMethod;
+  phone: string;
+  email: string;
+  property_address: string;
+  state: string;
+  lga: string;
+  preferred_start_date: string | null;
+  status: QuoteRequestStatus;
+  viewed_at: string | null;
+  responded_at: string | null;
+  closed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuoteRequestFilters = {
+  status?: QuoteRequestStatus | "";
+  search?: string;
+  ordering?: "newest" | "oldest" | "";
+};
+
+export type PaginatedQuoteRequests = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: QuoteRequest[];
+};
+
 export type ServiceProviderFilters = {
   search?: string;
   category?: string;
@@ -232,7 +298,9 @@ export type PaginatedServiceProviders = {
   results: ServiceProvider[];
 };
 
-function cleanFilters(filters: ServiceProviderFilters): Record<string, string> {
+function cleanFilters(
+  filters: ServiceProviderFilters | AdminProviderFilters | QuoteRequestFilters,
+): Record<string, string> {
   return Object.fromEntries(
     Object.entries(filters).filter(([, value]) => value !== undefined && value !== ""),
   ) as Record<string, string>;
@@ -544,6 +612,86 @@ export async function adminReactivateProvider(id: string): Promise<OwnerServiceP
   }
   const response = await apiClient.post<OwnerServiceProvider>(
     `/services/admin/providers/${id}/reactivate/`,
+  );
+  return response.data;
+}
+
+export async function createQuoteRequest(
+  providerSlug: string,
+  payload: QuoteRequestPayload,
+): Promise<QuoteRequest> {
+  if (USE_MOCKS) {
+    return mockCreateQuoteRequest(providerSlug, payload);
+  }
+  const response = await apiClient.post<QuoteRequest>(
+    `/services/providers/${providerSlug}/quote-requests/`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function listProviderQuoteRequests(
+  filters: QuoteRequestFilters = {},
+): Promise<PaginatedQuoteRequests> {
+  if (USE_MOCKS) {
+    return mockListProviderQuoteRequests(filters);
+  }
+  const response = await apiClient.get<PaginatedQuoteRequests>(
+    "/services/provider-profile/quote-requests/",
+    { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function markQuoteRequestViewed(id: string): Promise<QuoteRequest> {
+  if (USE_MOCKS) {
+    return mockMarkQuoteRequestViewed(id);
+  }
+  const response = await apiClient.post<QuoteRequest>(
+    `/services/provider-profile/quote-requests/${id}/mark-viewed/`,
+  );
+  return response.data;
+}
+
+export async function markQuoteRequestResponded(id: string): Promise<QuoteRequest> {
+  if (USE_MOCKS) {
+    return mockMarkQuoteRequestResponded(id);
+  }
+  const response = await apiClient.post<QuoteRequest>(
+    `/services/provider-profile/quote-requests/${id}/mark-responded/`,
+  );
+  return response.data;
+}
+
+export async function markQuoteRequestClosed(id: string): Promise<QuoteRequest> {
+  if (USE_MOCKS) {
+    return mockMarkQuoteRequestClosed(id);
+  }
+  const response = await apiClient.post<QuoteRequest>(
+    `/services/provider-profile/quote-requests/${id}/close/`,
+  );
+  return response.data;
+}
+
+export async function adminListQuoteRequests(
+  filters: QuoteRequestFilters = {},
+): Promise<PaginatedQuoteRequests> {
+  if (USE_MOCKS) {
+    return mockAdminListQuoteRequests(filters);
+  }
+  const response = await apiClient.get<PaginatedQuoteRequests>(
+    "/services/admin/quote-requests/",
+    { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function adminCloseQuoteRequest(id: string): Promise<QuoteRequest> {
+  if (USE_MOCKS) {
+    return mockAdminCloseQuoteRequest(id);
+  }
+  const response = await apiClient.post<QuoteRequest>(
+    `/services/admin/quote-requests/${id}/close/`,
   );
   return response.data;
 }

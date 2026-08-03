@@ -126,6 +126,9 @@ export default function ArtisanDashboardPage() {
               <Link className={buttonClasses("secondary")} href="/dashboard/artisan/portfolio">
                 Manage portfolio
               </Link>
+              <Link className={buttonClasses("secondary")} href="/dashboard/artisan/quote-requests">
+                Quote requests
+              </Link>
               <Button
                 disabled={submitMutation.isPending || profile.status === "pending_review"}
                 onClick={() => submitMutation.mutate()}

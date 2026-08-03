@@ -3,10 +3,14 @@ import type {
   AdminProviderFilters,
   OwnerServiceProvider,
   PaginatedServiceProviders,
+  PaginatedQuoteRequests,
   PortfolioImage,
   PortfolioImageMetadataPayload,
   PortfolioImagePayload,
   PortfolioReorderPayload,
+  QuoteRequest,
+  QuoteRequestFilters,
+  QuoteRequestPayload,
   ServiceProvider,
   ServiceProviderFilters,
   ProviderProfilePayload,
@@ -364,6 +368,37 @@ let mockOwnerServiceAreas: ServiceArea[] = mockOwnerProfile.service_areas.map((a
   is_primary: index === 0,
 }));
 let mockOwnerPortfolio: PortfolioImage[] = [];
+let mockQuoteRequests: QuoteRequest[] = [
+  {
+    id: "quote-demo-electrical",
+    customer: null,
+    customer_name: "Ada Buyer",
+    provider: {
+      id: "provider-bright-spark",
+      slug: "bright-spark-electrical",
+      business_name: "Bright Spark Electrical",
+      provider_type: "individual",
+      display_location: "Lekki, Lagos",
+    },
+    service_category: mockTradeCategories[0].children[0],
+    project_title: "Repair inverter wiring",
+    project_description: "The inverter trips when power changes over in the apartment.",
+    budget_range: "NGN 100,000 - 250,000",
+    preferred_contact_method: "whatsapp",
+    phone: "+2348090000000",
+    email: "ada@example.com",
+    property_address: "Lekki Phase 1",
+    state: "Lagos",
+    lga: "Eti-Osa",
+    preferred_start_date: "2026-08-12",
+    status: "submitted",
+    viewed_at: null,
+    responded_at: null,
+    closed_at: null,
+    created_at: "2026-08-01T09:00:00Z",
+    updated_at: "2026-08-01T09:00:00Z",
+  },
+];
 
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -436,6 +471,46 @@ function flattenCategories(categories: TradeCategory[]): TradeCategory[] {
 
 function matchesText(value: string | undefined, query: string | undefined) {
   return (value ?? "").toLowerCase().includes((query ?? "").toLowerCase());
+}
+
+function filterQuoteRequests(filters: QuoteRequestFilters = {}) {
+  let requests = [...mockQuoteRequests];
+  if (filters.status) {
+    requests = requests.filter((request) => request.status === filters.status);
+  }
+  if (filters.search) {
+    requests = requests.filter(
+      (request) =>
+        matchesText(request.project_title, filters.search) ||
+        matchesText(request.project_description, filters.search) ||
+        matchesText(request.customer_name, filters.search),
+    );
+  }
+  requests.sort((a, b) =>
+    filters.ordering === "oldest"
+      ? a.created_at.localeCompare(b.created_at)
+      : b.created_at.localeCompare(a.created_at),
+  );
+  return requests;
+}
+
+function updateQuoteRequestStatus(id: string, status: QuoteRequest["status"]) {
+  let updated: QuoteRequest | null = null;
+  const now = new Date().toISOString();
+  mockQuoteRequests = mockQuoteRequests.map((request) => {
+    if (request.id !== id) return request;
+    updated = {
+      ...request,
+      status,
+      viewed_at: status === "viewed" ? now : request.viewed_at,
+      responded_at: status === "responded" ? now : request.responded_at,
+      closed_at: status === "closed" || status === "cancelled" ? now : request.closed_at,
+      updated_at: now,
+    };
+    return updated;
+  });
+  if (!updated) throw new Error("Quote request was not found.");
+  return updated;
 }
 
 export async function mockGetTradeCategories(): Promise<TradeCategory[]> {
@@ -834,4 +909,83 @@ export async function mockAdminSuspendProvider(
 export async function mockAdminReactivateProvider(id: string): Promise<OwnerServiceProvider> {
   if (requireOwnerProfile().id !== id) return mockAdminGetProvider(id);
   return updateMockProviderStatus("active");
+}
+
+export async function mockCreateQuoteRequest(
+  providerSlug: string,
+  payload: QuoteRequestPayload,
+): Promise<QuoteRequest> {
+  const provider = mockProviders.find((item) => item.slug === providerSlug);
+  if (!provider) {
+    throw new Error("Service provider not found.");
+  }
+  if (!payload.customer_name || !payload.phone || !payload.email) {
+    throw new Error("Name, phone, and email are required for quote requests.");
+  }
+  const category = payload.service_category_id ? findCategory(payload.service_category_id) : null;
+  const now = new Date().toISOString();
+  const request: QuoteRequest = {
+    id: createId("quote"),
+    customer: null,
+    customer_name: payload.customer_name,
+    provider: {
+      id: provider.id,
+      slug: provider.slug,
+      business_name: provider.business_name,
+      provider_type: provider.provider_type,
+      display_location: provider.display_location,
+    },
+    service_category: category ?? provider.primary_trade?.category ?? null,
+    project_title: payload.project_title,
+    project_description: payload.project_description,
+    budget_range: payload.budget_range ?? "",
+    preferred_contact_method: payload.preferred_contact_method,
+    phone: payload.phone ?? "",
+    email: payload.email ?? "",
+    property_address: payload.property_address ?? "",
+    state: payload.state,
+    lga: payload.lga ?? "",
+    preferred_start_date: payload.preferred_start_date ?? null,
+    status: "submitted",
+    viewed_at: null,
+    responded_at: null,
+    closed_at: null,
+    created_at: now,
+    updated_at: now,
+  };
+  mockQuoteRequests = [request, ...mockQuoteRequests];
+  return request;
+}
+
+export async function mockListProviderQuoteRequests(
+  filters: QuoteRequestFilters = {},
+): Promise<PaginatedQuoteRequests> {
+  const provider = requireOwnerProfile();
+  const results = filterQuoteRequests(filters).filter(
+    (request) => request.provider.id === provider.id || request.provider.slug === provider.slug,
+  );
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockMarkQuoteRequestViewed(id: string): Promise<QuoteRequest> {
+  return updateQuoteRequestStatus(id, "viewed");
+}
+
+export async function mockMarkQuoteRequestResponded(id: string): Promise<QuoteRequest> {
+  return updateQuoteRequestStatus(id, "responded");
+}
+
+export async function mockMarkQuoteRequestClosed(id: string): Promise<QuoteRequest> {
+  return updateQuoteRequestStatus(id, "closed");
+}
+
+export async function mockAdminListQuoteRequests(
+  filters: QuoteRequestFilters = {},
+): Promise<PaginatedQuoteRequests> {
+  const results = filterQuoteRequests(filters);
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockAdminCloseQuoteRequest(id: string): Promise<QuoteRequest> {
+  return updateQuoteRequestStatus(id, "closed");
 }
