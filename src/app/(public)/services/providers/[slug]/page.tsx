@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
@@ -51,6 +52,7 @@ export default function ServiceProviderProfilePage() {
   }
 
   const provider = providerQuery.data;
+  const portfolioItems = provider.portfolio?.items ?? [];
 
   return (
     <main className="min-h-screen bg-brand-background text-brand-text">
@@ -87,18 +89,35 @@ export default function ServiceProviderProfilePage() {
               <SectionHeader
                 eyebrow="Portfolio"
                 title="Work samples"
-                description={provider.portfolio?.message ?? "Portfolio uploads are coming soon."}
+                description={
+                  provider.portfolio?.message ??
+                  "Approved portfolio samples will appear here when available."
+                }
               />
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {[1, 2, 3].map((item) => (
-                  <div
-                    className="flex aspect-[4/3] items-center justify-center rounded-md border border-dashed border-white/15 bg-white/5 text-sm text-brand-muted"
-                    key={item}
-                  >
-                    Portfolio placeholder
-                  </div>
-                ))}
-              </div>
+              {portfolioItems.length > 0 ? (
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  {portfolioItems.map((item) => (
+                    <div className="overflow-hidden rounded-md border border-white/10" key={item.id}>
+                      <div className="relative aspect-[4/3] bg-white/5">
+                        <Image
+                          alt={item.caption || `${provider.business_name} portfolio image`}
+                          className="object-cover"
+                          fill
+                          sizes="(min-width: 1024px) 33vw, 100vw"
+                          src={item.image_url}
+                        />
+                      </div>
+                      {item.caption ? (
+                        <p className="px-3 py-2 text-sm text-brand-muted">{item.caption}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-6 rounded-md border border-dashed border-white/15 bg-white/5 p-5 text-sm text-brand-muted">
+                  No approved portfolio images have been published yet.
+                </div>
+              )}
             </Card>
 
             <Card className="p-6">

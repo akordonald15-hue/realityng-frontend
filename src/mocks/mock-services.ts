@@ -1,7 +1,19 @@
 import type {
+  AdminProviderDecisionPayload,
+  AdminProviderFilters,
+  OwnerServiceProvider,
   PaginatedServiceProviders,
+  PortfolioImage,
+  PortfolioImageMetadataPayload,
+  PortfolioImagePayload,
+  PortfolioReorderPayload,
   ServiceProvider,
   ServiceProviderFilters,
+  ProviderProfilePayload,
+  ProviderTrade,
+  ProviderTradePayload,
+  ServiceArea,
+  ServiceAreaPayload,
   TradeCategory,
 } from "@/lib/api/services";
 
@@ -334,6 +346,90 @@ const mockProviders: ServiceProvider[] = [
   },
 ];
 
+let mockOwnerProfile: OwnerServiceProvider | null = {
+  ...mockProviders[0],
+  status: "draft",
+  private_address: "House 14, Admiralty Way, Lekki",
+  completion: {
+    is_complete: true,
+    missing_fields: [],
+    warnings: ["Submit your profile for RealityNG moderation when ready."],
+  },
+  portfolio_count: 0,
+};
+
+let mockOwnerTrades: ProviderTrade[] = [...(mockOwnerProfile.trades ?? [])];
+let mockOwnerServiceAreas: ServiceArea[] = mockOwnerProfile.service_areas.map((area, index) => ({
+  ...area,
+  is_primary: index === 0,
+}));
+let mockOwnerPortfolio: PortfolioImage[] = [];
+
+function createId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function findCategory(id: string) {
+  return flattenCategories(mockTradeCategories).find(
+    (category) => category.id === id || category.slug === id,
+  );
+}
+
+function syncOwnerCollections() {
+  if (!mockOwnerProfile) return;
+  const primaryTrade = mockOwnerTrades.find((trade) => trade.is_primary) ?? mockOwnerTrades[0] ?? null;
+  mockOwnerProfile = {
+    ...mockOwnerProfile,
+    trades: mockOwnerTrades,
+    primary_trade: primaryTrade,
+    service_areas: mockOwnerServiceAreas,
+    portfolio: {
+      items: mockOwnerPortfolio,
+      message: mockOwnerPortfolio.length
+        ? "Approved portfolio samples from this provider."
+        : "Add portfolio images to strengthen your public profile.",
+    },
+    portfolio_count: mockOwnerPortfolio.length,
+    completion: buildCompletion(mockOwnerProfile),
+  };
+}
+
+function requireOwnerProfile() {
+  if (!mockOwnerProfile) {
+    throw new Error("Create a provider profile first.");
+  }
+  syncOwnerCollections();
+  return mockOwnerProfile;
+}
+
+function buildCompletion(provider: OwnerServiceProvider) {
+  const missing: string[] = [];
+  if (!provider.business_name) missing.push("Business name");
+  if (!provider.provider_type) missing.push("Provider type");
+  if (!provider.headline) missing.push("Headline");
+  if (!provider.biography) missing.push("Biography");
+  if (!provider.phone && !provider.email) missing.push("Contact details");
+  if (!mockOwnerTrades.some((trade) => trade.is_primary)) missing.push("Primary trade");
+  if (mockOwnerServiceAreas.length === 0) missing.push("Service area");
+  return {
+    is_complete: missing.length === 0,
+    missing_fields: missing,
+    warnings: provider.status === "active" ? [] : ["Profile must be approved before it is public."],
+  };
+}
+
+function updateMockProviderStatus(status: OwnerServiceProvider["status"], extra = {}) {
+  const provider = requireOwnerProfile();
+  mockOwnerProfile = {
+    ...provider,
+    status,
+    ...extra,
+    updated_at: new Date().toISOString(),
+  };
+  syncOwnerCollections();
+  return mockOwnerProfile;
+}
+
 function flattenCategories(categories: TradeCategory[]): TradeCategory[] {
   return categories.flatMap((category) => [category, ...flattenCategories(category.children)]);
 }
@@ -404,4 +500,338 @@ export async function mockGetServiceProvider(slug: string): Promise<ServiceProvi
     throw new Error("Service provider not found.");
   }
   return provider;
+}
+
+export async function mockCreateProviderProfile(
+  payload: ProviderProfilePayload,
+): Promise<OwnerServiceProvider> {
+  if (mockOwnerProfile) {
+    throw new Error("You already have a provider profile.");
+  }
+  mockOwnerProfile = {
+    id: createId("provider"),
+    slug: payload.business_name?.toLowerCase().replace(/[^a-z0-9]+/g, "-") ?? "my-provider",
+    status: "draft",
+    provider_type: payload.provider_type ?? "individual",
+    business_name: payload.business_name ?? "",
+    headline: payload.headline ?? "",
+    biography: payload.biography ?? "",
+    phone: payload.phone ?? "",
+    email: payload.email ?? "",
+    country: payload.country ?? "Nigeria",
+    state: payload.state ?? "",
+    city: payload.city ?? "",
+    lga: payload.lga ?? "",
+    neighborhood: payload.neighborhood ?? "",
+    display_location: payload.display_location ?? [payload.city, payload.state].filter(Boolean).join(", "),
+    private_address: payload.private_address ?? "",
+    verification_badges: [],
+    average_rating: "0.00",
+    completed_jobs_count: 0,
+    trades: [],
+    primary_trade: null,
+    service_areas: [],
+    portfolio: { items: [], message: "Add portfolio images to strengthen your public profile." },
+    reviews_summary: {
+      average_rating: "0.00",
+      completed_jobs_count: 0,
+      review_count: 0,
+      message: "Verified booking reviews will be available in a later Sprint 9 phase.",
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    completion: { is_complete: false, missing_fields: [], warnings: [] },
+    portfolio_count: 0,
+  };
+  mockOwnerTrades = [];
+  mockOwnerServiceAreas = [];
+  mockOwnerPortfolio = [];
+  syncOwnerCollections();
+  return mockOwnerProfile;
+}
+
+export async function mockGetMyProviderProfile(): Promise<OwnerServiceProvider> {
+  return requireOwnerProfile();
+}
+
+export async function mockUpdateMyProviderProfile(
+  payload: ProviderProfilePayload,
+): Promise<OwnerServiceProvider> {
+  const provider = requireOwnerProfile();
+  mockOwnerProfile = {
+    ...provider,
+    ...payload,
+    display_location:
+      payload.display_location ??
+      provider.display_location ??
+      [payload.city ?? provider.city, payload.state ?? provider.state].filter(Boolean).join(", "),
+    updated_at: new Date().toISOString(),
+  };
+  syncOwnerCollections();
+  return mockOwnerProfile;
+}
+
+export async function mockSubmitProviderProfile(): Promise<OwnerServiceProvider> {
+  const provider = requireOwnerProfile();
+  const completion = buildCompletion(provider);
+  if (!completion.is_complete) {
+    throw new Error(`Complete these items first: ${completion.missing_fields.join(", ")}`);
+  }
+  return updateMockProviderStatus("pending_review", { submitted_at: new Date().toISOString() });
+}
+
+export async function mockDeactivateProviderProfile(): Promise<OwnerServiceProvider> {
+  return updateMockProviderStatus("inactive");
+}
+
+export async function mockListProviderTrades(): Promise<ProviderTrade[]> {
+  syncOwnerCollections();
+  return mockOwnerTrades;
+}
+
+export async function mockCreateProviderTrade(payload: ProviderTradePayload): Promise<ProviderTrade> {
+  const category = findCategory(payload.category_id);
+  if (!category) throw new Error("Trade category was not found.");
+  if (mockOwnerTrades.some((trade) => trade.category.id === category.id)) {
+    throw new Error("This trade category is already selected.");
+  }
+  if (payload.is_primary || mockOwnerTrades.length === 0) {
+    mockOwnerTrades = mockOwnerTrades.map((trade) => ({ ...trade, is_primary: false }));
+  }
+  const trade: ProviderTrade = {
+    id: createId("trade"),
+    category,
+    is_primary: payload.is_primary ?? mockOwnerTrades.length === 0,
+    years_experience: payload.years_experience ?? null,
+    skill_level: payload.skill_level ?? "intermediate",
+  };
+  mockOwnerTrades.push(trade);
+  syncOwnerCollections();
+  return trade;
+}
+
+export async function mockUpdateProviderTrade(
+  id: string,
+  payload: Partial<ProviderTradePayload>,
+): Promise<ProviderTrade> {
+  let updated: ProviderTrade | null = null;
+  if (payload.is_primary) {
+    mockOwnerTrades = mockOwnerTrades.map((trade) => ({ ...trade, is_primary: false }));
+  }
+  mockOwnerTrades = mockOwnerTrades.map((trade) => {
+    if (trade.id !== id) return trade;
+    updated = {
+      ...trade,
+      is_primary: payload.is_primary ?? trade.is_primary,
+      years_experience: payload.years_experience ?? trade.years_experience,
+      skill_level: payload.skill_level ?? trade.skill_level,
+    };
+    return updated;
+  });
+  if (!updated) throw new Error("Trade was not found.");
+  syncOwnerCollections();
+  return updated;
+}
+
+export async function mockDeleteProviderTrade(id: string): Promise<void> {
+  const wasPrimary = mockOwnerTrades.find((trade) => trade.id === id)?.is_primary;
+  mockOwnerTrades = mockOwnerTrades.filter((trade) => trade.id !== id);
+  if (wasPrimary && mockOwnerTrades[0]) {
+    mockOwnerTrades[0] = { ...mockOwnerTrades[0], is_primary: true };
+  }
+  syncOwnerCollections();
+}
+
+export async function mockListServiceAreas(): Promise<ServiceArea[]> {
+  syncOwnerCollections();
+  return mockOwnerServiceAreas;
+}
+
+export async function mockCreateServiceArea(payload: ServiceAreaPayload): Promise<ServiceArea> {
+  if (payload.is_primary || mockOwnerServiceAreas.length === 0) {
+    mockOwnerServiceAreas = mockOwnerServiceAreas.map((area) => ({ ...area, is_primary: false }));
+  }
+  const area: ServiceArea = {
+    id: createId("area"),
+    country: payload.country ?? "Nigeria",
+    state: payload.state,
+    city: payload.city,
+    lga: payload.lga ?? "",
+    neighborhood: payload.neighborhood ?? "",
+    service_radius_km: payload.service_radius_km ?? null,
+    is_primary: payload.is_primary ?? mockOwnerServiceAreas.length === 0,
+  };
+  mockOwnerServiceAreas.push(area);
+  syncOwnerCollections();
+  return area;
+}
+
+export async function mockUpdateServiceArea(
+  id: string,
+  payload: Partial<ServiceAreaPayload>,
+): Promise<ServiceArea> {
+  let updated: ServiceArea | null = null;
+  if (payload.is_primary) {
+    mockOwnerServiceAreas = mockOwnerServiceAreas.map((area) => ({ ...area, is_primary: false }));
+  }
+  mockOwnerServiceAreas = mockOwnerServiceAreas.map((area) => {
+    if (area.id !== id) return area;
+    updated = { ...area, ...payload };
+    return updated;
+  });
+  if (!updated) throw new Error("Service area was not found.");
+  syncOwnerCollections();
+  return updated;
+}
+
+export async function mockDeleteServiceArea(id: string): Promise<void> {
+  const wasPrimary = mockOwnerServiceAreas.find((area) => area.id === id)?.is_primary;
+  mockOwnerServiceAreas = mockOwnerServiceAreas.filter((area) => area.id !== id);
+  if (wasPrimary && mockOwnerServiceAreas[0]) {
+    mockOwnerServiceAreas[0] = { ...mockOwnerServiceAreas[0], is_primary: true };
+  }
+  syncOwnerCollections();
+}
+
+export async function mockListPortfolioImages(): Promise<PortfolioImage[]> {
+  return mockOwnerPortfolio;
+}
+
+export async function mockCreatePortfolioImage(
+  payload: PortfolioImagePayload,
+): Promise<PortfolioImage> {
+  if (!payload.image.type.startsWith("image/")) {
+    throw new Error("Upload a valid image file.");
+  }
+  const image: PortfolioImage = {
+    id: createId("portfolio"),
+    image_url: URL.createObjectURL(payload.image),
+    caption: payload.caption ?? "",
+    category: payload.category_id ? findCategory(payload.category_id) ?? null : null,
+    display_order: payload.display_order ?? mockOwnerPortfolio.length,
+    is_cover: payload.is_cover ?? mockOwnerPortfolio.length === 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  if (image.is_cover) {
+    mockOwnerPortfolio = mockOwnerPortfolio.map((item) => ({ ...item, is_cover: false }));
+  }
+  mockOwnerPortfolio.push(image);
+  syncOwnerCollections();
+  return image;
+}
+
+export async function mockUpdatePortfolioImage(
+  id: string,
+  payload: PortfolioImageMetadataPayload,
+): Promise<PortfolioImage> {
+  let updated: PortfolioImage | null = null;
+  if (payload.is_cover) {
+    mockOwnerPortfolio = mockOwnerPortfolio.map((image) => ({ ...image, is_cover: false }));
+  }
+  mockOwnerPortfolio = mockOwnerPortfolio.map((image) => {
+    if (image.id !== id) return image;
+    updated = {
+      ...image,
+      caption: payload.caption ?? image.caption,
+      category: payload.category_id ? findCategory(payload.category_id) ?? null : image.category,
+      display_order: payload.display_order ?? image.display_order,
+      is_cover: payload.is_cover ?? image.is_cover,
+      updated_at: new Date().toISOString(),
+    };
+    return updated;
+  });
+  if (!updated) throw new Error("Portfolio image was not found.");
+  syncOwnerCollections();
+  return updated;
+}
+
+export async function mockDeletePortfolioImage(id: string): Promise<void> {
+  const wasCover = mockOwnerPortfolio.find((image) => image.id === id)?.is_cover;
+  mockOwnerPortfolio = mockOwnerPortfolio.filter((image) => image.id !== id);
+  if (wasCover && mockOwnerPortfolio[0]) {
+    mockOwnerPortfolio[0] = { ...mockOwnerPortfolio[0], is_cover: true };
+  }
+  syncOwnerCollections();
+}
+
+export async function mockSetPortfolioCover(id: string): Promise<PortfolioImage> {
+  let selected: PortfolioImage | null = null;
+  mockOwnerPortfolio = mockOwnerPortfolio.map((image) => {
+    const next = { ...image, is_cover: image.id === id };
+    if (next.is_cover) selected = next;
+    return next;
+  });
+  if (!selected) throw new Error("Portfolio image was not found.");
+  syncOwnerCollections();
+  return selected;
+}
+
+export async function mockReorderPortfolioImages(
+  payload: PortfolioReorderPayload,
+): Promise<PortfolioImage[]> {
+  const order = new Map(payload.items.map((item) => [item.id, item.display_order]));
+  mockOwnerPortfolio = mockOwnerPortfolio
+    .map((image) => ({ ...image, display_order: order.get(image.id) ?? image.display_order }))
+    .sort((a, b) => a.display_order - b.display_order);
+  syncOwnerCollections();
+  return mockOwnerPortfolio;
+}
+
+export async function mockAdminListProviders(
+  filters: AdminProviderFilters = {},
+): Promise<PaginatedServiceProviders> {
+  const providers = [requireOwnerProfile(), ...mockProviders].filter((provider) => {
+    if (filters.status && provider.status !== filters.status) return false;
+    if (filters.provider_type && provider.provider_type !== filters.provider_type) return false;
+    if (filters.state && !matchesText(provider.state, filters.state)) return false;
+    if (filters.city && !matchesText(provider.city, filters.city)) return false;
+    if (filters.search && !matchesText(provider.business_name, filters.search)) return false;
+    return true;
+  });
+  return { count: providers.length, next: null, previous: null, results: providers };
+}
+
+export async function mockAdminGetProvider(id: string): Promise<OwnerServiceProvider> {
+  const owner = requireOwnerProfile();
+  if (owner.id === id) return owner;
+  const provider = mockProviders.find((item) => item.id === id);
+  if (!provider) throw new Error("Provider was not found.");
+  return { ...provider, status: provider.status ?? "active", completion: buildCompletion(owner) };
+}
+
+export async function mockAdminApproveProvider(id: string): Promise<OwnerServiceProvider> {
+  if (requireOwnerProfile().id !== id) return mockAdminGetProvider(id);
+  return updateMockProviderStatus("active", { reviewed_at: new Date().toISOString() });
+}
+
+export async function mockAdminRejectProvider(
+  id: string,
+  payload: AdminProviderDecisionPayload,
+): Promise<OwnerServiceProvider> {
+  if (requireOwnerProfile().id !== id) return mockAdminGetProvider(id);
+  return updateMockProviderStatus("rejected", { rejection_reason: payload.reason ?? "" });
+}
+
+export async function mockAdminRequestProviderInfo(
+  id: string,
+  payload: AdminProviderDecisionPayload,
+): Promise<OwnerServiceProvider> {
+  if (requireOwnerProfile().id !== id) return mockAdminGetProvider(id);
+  return updateMockProviderStatus("needs_more_information", {
+    more_info_message: payload.message ?? "",
+  });
+}
+
+export async function mockAdminSuspendProvider(
+  id: string,
+  payload: AdminProviderDecisionPayload,
+): Promise<OwnerServiceProvider> {
+  if (requireOwnerProfile().id !== id) return mockAdminGetProvider(id);
+  return updateMockProviderStatus("suspended", { suspended_reason: payload.reason ?? "" });
+}
+
+export async function mockAdminReactivateProvider(id: string): Promise<OwnerServiceProvider> {
+  if (requireOwnerProfile().id !== id) return mockAdminGetProvider(id);
+  return updateMockProviderStatus("active");
 }
