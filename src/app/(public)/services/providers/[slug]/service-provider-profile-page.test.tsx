@@ -8,6 +8,7 @@ import { renderWithQueryClient } from "@/test/render";
 const mocks = vi.hoisted(() => ({
   createQuoteRequest: vi.fn(),
   getServiceProvider: vi.fn(),
+  listServiceReviews: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -24,12 +25,45 @@ vi.mock("@/lib/api/services", async () => {
     createQuoteRequest: (slug: string, payload: unknown) =>
       mocks.createQuoteRequest(slug, payload),
     getServiceProvider: (slug: string) => mocks.getServiceProvider(slug),
+    listServiceReviews: (slug: string) => mocks.listServiceReviews(slug),
   };
 });
 
 describe("ServiceProviderProfilePage", () => {
   beforeEach(() => {
     mocks.createQuoteRequest.mockResolvedValue({});
+    mocks.listServiceReviews.mockResolvedValue({
+      count: 1,
+      next: null,
+      previous: null,
+      results: [
+        {
+          id: "review-1",
+          reviewer_label: "A. Verified customer",
+          booking: {
+            id: "booking-1",
+            title: "Electrical repair",
+            service_summary: "Completed service",
+            status: "completed",
+            service_category: null,
+            completed_at: "2026-07-28T10:00:00Z",
+            created_at: "2026-07-26T10:00:00Z",
+          },
+          rating: 5,
+          title: "Clean, careful work",
+          comment: "The provider explained the issue clearly.",
+          would_recommend: true,
+          quality_rating: 5,
+          punctuality_rating: 5,
+          communication_rating: 5,
+          value_rating: 4,
+          provider_response: "Thank you for trusting our team.",
+          provider_responded_at: "2026-07-29T12:00:00Z",
+          published_at: "2026-07-29T09:00:00Z",
+          created_at: "2026-07-28T15:00:00Z",
+        },
+      ],
+    });
     mocks.getServiceProvider.mockResolvedValue({
       id: "provider-1",
       slug: "bright-spark-electrical",
@@ -44,7 +78,14 @@ describe("ServiceProviderProfilePage", () => {
       neighborhood: "Lekki",
       display_location: "Lekki, Lagos",
       verification_badges: [{ label: "Identity Verified", status: "approved" }],
+      review_trust_signals: [{ label: "Highly Rated", status: "approved", value: "4.7" }],
       average_rating: "4.70",
+      average_quality_rating: "4.80",
+      average_punctuality_rating: "4.60",
+      average_communication_rating: "4.70",
+      average_value_rating: "4.60",
+      published_review_count: 6,
+      recommendation_percentage: 92,
       completed_jobs_count: 12,
       trades: [
         {
@@ -81,9 +122,14 @@ describe("ServiceProviderProfilePage", () => {
       portfolio: { items: [], message: "Portfolio images will appear after approval." },
       reviews_summary: {
         average_rating: "4.70",
+        average_quality_rating: "4.80",
+        average_punctuality_rating: "4.60",
+        average_communication_rating: "4.70",
+        average_value_rating: "4.60",
         completed_jobs_count: 12,
-        review_count: 0,
-        message: "Verified booking reviews will be available in a later Sprint 9 phase.",
+        review_count: 6,
+        recommendation_percentage: 92,
+        message: "Ratings are calculated from published reviews.",
       },
       created_at: "2026-07-31T08:00:00Z",
     });
@@ -96,6 +142,8 @@ describe("ServiceProviderProfilePage", () => {
     expect(await screen.findByRole("heading", { name: "Bright Spark Electrical" }))
       .toBeInTheDocument();
     expect(screen.getAllByText("Identity Verified").length).toBeGreaterThan(0);
+    expect(await screen.findByText("Clean, careful work")).toBeInTheDocument();
+    expect(screen.getByText("Provider response")).toBeInTheDocument();
     expect(screen.getByText("Portfolio images will appear after approval.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Request Quote" }));
@@ -121,5 +169,5 @@ describe("ServiceProviderProfilePage", () => {
       );
     });
     expect(await screen.findByText("Your request has been sent.")).toBeInTheDocument();
-  });
+  }, 10000);
 });

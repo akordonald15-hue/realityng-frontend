@@ -4,6 +4,7 @@ import type {
   OwnerServiceProvider,
   PaginatedServiceProviders,
   PaginatedQuoteRequests,
+  PaginatedServiceReviews,
   PortfolioImage,
   PortfolioImageMetadataPayload,
   PortfolioImagePayload,
@@ -11,8 +12,13 @@ import type {
   QuoteRequest,
   QuoteRequestFilters,
   QuoteRequestPayload,
+  ServiceBookingSummary,
   ServiceProvider,
   ServiceProviderFilters,
+  ServiceReview,
+  ServiceReviewFilters,
+  ServiceReviewFlagReason,
+  ServiceReviewPayload,
   ProviderProfilePayload,
   ProviderTrade,
   ProviderTradePayload,
@@ -254,7 +260,18 @@ const mockProviders: ServiceProvider[] = [
       { label: "Trade Verified", status: "approved", verified_at: "2026-07-03" },
     ],
     average_rating: "4.70",
+    average_quality_rating: "4.80",
+    average_punctuality_rating: "4.60",
+    average_communication_rating: "4.70",
+    average_value_rating: "4.60",
+    published_review_count: 6,
+    recommendation_percentage: 92,
     completed_jobs_count: 12,
+    review_trust_signals: [
+      { label: "Completed Jobs", status: "approved", value: "12" },
+      { label: "Highly Rated", status: "approved", value: "4.70" },
+      { label: "Recommended by Customers", status: "approved", value: "92%" },
+    ],
     trades: [
       {
         id: "trade-bright-electrical",
@@ -283,12 +300,7 @@ const mockProviders: ServiceProvider[] = [
       },
     ],
     portfolio: { items: [], message: "Portfolio uploads will be available in Sprint 9.2." },
-    reviews_summary: {
-      average_rating: "4.70",
-      completed_jobs_count: 12,
-      review_count: 0,
-      message: "Verified booking reviews will be available in a later Sprint 9 phase.",
-    },
+    reviews_summary: reviewSummary("4.70", 6, 92, 12),
     created_at: "2026-07-31T08:00:00Z",
   },
   {
@@ -311,7 +323,18 @@ const mockProviders: ServiceProvider[] = [
       { label: "Business Verified", status: "approved", verified_at: "2026-07-05" },
     ],
     average_rating: "4.50",
+    average_quality_rating: "4.50",
+    average_punctuality_rating: "4.40",
+    average_communication_rating: "4.60",
+    average_value_rating: "4.40",
+    published_review_count: 5,
+    recommendation_percentage: 80,
     completed_jobs_count: 9,
+    review_trust_signals: [
+      { label: "Completed Jobs", status: "approved", value: "9" },
+      { label: "Highly Rated", status: "approved", value: "4.50" },
+      { label: "Recommended by Customers", status: "approved", value: "80%" },
+    ],
     trades: [
       {
         id: "trade-clean-haven",
@@ -340,12 +363,7 @@ const mockProviders: ServiceProvider[] = [
       },
     ],
     portfolio: { items: [], message: "Portfolio uploads will be available in Sprint 9.2." },
-    reviews_summary: {
-      average_rating: "4.50",
-      completed_jobs_count: 9,
-      review_count: 0,
-      message: "Verified booking reviews will be available in a later Sprint 9 phase.",
-    },
+    reviews_summary: reviewSummary("4.50", 5, 80, 9),
     created_at: "2026-07-30T08:00:00Z",
   },
 ];
@@ -368,6 +386,82 @@ let mockOwnerServiceAreas: ServiceArea[] = mockOwnerProfile.service_areas.map((a
   is_primary: index === 0,
 }));
 let mockOwnerPortfolio: PortfolioImage[] = [];
+const mockCompletedBooking: ServiceBookingSummary = {
+  id: "booking-demo-electrical",
+  title: "Inverter wiring repair",
+  service_summary: "Completed inverter wiring repair in a Lekki apartment.",
+  status: "completed",
+  service_category: mockTradeCategories[0].children[0],
+  completed_at: "2026-07-28T10:00:00Z",
+  created_at: "2026-07-26T10:00:00Z",
+};
+
+let mockServiceReviews: ServiceReview[] = [
+  {
+    id: "review-bright-spark-1",
+    customer: "customer-demo",
+    reviewer_label: "A. Verified customer",
+    provider: {
+      id: "provider-bright-spark",
+      slug: "bright-spark-electrical",
+      business_name: "Bright Spark Electrical",
+      provider_type: "individual",
+      display_location: "Lekki, Lagos",
+    },
+    booking: mockCompletedBooking,
+    rating: 5,
+    title: "Clean, careful electrical repair",
+    comment: "The provider explained the issue clearly and fixed the inverter wiring neatly.",
+    would_recommend: true,
+    quality_rating: 5,
+    punctuality_rating: 5,
+    communication_rating: 5,
+    value_rating: 4,
+    status: "published",
+    can_edit: false,
+    provider_response: "Thank you for trusting our team.",
+    provider_responded_at: "2026-07-29T12:00:00Z",
+    moderation_reason: "",
+    published_at: "2026-07-29T09:00:00Z",
+    created_at: "2026-07-28T15:00:00Z",
+    updated_at: "2026-07-29T12:00:00Z",
+  },
+  {
+    id: "review-clean-haven-1",
+    customer: "customer-demo",
+    reviewer_label: "M. Verified customer",
+    provider: {
+      id: "provider-clean-haven",
+      slug: "clean-haven-services",
+      business_name: "Clean Haven Services",
+      provider_type: "company",
+      display_location: "Maitama, Abuja",
+    },
+    booking: {
+      ...mockCompletedBooking,
+      id: "booking-demo-cleaning",
+      title: "Move-in deep cleaning",
+      service_category: mockTradeCategories[2].children[0],
+    },
+    rating: 4,
+    title: "Reliable cleaning crew",
+    comment: "Good communication and the apartment was ready before tenant arrival.",
+    would_recommend: true,
+    quality_rating: 4,
+    punctuality_rating: 4,
+    communication_rating: 5,
+    value_rating: 4,
+    status: "published",
+    can_edit: false,
+    provider_response: "",
+    provider_responded_at: null,
+    moderation_reason: "",
+    published_at: "2026-07-27T09:00:00Z",
+    created_at: "2026-07-26T15:00:00Z",
+    updated_at: "2026-07-27T09:00:00Z",
+  },
+];
+
 let mockQuoteRequests: QuoteRequest[] = [
   {
     id: "quote-demo-electrical",
@@ -402,6 +496,26 @@ let mockQuoteRequests: QuoteRequest[] = [
 
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function reviewSummary(
+  average: string,
+  count: number,
+  recommendation: number,
+  completedJobs: number,
+) {
+  return {
+    average_rating: average,
+    average_quality_rating: average,
+    average_punctuality_rating: average,
+    average_communication_rating: average,
+    average_value_rating: average,
+    completed_jobs_count: completedJobs,
+    review_count: count,
+    recommendation_percentage: recommendation,
+    message:
+      "Ratings are calculated from published reviews linked to completed RealityNG service engagements.",
+  };
 }
 
 function findCategory(id: string) {
@@ -988,4 +1102,171 @@ export async function mockAdminListQuoteRequests(
 
 export async function mockAdminCloseQuoteRequest(id: string): Promise<QuoteRequest> {
   return updateQuoteRequestStatus(id, "closed");
+}
+
+function filterServiceReviews(filters: ServiceReviewFilters = {}) {
+  let reviews = [...mockServiceReviews];
+  if (filters.status) {
+    reviews = reviews.filter((review) => review.status === filters.status);
+  }
+  if (filters.provider) {
+    reviews = reviews.filter((review) => review.provider?.id === filters.provider);
+  }
+  if (filters.rating) {
+    reviews = reviews.filter((review) => String(review.rating) === filters.rating);
+  }
+  if (filters.recommended === "true") {
+    reviews = reviews.filter((review) => review.would_recommend);
+  }
+  if (filters.flagged === "true") {
+    reviews = reviews.filter((review) => review.status === "flagged");
+  }
+  if (filters.ordering === "highest") {
+    reviews.sort((left, right) => right.rating - left.rating);
+  } else if (filters.ordering === "lowest") {
+    reviews.sort((left, right) => left.rating - right.rating);
+  } else if (filters.ordering === "oldest") {
+    reviews.sort((left, right) => left.created_at.localeCompare(right.created_at));
+  } else {
+    reviews.sort((left, right) => right.created_at.localeCompare(left.created_at));
+  }
+  return reviews;
+}
+
+function updateMockReview(id: string, updates: Partial<ServiceReview>) {
+  let updated: ServiceReview | null = null;
+  mockServiceReviews = mockServiceReviews.map((review) => {
+    if (review.id !== id) return review;
+    updated = { ...review, ...updates, updated_at: new Date().toISOString() };
+    return updated;
+  });
+  if (!updated) throw new Error("Review was not found.");
+  return updated;
+}
+
+export async function mockListServiceReviews(
+  providerSlug: string,
+  filters: ServiceReviewFilters = {},
+): Promise<PaginatedServiceReviews> {
+  const results = filterServiceReviews(filters).filter(
+    (review) => review.provider?.slug === providerSlug && review.status === "published",
+  );
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockCreateServiceReview(
+  payload: ServiceReviewPayload,
+): Promise<ServiceReview> {
+  if (payload.booking_id !== mockCompletedBooking.id) {
+    throw new Error("Only completed service bookings can be reviewed.");
+  }
+  if (mockServiceReviews.some((review) => review.booking.id === payload.booking_id)) {
+    throw new Error("A review already exists for this booking.");
+  }
+  const now = new Date().toISOString();
+  const review: ServiceReview = {
+    id: createId("review"),
+    customer: "customer-demo",
+    reviewer_label: "Verified customer",
+    provider: {
+      id: "provider-bright-spark",
+      slug: "bright-spark-electrical",
+      business_name: "Bright Spark Electrical",
+      provider_type: "individual",
+      display_location: "Lekki, Lagos",
+    },
+    booking: mockCompletedBooking,
+    rating: payload.rating,
+    title: payload.title,
+    comment: payload.comment,
+    would_recommend: payload.would_recommend,
+    quality_rating: payload.quality_rating ?? null,
+    punctuality_rating: payload.punctuality_rating ?? null,
+    communication_rating: payload.communication_rating ?? null,
+    value_rating: payload.value_rating ?? null,
+    status: "pending",
+    can_edit: true,
+    provider_response: "",
+    provider_responded_at: null,
+    moderation_reason: "",
+    published_at: null,
+    created_at: now,
+    updated_at: now,
+  };
+  mockServiceReviews = [review, ...mockServiceReviews];
+  return review;
+}
+
+export async function mockListProviderServiceReviews(
+  filters: ServiceReviewFilters = {},
+): Promise<PaginatedServiceReviews> {
+  const provider = requireOwnerProfile();
+  const results = filterServiceReviews(filters).filter(
+    (review) => review.provider?.id === provider.id || review.provider?.slug === provider.slug,
+  );
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockRespondToServiceReview(
+  id: string,
+  responseText: string,
+): Promise<ServiceReview> {
+  const review = mockServiceReviews.find((item) => item.id === id);
+  if (!review || review.status !== "published") {
+    throw new Error("Only published reviews can receive provider responses.");
+  }
+  if (review.provider_response) {
+    throw new Error("This review already has a provider response.");
+  }
+  return updateMockReview(id, {
+    provider_response: responseText,
+    provider_responded_at: new Date().toISOString(),
+  });
+}
+
+export async function mockFlagServiceReview(
+  id: string,
+  reason: ServiceReviewFlagReason,
+  details = "",
+): Promise<ServiceReview> {
+  void details;
+  return updateMockReview(id, {
+    status:
+      reason === "privacy_concern" || reason === "conflict_of_interest"
+        ? "flagged"
+        : "published",
+  });
+}
+
+export async function mockAdminListServiceReviews(
+  filters: ServiceReviewFilters = {},
+): Promise<PaginatedServiceReviews> {
+  const results = filterServiceReviews(filters);
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockAdminGetServiceReview(id: string): Promise<ServiceReview> {
+  const review = mockServiceReviews.find((item) => item.id === id);
+  if (!review) throw new Error("Review was not found.");
+  return review;
+}
+
+export async function mockAdminModerateServiceReview(
+  id: string,
+  action: "publish" | "hide" | "restore" | "remove" | "mark-disputed",
+  reason = "",
+): Promise<ServiceReview> {
+  const statusByAction: Record<typeof action, ServiceReview["status"]> = {
+    publish: "published",
+    hide: "hidden",
+    restore: "published",
+    remove: "removed",
+    "mark-disputed": "disputed",
+  };
+  return updateMockReview(id, {
+    status: statusByAction[action],
+    moderation_reason: reason,
+    published_at:
+      action === "publish" || action === "restore" ? new Date().toISOString() : undefined,
+  });
 }

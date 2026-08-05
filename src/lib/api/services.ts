@@ -8,9 +8,13 @@ import {
   mockAdminRejectProvider,
   mockAdminCloseQuoteRequest,
   mockAdminListQuoteRequests,
+  mockAdminListServiceReviews,
+  mockAdminGetServiceReview,
+  mockAdminModerateServiceReview,
   mockAdminRequestProviderInfo,
   mockAdminSuspendProvider,
   mockCreateQuoteRequest,
+  mockCreateServiceReview,
   mockCreatePortfolioImage,
   mockCreateProviderProfile,
   mockCreateProviderTrade,
@@ -26,9 +30,13 @@ import {
   mockListPortfolioImages,
   mockListProviderTrades,
   mockListProviderQuoteRequests,
+  mockListProviderServiceReviews,
   mockListServiceAreas,
+  mockListServiceReviews,
   mockReorderPortfolioImages,
+  mockRespondToServiceReview,
   mockSetPortfolioCover,
+  mockFlagServiceReview,
   mockMarkQuoteRequestClosed,
   mockMarkQuoteRequestResponded,
   mockMarkQuoteRequestViewed,
@@ -87,6 +95,7 @@ export type ServiceArea = {
 export type VerificationBadge = {
   label: string;
   status: string;
+  value?: string;
   verified_at?: string;
   expires_at?: string;
 };
@@ -119,7 +128,14 @@ export type ServiceProvider = {
   neighborhood?: string;
   display_location: string;
   verification_badges: VerificationBadge[];
+  review_trust_signals?: VerificationBadge[];
   average_rating: string;
+  average_quality_rating?: string;
+  average_punctuality_rating?: string;
+  average_communication_rating?: string;
+  average_value_rating?: string;
+  published_review_count?: number;
+  recommendation_percentage?: number;
   completed_jobs_count: number;
   trades: ProviderTrade[];
   primary_trade: ProviderTrade | null;
@@ -130,8 +146,13 @@ export type ServiceProvider = {
   };
   reviews_summary?: {
     average_rating: string;
+    average_quality_rating?: string;
+    average_punctuality_rating?: string;
+    average_communication_rating?: string;
+    average_value_rating?: string;
     completed_jobs_count: number;
     review_count: number;
+    recommendation_percentage?: number;
     message: string;
   };
   created_at: string;
@@ -281,6 +302,88 @@ export type PaginatedQuoteRequests = {
   results: QuoteRequest[];
 };
 
+export type ServiceReviewStatus =
+  | "pending"
+  | "published"
+  | "flagged"
+  | "hidden"
+  | "disputed"
+  | "removed";
+
+export type ServiceReviewFlagReason =
+  | "spam"
+  | "abusive"
+  | "false_information"
+  | "privacy_concern"
+  | "conflict_of_interest"
+  | "other";
+
+export type ServiceBookingSummary = {
+  id: string;
+  title: string;
+  service_summary: string;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  service_category: TradeCategory | null;
+  completed_at: string | null;
+  created_at: string;
+};
+
+export type ServiceReview = {
+  id: string;
+  customer?: string;
+  provider?: Pick<
+    ServiceProvider,
+    "id" | "slug" | "business_name" | "provider_type" | "display_location"
+  >;
+  reviewer_label: string;
+  booking: ServiceBookingSummary;
+  rating: number;
+  title: string;
+  comment: string;
+  would_recommend: boolean;
+  quality_rating?: number | null;
+  punctuality_rating?: number | null;
+  communication_rating?: number | null;
+  value_rating?: number | null;
+  status?: ServiceReviewStatus;
+  can_edit?: boolean;
+  provider_response: string;
+  provider_responded_at: string | null;
+  moderation_reason?: string;
+  published_at: string | null;
+  created_at: string;
+  updated_at?: string;
+};
+
+export type ServiceReviewPayload = {
+  booking_id: string;
+  rating: number;
+  title: string;
+  comment: string;
+  would_recommend: boolean;
+  quality_rating?: number | null;
+  punctuality_rating?: number | null;
+  communication_rating?: number | null;
+  value_rating?: number | null;
+};
+
+export type ServiceReviewFilters = {
+  status?: ServiceReviewStatus | "";
+  provider?: string;
+  customer?: string;
+  rating?: string;
+  flagged?: "true" | "false" | "";
+  recommended?: "true" | "false" | "";
+  ordering?: "newest" | "oldest" | "highest" | "lowest" | "";
+};
+
+export type PaginatedServiceReviews = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ServiceReview[];
+};
+
 export type ServiceProviderFilters = {
   search?: string;
   category?: string;
@@ -299,7 +402,11 @@ export type PaginatedServiceProviders = {
 };
 
 function cleanFilters(
-  filters: ServiceProviderFilters | AdminProviderFilters | QuoteRequestFilters,
+  filters:
+    | ServiceProviderFilters
+    | AdminProviderFilters
+    | QuoteRequestFilters
+    | ServiceReviewFilters,
 ): Record<string, string> {
   return Object.fromEntries(
     Object.entries(filters).filter(([, value]) => value !== undefined && value !== ""),
@@ -692,6 +799,119 @@ export async function adminCloseQuoteRequest(id: string): Promise<QuoteRequest> 
   }
   const response = await apiClient.post<QuoteRequest>(
     `/services/admin/quote-requests/${id}/close/`,
+  );
+  return response.data;
+}
+
+export async function listServiceReviews(
+  providerSlug: string,
+  filters: ServiceReviewFilters = {},
+): Promise<PaginatedServiceReviews> {
+  if (USE_MOCKS) {
+    return mockListServiceReviews(providerSlug, filters);
+  }
+  const response = await apiClient.get<PaginatedServiceReviews>(
+    `/services/providers/${providerSlug}/reviews/`,
+    { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function createServiceReview(
+  payload: ServiceReviewPayload,
+): Promise<ServiceReview> {
+  if (USE_MOCKS) {
+    return mockCreateServiceReview(payload);
+  }
+  const response = await apiClient.post<ServiceReview>("/services/reviews/", payload);
+  return response.data;
+}
+
+export async function listMyServiceReviews(
+  filters: ServiceReviewFilters = {},
+): Promise<PaginatedServiceReviews> {
+  if (USE_MOCKS) {
+    return mockListProviderServiceReviews(filters);
+  }
+  const response = await apiClient.get<PaginatedServiceReviews>("/services/reviews/my/", {
+    params: cleanFilters(filters),
+  });
+  return response.data;
+}
+
+export async function listProviderServiceReviews(
+  filters: ServiceReviewFilters = {},
+): Promise<PaginatedServiceReviews> {
+  if (USE_MOCKS) {
+    return mockListProviderServiceReviews(filters);
+  }
+  const response = await apiClient.get<PaginatedServiceReviews>(
+    "/services/provider-profile/reviews/",
+    { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function respondToServiceReview(
+  id: string,
+  responseText: string,
+): Promise<ServiceReview> {
+  if (USE_MOCKS) {
+    return mockRespondToServiceReview(id, responseText);
+  }
+  const response = await apiClient.post<ServiceReview>(`/services/reviews/${id}/respond/`, {
+    response: responseText,
+  });
+  return response.data;
+}
+
+export async function flagServiceReview(
+  id: string,
+  reason: ServiceReviewFlagReason,
+  details = "",
+): Promise<ServiceReview> {
+  if (USE_MOCKS) {
+    return mockFlagServiceReview(id, reason, details);
+  }
+  const response = await apiClient.post<ServiceReview>(`/services/reviews/${id}/flag/`, {
+    reason,
+    details,
+  });
+  return response.data;
+}
+
+export async function adminListServiceReviews(
+  filters: ServiceReviewFilters = {},
+): Promise<PaginatedServiceReviews> {
+  if (USE_MOCKS) {
+    return mockAdminListServiceReviews(filters);
+  }
+  const response = await apiClient.get<PaginatedServiceReviews>(
+    "/services/admin/reviews/",
+    { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function adminGetServiceReview(id: string): Promise<ServiceReview> {
+  if (USE_MOCKS) {
+    return mockAdminGetServiceReview(id);
+  }
+  const response = await apiClient.get<ServiceReview>(`/services/admin/reviews/${id}/`);
+  return response.data;
+}
+
+export async function adminModerateServiceReview(
+  id: string,
+  action: "publish" | "hide" | "restore" | "remove" | "mark-disputed",
+  reason = "",
+): Promise<ServiceReview> {
+  if (USE_MOCKS) {
+    return mockAdminModerateServiceReview(id, action, reason);
+  }
+  const response = await apiClient.post<ServiceReview>(
+    `/services/admin/reviews/${id}/${action}/`,
+    { reason },
   );
   return response.data;
 }
