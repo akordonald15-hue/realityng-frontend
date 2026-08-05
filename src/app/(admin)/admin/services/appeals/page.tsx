@@ -43,7 +43,10 @@ export default function AdminServiceAppealsPage() {
           {appealsQuery.isLoading ? (
             <Card className="p-5 text-brand-muted">Loading appeals...</Card>
           ) : (
-            <AppealList appeals={appealsQuery.data?.results ?? []} />
+            <AppealList
+              appeals={appealsQuery.data?.results ?? []}
+              getHref={(appeal) => `/admin/services/appeals/${appeal.id}`}
+            />
           )}
           {appealsQuery.data?.results.map((appeal) => (
             <Card className="p-4" key={`${appeal.id}-actions`}>

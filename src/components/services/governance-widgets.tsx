@@ -142,7 +142,13 @@ export function AppealForm({
   );
 }
 
-export function AppealList({ appeals }: { appeals: ProviderAppeal[] }) {
+export function AppealList({
+  appeals,
+  getHref,
+}: {
+  appeals: ProviderAppeal[];
+  getHref?: (appeal: ProviderAppeal) => string;
+}) {
   if (!appeals.length) {
     return (
       <Card className="p-5 text-sm text-brand-muted">
@@ -152,26 +158,36 @@ export function AppealList({ appeals }: { appeals: ProviderAppeal[] }) {
   }
   return (
     <div className="space-y-3">
-      {appeals.map((appeal) => (
-        <Card className="p-5" key={appeal.id}>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="font-semibold text-brand-text">
-                {appeal.appeal_type.replaceAll("_", " ")}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-brand-muted">{appeal.reason}</p>
+      {appeals.map((appeal) => {
+        const content = (
+          <Card className="p-5 transition hover:border-brand-secondary/50">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold text-brand-text">
+                  {appeal.appeal_type.replaceAll("_", " ")}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-brand-muted">{appeal.reason}</p>
+              </div>
+              <span className="rounded-full bg-brand-secondary/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-secondary">
+                {appeal.status.replaceAll("_", " ")}
+              </span>
             </div>
-            <span className="rounded-full bg-brand-secondary/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-secondary">
-              {appeal.status.replaceAll("_", " ")}
-            </span>
-          </div>
-          {appeal.admin_notes ? (
-            <p className="mt-3 rounded-md bg-white/5 p-3 text-sm text-brand-muted">
-              {appeal.admin_notes}
-            </p>
-          ) : null}
-        </Card>
-      ))}
+            {appeal.admin_notes ? (
+              <p className="mt-3 rounded-md bg-white/5 p-3 text-sm text-brand-muted">
+                {appeal.admin_notes}
+              </p>
+            ) : null}
+          </Card>
+        );
+        const href = getHref?.(appeal);
+        return href ? (
+          <Link className="block" href={href} key={appeal.id}>
+            {content}
+          </Link>
+        ) : (
+          <div key={appeal.id}>{content}</div>
+        );
+      })}
     </div>
   );
 }

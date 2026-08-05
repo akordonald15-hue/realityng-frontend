@@ -122,7 +122,11 @@ export default function CustomerComplaintsPage() {
             <Card className="p-5 text-brand-muted">Loading complaints...</Card>
           ) : null}
           {complaintsQuery.data?.results.map((complaint) => (
-            <ComplaintCard complaint={complaint} key={complaint.id} />
+            <ComplaintCard
+              complaint={complaint}
+              href={`/dashboard/services/complaints/${complaint.id}`}
+              key={complaint.id}
+            />
           ))}
           {complaintsQuery.data?.results.length === 0 ? (
             <Card className="p-5 text-sm text-brand-muted">No complaints submitted yet.</Card>

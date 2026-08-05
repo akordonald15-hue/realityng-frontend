@@ -38,9 +38,12 @@ import {
   mockGetServiceProviders,
   mockGetTradeCategories,
   mockListMyServiceComplaints,
+  mockGetMyServiceComplaint,
   mockListPortfolioImages,
   mockListProviderAppeals,
+  mockGetProviderAppeal,
   mockListProviderComplaints,
+  mockGetProviderComplaint,
   mockListProviderTrades,
   mockListProviderQuoteRequests,
   mockListProviderServiceReviews,
@@ -1158,6 +1161,14 @@ export async function listMyServiceComplaints(
   return response.data;
 }
 
+export async function getMyServiceComplaint(id: string): Promise<ServiceComplaint> {
+  if (USE_MOCKS) {
+    return mockGetMyServiceComplaint(id);
+  }
+  const response = await apiClient.get<ServiceComplaint>(`/services/complaints/${id}/`);
+  return response.data;
+}
+
 export async function listProviderComplaints(
   filters: ServiceComplaintFilters = {},
 ): Promise<PaginatedServiceComplaints> {
@@ -1167,6 +1178,16 @@ export async function listProviderComplaints(
   const response = await apiClient.get<PaginatedServiceComplaints>(
     "/services/provider-profile/complaints/",
     { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function getProviderComplaint(id: string): Promise<ServiceComplaint> {
+  if (USE_MOCKS) {
+    return mockGetProviderComplaint(id);
+  }
+  const response = await apiClient.get<ServiceComplaint>(
+    `/services/provider-profile/complaints/${id}/`,
   );
   return response.data;
 }
@@ -1193,6 +1214,16 @@ export async function listProviderAppeals(
   const response = await apiClient.get<PaginatedProviderAppeals>(
     "/services/provider-profile/appeals/",
     { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function getProviderAppeal(id: string): Promise<ProviderAppeal> {
+  if (USE_MOCKS) {
+    return mockGetProviderAppeal(id);
+  }
+  const response = await apiClient.get<ProviderAppeal>(
+    `/services/provider-profile/appeals/${id}/`,
   );
   return response.data;
 }

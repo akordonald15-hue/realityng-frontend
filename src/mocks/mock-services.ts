@@ -1455,6 +1455,10 @@ export async function mockListMyServiceComplaints(
   return { count: results.length, next: null, previous: null, results };
 }
 
+export async function mockGetMyServiceComplaint(id: string): Promise<ServiceComplaint> {
+  return mockAdminGetComplaint(id);
+}
+
 export async function mockListProviderComplaints(
   filters: ServiceComplaintFilters = {},
 ): Promise<PaginatedServiceComplaints> {
@@ -1463,6 +1467,10 @@ export async function mockListProviderComplaints(
     (complaint) => complaint.provider.id === provider.id || complaint.complainant === "mock-user",
   );
   return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockGetProviderComplaint(id: string): Promise<ServiceComplaint> {
+  return mockAdminGetComplaint(id);
 }
 
 export async function mockSubmitProviderAppeal(
@@ -1502,6 +1510,10 @@ export async function mockListProviderAppeals(
   const provider = requireOwnerProfile();
   const results = filterAppeals(filters).filter((appeal) => appeal.provider.id === provider.id);
   return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockGetProviderAppeal(id: string): Promise<ProviderAppeal> {
+  return mockAdminGetAppeal(id);
 }
 
 export async function mockAdminListComplaints(

@@ -1,19 +1,29 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import AdminServiceAppealsPage from "@/app/(admin)/admin/services/appeals/page";
+import AdminAppealDetailPage from "@/app/(admin)/admin/services/appeals/[id]/page";
 import AdminServiceComplaintsPage from "@/app/(admin)/admin/services/complaints/page";
+import AdminComplaintDetailPage from "@/app/(admin)/admin/services/complaints/[id]/page";
 import ProviderAppealsPage from "@/app/(dashboard)/dashboard/artisan/appeals/page";
+import ProviderAppealDetailPage from "@/app/(dashboard)/dashboard/artisan/appeals/[id]/page";
 import ProviderComplaintsPage from "@/app/(dashboard)/dashboard/artisan/complaints/page";
+import ProviderComplaintDetailPage from "@/app/(dashboard)/dashboard/artisan/complaints/[id]/page";
 import CustomerComplaintsPage from "@/app/(dashboard)/dashboard/services/complaints/page";
+import CustomerComplaintDetailPage from "@/app/(dashboard)/dashboard/services/complaints/[id]/page";
 import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
+  adminGetAppeal: vi.fn(),
+  adminGetComplaint: vi.fn(),
   adminListAppeals: vi.fn(),
   adminListComplaints: vi.fn(),
   adminModerateAppeal: vi.fn(),
   adminModerateComplaint: vi.fn(),
+  getMyServiceComplaint: vi.fn(),
   getMyProviderProfile: vi.fn(),
+  getProviderAppeal: vi.fn(),
+  getProviderComplaint: vi.fn(),
   listMyServiceComplaints: vi.fn(),
   listProviderAppeals: vi.fn(),
   listProviderComplaints: vi.fn(),
@@ -25,17 +35,26 @@ vi.mock("@/components/auth/protected-route", () => ({
   ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock("next/navigation", () => ({
+  useParams: () => ({ id: "complaint-1" }),
+}));
+
 vi.mock("@/lib/api/services", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api/services")>(
     "@/lib/api/services",
   );
   return {
     ...actual,
+    adminGetAppeal: () => mocks.adminGetAppeal(),
+    adminGetComplaint: () => mocks.adminGetComplaint(),
     adminListAppeals: () => mocks.adminListAppeals(),
     adminListComplaints: () => mocks.adminListComplaints(),
     adminModerateAppeal: (...args: unknown[]) => mocks.adminModerateAppeal(...args),
     adminModerateComplaint: (...args: unknown[]) => mocks.adminModerateComplaint(...args),
+    getMyServiceComplaint: () => mocks.getMyServiceComplaint(),
     getMyProviderProfile: () => mocks.getMyProviderProfile(),
+    getProviderAppeal: () => mocks.getProviderAppeal(),
+    getProviderComplaint: () => mocks.getProviderComplaint(),
     listMyServiceComplaints: () => mocks.listMyServiceComplaints(),
     listProviderAppeals: () => mocks.listProviderAppeals(),
     listProviderComplaints: () => mocks.listProviderComplaints(),
@@ -172,6 +191,33 @@ describe("service governance pages", () => {
 
     expect(await screen.findByText("Complaints queue")).toBeInTheDocument();
     expect(await screen.findByText("Provider appeals")).toBeInTheDocument();
-    expect(screen.getByText("Review, resolve, reject, escalate, or close services marketplace complaints.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Review, resolve, reject, escalate, or close services marketplace complaints.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("renders governance detail pages", async () => {
+    mocks.getMyServiceComplaint.mockResolvedValueOnce(complaint);
+    mocks.getProviderComplaint.mockResolvedValueOnce(complaint);
+    mocks.getProviderAppeal.mockResolvedValueOnce(appeal);
+    mocks.adminGetComplaint.mockResolvedValueOnce(complaint);
+    mocks.adminGetAppeal.mockResolvedValueOnce(appeal);
+
+    renderWithQueryClient(
+      <>
+        <CustomerComplaintDetailPage />
+        <ProviderComplaintDetailPage />
+        <ProviderAppealDetailPage />
+        <AdminComplaintDetailPage />
+        <AdminAppealDetailPage />
+      </>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Moderation timeline")).toHaveLength(3);
+      expect(screen.getAllByText("Decision details")).toHaveLength(2);
+    });
   });
 });

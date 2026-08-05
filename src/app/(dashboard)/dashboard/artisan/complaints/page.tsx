@@ -29,7 +29,11 @@ export default function ProviderComplaintsPage() {
           <Card className="p-5 text-red-200">Provider complaints could not be loaded.</Card>
         ) : null}
         {complaintsQuery.data?.results.map((complaint) => (
-          <ComplaintCard complaint={complaint} key={complaint.id} />
+          <ComplaintCard
+            complaint={complaint}
+            href={`/dashboard/artisan/complaints/${complaint.id}`}
+            key={complaint.id}
+          />
         ))}
         {complaintsQuery.data?.results.length === 0 ? (
           <Card className="p-5 text-sm text-brand-muted">

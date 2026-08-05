@@ -45,7 +45,10 @@ export default function AdminServiceComplaintsPage() {
           ) : null}
           {complaintsQuery.data?.results.map((complaint) => (
             <div className="space-y-3" key={complaint.id}>
-              <ComplaintCard complaint={complaint} />
+              <ComplaintCard
+                complaint={complaint}
+                href={`/admin/services/complaints/${complaint.id}`}
+              />
               <div className="flex flex-wrap gap-2">
                 {(["review", "resolve", "reject", "escalate", "close"] as const).map((action) => (
                   <Button

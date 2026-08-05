@@ -80,7 +80,10 @@ export default function ProviderAppealsPage() {
           {appealsQuery.isLoading ? (
             <Card className="p-5 text-brand-muted">Loading appeals...</Card>
           ) : (
-            <AppealList appeals={appealsQuery.data?.results ?? []} />
+            <AppealList
+              appeals={appealsQuery.data?.results ?? []}
+              getHref={(appeal) => `/dashboard/artisan/appeals/${appeal.id}`}
+            />
           )}
         </section>
       </div>
