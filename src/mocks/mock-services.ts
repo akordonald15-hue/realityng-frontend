@@ -1,6 +1,8 @@
 import type {
+  AdminServicesDashboard,
   AdminProviderDecisionPayload,
   AdminProviderFilters,
+  CustomerServicesDashboard,
   OwnerServiceProvider,
   PaginatedServiceProviders,
   PaginatedQuoteRequests,
@@ -15,6 +17,7 @@ import type {
   ServiceBookingSummary,
   ServiceProvider,
   ServiceProviderFilters,
+  ProviderServicesDashboard,
   ServiceReview,
   ServiceReviewFilters,
   ServiceReviewFlagReason,
@@ -388,12 +391,27 @@ let mockOwnerServiceAreas: ServiceArea[] = mockOwnerProfile.service_areas.map((a
 let mockOwnerPortfolio: PortfolioImage[] = [];
 const mockCompletedBooking: ServiceBookingSummary = {
   id: "booking-demo-electrical",
+  provider: {
+    id: "provider-bright-spark",
+    slug: "bright-spark-electrical",
+    business_name: "Bright Spark Electrical",
+    provider_type: "individual",
+    display_location: "Lekki, Lagos",
+  },
   title: "Inverter wiring repair",
   service_summary: "Completed inverter wiring repair in a Lekki apartment.",
   status: "completed",
   service_category: mockTradeCategories[0].children[0],
   completed_at: "2026-07-28T10:00:00Z",
   created_at: "2026-07-26T10:00:00Z",
+};
+const mockEligibleBooking: ServiceBookingSummary = {
+  ...mockCompletedBooking,
+  id: "booking-demo-painting",
+  title: "Move-in paint touch-up",
+  service_summary: "Completed wall touch-up before tenant move-in.",
+  completed_at: "2026-08-02T13:00:00Z",
+  created_at: "2026-08-01T10:00:00Z",
 };
 
 let mockServiceReviews: ServiceReview[] = [
@@ -1269,4 +1287,219 @@ export async function mockAdminModerateServiceReview(
     published_at:
       action === "publish" || action === "restore" ? new Date().toISOString() : undefined,
   });
+}
+
+function countQuotes() {
+  return {
+    submitted: mockQuoteRequests.filter((item) => item.status === "submitted").length,
+    viewed: mockQuoteRequests.filter((item) => item.status === "viewed").length,
+    responded: mockQuoteRequests.filter((item) => item.status === "responded").length,
+    closed: mockQuoteRequests.filter((item) => item.status === "closed").length,
+    cancelled: mockQuoteRequests.filter((item) => item.status === "cancelled").length,
+  };
+}
+
+function countReviews() {
+  return {
+    pending: mockServiceReviews.filter((item) => item.status === "pending").length,
+    published: mockServiceReviews.filter((item) => item.status === "published").length,
+    flagged: mockServiceReviews.filter((item) => item.status === "flagged").length,
+    hidden: mockServiceReviews.filter((item) => item.status === "hidden").length,
+    disputed: mockServiceReviews.filter((item) => item.status === "disputed").length,
+    removed: mockServiceReviews.filter((item) => item.status === "removed").length,
+  };
+}
+
+function countProviders() {
+  return {
+    draft: mockOwnerProfile?.status === "draft" ? 1 : 0,
+    pending_review: mockOwnerProfile?.status === "pending_review" ? 1 : 0,
+    active: mockProviders.length,
+    needs_more_information: 0,
+    rejected: 0,
+    suspended: 0,
+    inactive: 0,
+    archived: 0,
+  };
+}
+
+export async function mockGetCustomerServicesDashboard(): Promise<CustomerServicesDashboard> {
+  const quoteCounts = countQuotes();
+  const submittedReviews = filterServiceReviews({ ordering: "newest" });
+  return {
+    stats: [
+      {
+        label: "Quote requests",
+        value: String(mockQuoteRequests.length),
+        detail: "Requests sent to service providers",
+      },
+      {
+        label: "Pending responses",
+        value: String(quoteCounts.submitted + quoteCounts.viewed),
+        detail: "Quotes still awaiting provider follow-up",
+      },
+      {
+        label: "Submitted reviews",
+        value: String(submittedReviews.length),
+        detail: "Reviews linked to completed service engagements",
+      },
+      {
+        label: "Reviews waiting",
+        value: "1",
+        detail: "Completed services still eligible for review",
+      },
+    ],
+    recent_quote_requests: mockQuoteRequests.slice(0, 5),
+    submitted_reviews: submittedReviews.slice(0, 5),
+    eligible_reviews: [mockEligibleBooking],
+    recent_providers: mockProviders.slice(0, 2),
+    recommended_providers: [...mockProviders].sort(
+      (left, right) => Number(right.average_rating) - Number(left.average_rating),
+    ),
+    service_categories: mockTradeCategories,
+    activity: [
+      {
+        id: "activity-quote",
+        title: "Quote requested: Repair inverter wiring",
+        description: "Bright Spark Electrical",
+        status: "submitted",
+        timestamp: "2026-08-01T09:00:00Z",
+        href: "/dashboard/services",
+      },
+      {
+        id: "activity-review",
+        title: "Review submitted: Clean, careful electrical repair",
+        description: "Bright Spark Electrical",
+        status: "published",
+        timestamp: "2026-07-28T15:00:00Z",
+        href: "/dashboard/services/reviews",
+      },
+    ],
+  };
+}
+
+export async function mockGetProviderServicesDashboard(): Promise<ProviderServicesDashboard> {
+  const profile = requireOwnerProfile();
+  const quoteRequests = filterQuoteRequests().filter(
+    (item) => item.provider.id === profile.id || item.provider.slug === profile.slug,
+  );
+  const reviews = filterServiceReviews().filter(
+    (item) => item.provider?.id === profile.id || item.provider?.slug === profile.slug,
+  );
+  const completion = profile.completion;
+  const missingCount = completion?.missing_fields?.length ?? 0;
+  const completionPercentage = Math.round(((7 - missingCount) / 7) * 100);
+  return {
+    profile,
+    stats: [
+      {
+        label: "Profile completion",
+        value: `${completionPercentage}%`,
+        detail: completion?.is_complete ? "Profile is ready for moderation." : "Complete setup items.",
+      },
+      {
+        label: "Average rating",
+        value: profile.average_rating,
+        detail: `${profile.published_review_count ?? 0} published reviews`,
+      },
+      {
+        label: "Quote requests",
+        value: String(quoteRequests.length),
+        detail: "Total service enquiries received",
+      },
+      {
+        label: "Completed jobs",
+        value: String(profile.completed_jobs_count),
+        detail: "Completed service engagements",
+      },
+      {
+        label: "Portfolio",
+        value: String(profile.portfolio_count ?? 0),
+        detail: "Public work samples",
+      },
+      {
+        label: "Coverage",
+        value: String(profile.service_areas.length),
+        detail: "Service areas listed",
+      },
+    ],
+    quote_status_counts: countQuotes(),
+    review_status_counts: countReviews(),
+    recent_quote_requests: quoteRequests.slice(0, 5),
+    latest_reviews: reviews.slice(0, 5),
+    response_reminders: reviews.filter(
+      (item) => item.status === "published" && !item.provider_response,
+    ),
+    activity: [
+      {
+        id: "provider-activity-quote",
+        title: "New quote: Repair inverter wiring",
+        description: "Ada Buyer",
+        status: "submitted",
+        timestamp: "2026-08-01T09:00:00Z",
+        href: "/dashboard/artisan/quote-requests",
+      },
+      {
+        id: "provider-activity-review",
+        title: "Review: Reliable cleaning crew",
+        description: "4/5 from a verified customer",
+        status: "published",
+        timestamp: "2026-07-26T15:00:00Z",
+        href: "/dashboard/artisan/reviews",
+      },
+    ],
+  };
+}
+
+export async function mockGetAdminServicesDashboard(): Promise<AdminServicesDashboard> {
+  return {
+    stats: [
+      { label: "Pending provider approvals", value: "1", detail: "Profiles waiting for admin action" },
+      { label: "Active providers", value: String(mockProviders.length), detail: "Public providers" },
+      { label: "Open quote requests", value: String(mockQuoteRequests.length), detail: "Active enquiries" },
+      {
+        label: "Pending reviews",
+        value: String(countReviews().pending),
+        detail: "Reviews waiting for moderation",
+      },
+      {
+        label: "Flagged reviews",
+        value: String(countReviews().flagged),
+        detail: "Reviews needing trust review",
+      },
+    ],
+    provider_status_counts: countProviders(),
+    quote_status_counts: countQuotes(),
+    review_status_counts: countReviews(),
+    pending_providers: mockOwnerProfile ? [mockOwnerProfile] : [],
+    pending_reviews: mockServiceReviews.filter((item) => item.status === "pending"),
+    flagged_reviews: mockServiceReviews.filter((item) => item.status === "flagged"),
+    open_quote_requests: mockQuoteRequests,
+    category_breakdown: mockTradeCategories.map((category) => ({
+      label: category.name,
+      value: category.children.length,
+    })),
+    geographic_breakdown: [
+      { label: "Lagos", value: 1 },
+      { label: "Abuja", value: 1 },
+    ],
+    activity: [
+      {
+        id: "admin-activity-provider",
+        title: "Provider profile pending",
+        description: mockOwnerProfile?.business_name ?? "Draft provider",
+        status: mockOwnerProfile?.status ?? "draft",
+        timestamp: "2026-08-01T12:00:00Z",
+        href: "/admin/services/providers",
+      },
+      {
+        id: "admin-activity-quote",
+        title: "Quote request submitted",
+        description: "Bright Spark Electrical",
+        status: "submitted",
+        timestamp: "2026-08-01T09:00:00Z",
+        href: "/admin/services/quote-requests",
+      },
+    ],
+  };
 }

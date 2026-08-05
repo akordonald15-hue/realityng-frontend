@@ -10,6 +10,9 @@ import {
   mockAdminListQuoteRequests,
   mockAdminListServiceReviews,
   mockAdminGetServiceReview,
+  mockGetAdminServicesDashboard,
+  mockGetCustomerServicesDashboard,
+  mockGetProviderServicesDashboard,
   mockAdminModerateServiceReview,
   mockAdminRequestProviderInfo,
   mockAdminSuspendProvider,
@@ -320,6 +323,10 @@ export type ServiceReviewFlagReason =
 
 export type ServiceBookingSummary = {
   id: string;
+  provider?: Pick<
+    ServiceProvider,
+    "id" | "slug" | "business_name" | "provider_type" | "display_location"
+  >;
   title: string;
   service_summary: string;
   status: "pending" | "confirmed" | "completed" | "cancelled";
@@ -382,6 +389,63 @@ export type PaginatedServiceReviews = {
   next: string | null;
   previous: string | null;
   results: ServiceReview[];
+};
+
+export type DashboardStat = {
+  label: string;
+  value: string;
+  detail?: string;
+  tone?: string;
+};
+
+export type DashboardActivityItem = {
+  id: string;
+  title: string;
+  description?: string;
+  status?: string;
+  timestamp: string;
+  href?: string;
+};
+
+export type DashboardBreakdownItem = {
+  label: string;
+  value: number;
+};
+
+export type CustomerServicesDashboard = {
+  stats: DashboardStat[];
+  recent_quote_requests: QuoteRequest[];
+  submitted_reviews: ServiceReview[];
+  eligible_reviews: ServiceBookingSummary[];
+  recent_providers: ServiceProvider[];
+  recommended_providers: ServiceProvider[];
+  service_categories: TradeCategory[];
+  activity: DashboardActivityItem[];
+};
+
+export type ProviderServicesDashboard = {
+  profile: OwnerServiceProvider | null;
+  stats: DashboardStat[];
+  quote_status_counts: Record<QuoteRequestStatus, number>;
+  review_status_counts: Record<ServiceReviewStatus, number>;
+  recent_quote_requests: QuoteRequest[];
+  latest_reviews: ServiceReview[];
+  response_reminders: ServiceReview[];
+  activity: DashboardActivityItem[];
+};
+
+export type AdminServicesDashboard = {
+  stats: DashboardStat[];
+  provider_status_counts: Record<ProviderStatus, number>;
+  quote_status_counts: Record<QuoteRequestStatus, number>;
+  review_status_counts: Record<ServiceReviewStatus, number>;
+  pending_providers: OwnerServiceProvider[];
+  pending_reviews: ServiceReview[];
+  flagged_reviews: ServiceReview[];
+  open_quote_requests: QuoteRequest[];
+  category_breakdown: DashboardBreakdownItem[];
+  geographic_breakdown: DashboardBreakdownItem[];
+  activity: DashboardActivityItem[];
 };
 
 export type ServiceProviderFilters = {
@@ -913,5 +977,29 @@ export async function adminModerateServiceReview(
     `/services/admin/reviews/${id}/${action}/`,
     { reason },
   );
+  return response.data;
+}
+
+export async function getCustomerServicesDashboard(): Promise<CustomerServicesDashboard> {
+  if (USE_MOCKS) {
+    return mockGetCustomerServicesDashboard();
+  }
+  const response = await apiClient.get<CustomerServicesDashboard>("/services/dashboard/customer/");
+  return response.data;
+}
+
+export async function getProviderServicesDashboard(): Promise<ProviderServicesDashboard> {
+  if (USE_MOCKS) {
+    return mockGetProviderServicesDashboard();
+  }
+  const response = await apiClient.get<ProviderServicesDashboard>("/services/dashboard/provider/");
+  return response.data;
+}
+
+export async function getAdminServicesDashboard(): Promise<AdminServicesDashboard> {
+  if (USE_MOCKS) {
+    return mockGetAdminServicesDashboard();
+  }
+  const response = await apiClient.get<AdminServicesDashboard>("/services/dashboard/admin/");
   return response.data;
 }

@@ -6,21 +6,53 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormMessage } from "@/components/forms/form-message";
 import { ProviderCompletenessChecklist } from "@/components/services/provider-completeness-checklist";
 import { ProviderStatusBadge } from "@/components/services/provider-status-badge";
+import { QuoteRequestStatusBadge } from "@/components/services/quote-request-status-badge";
+import { ReviewCard } from "@/components/services/review-card";
+import {
+  ActivityTimeline,
+  DashboardSection,
+  DashboardStatGrid,
+  EmptyDashboardState,
+  QuickActionGrid,
+} from "@/components/services/services-dashboard-widgets";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import {
   createProviderProfile,
-  getMyProviderProfile,
+  getProviderServicesDashboard,
   submitProviderProfile,
 } from "@/lib/api/services";
 
+const providerActions = [
+  {
+    href: "/dashboard/artisan/profile",
+    label: "Edit profile",
+    description: "Update public identity, trades, contact preferences, and service areas.",
+  },
+  {
+    href: "/dashboard/artisan/portfolio",
+    label: "Upload portfolio",
+    description: "Add moderated work samples to strengthen marketplace trust.",
+  },
+  {
+    href: "/dashboard/artisan/quote-requests",
+    label: "View quotes",
+    description: "Manage new, viewed, responded, and closed customer enquiries.",
+  },
+  {
+    href: "/dashboard/artisan/reviews",
+    label: "Reviews",
+    description: "Respond to published reviews and track customer trust signals.",
+  },
+];
+
 export default function ArtisanDashboardPage() {
   const queryClient = useQueryClient();
-  const profileQuery = useQuery({
-    queryKey: ["my-provider-profile"],
-    queryFn: getMyProviderProfile,
+  const dashboardQuery = useQuery({
+    queryKey: ["provider-services-dashboard"],
+    queryFn: getProviderServicesDashboard,
     retry: false,
   });
 
@@ -33,26 +65,26 @@ export default function ArtisanDashboardPage() {
         headline: "",
         biography: "",
       }),
-    onSuccess: (data) => queryClient.setQueryData(["my-provider-profile"], data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["provider-services-dashboard"] }),
   });
 
   const submitMutation = useMutation({
     mutationFn: submitProviderProfile,
-    onSuccess: (data) => queryClient.setQueryData(["my-provider-profile"], data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["provider-services-dashboard"] }),
   });
 
-  const profile = profileQuery.data;
-  const error = profileQuery.isError ? getApiErrorMessage(profileQuery.error) : "";
+  const dashboard = dashboardQuery.data;
+  const profile = dashboard?.profile;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <SectionHeader
         eyebrow="Artisan dashboard"
-        title="Provider profile command centre"
-        description="Create your services profile, complete trades and service areas, upload portfolio images, and track RealityNG moderation."
+        title="Provider operations command centre"
+        description="Monitor profile readiness, quote requests, reviews, portfolio strength, coverage, and the next work that needs attention."
       />
 
-      {!profile && !profileQuery.isLoading ? (
+      {!profile && !dashboardQuery.isLoading ? (
         <Card className="mt-8 p-6">
           <h2 className="font-heading text-2xl font-semibold text-brand-text">
             Create your provider profile
@@ -61,10 +93,12 @@ export default function ArtisanDashboardPage() {
             Start a draft profile before adding trades, service areas, and portfolio samples.
             Profiles become public only after admin approval.
           </p>
-          {createMutation.isError || error ? (
+          {createMutation.isError || dashboardQuery.isError ? (
             <div className="mt-4">
               <FormMessage tone="error">
-                {createMutation.isError ? getApiErrorMessage(createMutation.error) : error}
+                {createMutation.isError
+                  ? getApiErrorMessage(createMutation.error)
+                  : getApiErrorMessage(dashboardQuery.error)}
               </FormMessage>
             </div>
           ) : null}
@@ -78,8 +112,12 @@ export default function ArtisanDashboardPage() {
         </Card>
       ) : null}
 
-      {profile ? (
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_22rem]">
+      {dashboardQuery.isLoading ? (
+        <Card className="mt-8 p-5 text-brand-muted">Loading provider operations...</Card>
+      ) : null}
+
+      {dashboard && profile ? (
+        <div className="mt-8 space-y-8">
           <Card className="p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -87,7 +125,7 @@ export default function ArtisanDashboardPage() {
                 <h2 className="mt-4 font-heading text-3xl font-semibold text-brand-text">
                   {profile.business_name || "Untitled provider profile"}
                 </h2>
-                <p className="mt-3 text-sm leading-6 text-brand-muted">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-brand-muted">
                   {profile.headline || "Add a headline that explains your strongest service."}
                 </p>
               </div>
@@ -97,51 +135,100 @@ export default function ArtisanDashboardPage() {
                 </Link>
               ) : null}
             </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-              <Card className="p-4">
-                <p className="text-2xl font-bold text-brand-text">{profile.trades.length}</p>
-                <p className="text-sm text-brand-muted">Trades</p>
-              </Card>
-              <Card className="p-4">
-                <p className="text-2xl font-bold text-brand-text">{profile.service_areas.length}</p>
-                <p className="text-sm text-brand-muted">Service areas</p>
-              </Card>
-              <Card className="p-4">
-                <p className="text-2xl font-bold text-brand-text">{profile.portfolio_count ?? 0}</p>
-                <p className="text-sm text-brand-muted">Portfolio images</p>
-              </Card>
-            </div>
-
-            {submitMutation.isError ? (
-              <div className="mt-5">
-                <FormMessage tone="error">{getApiErrorMessage(submitMutation.error)}</FormMessage>
-              </div>
-            ) : null}
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link className={buttonClasses("primary")} href="/dashboard/artisan/profile">
-                Manage profile
-              </Link>
-              <Link className={buttonClasses("secondary")} href="/dashboard/artisan/portfolio">
-                Manage portfolio
-              </Link>
-              <Link className={buttonClasses("secondary")} href="/dashboard/artisan/quote-requests">
-                Quote requests
-              </Link>
-              <Link className={buttonClasses("secondary")} href="/dashboard/artisan/reviews">
-                Reviews
-              </Link>
-              <Button
-                disabled={submitMutation.isPending || profile.status === "pending_review"}
-                onClick={() => submitMutation.mutate()}
-                variant="secondary"
-              >
-                {submitMutation.isPending ? "Submitting..." : "Submit for review"}
-              </Button>
-            </div>
           </Card>
-          <ProviderCompletenessChecklist completion={profile.completion} />
+
+          <DashboardStatGrid stats={dashboard.stats} />
+
+          <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+            <DashboardSection title="Profile completeness">
+              <ProviderCompletenessChecklist completion={profile.completion} />
+              {submitMutation.isError ? (
+                <div className="mt-4">
+                  <FormMessage tone="error">{getApiErrorMessage(submitMutation.error)}</FormMessage>
+                </div>
+              ) : null}
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Link className={buttonClasses("primary")} href="/dashboard/artisan/profile">
+                  Manage profile
+                </Link>
+                <Button
+                  disabled={submitMutation.isPending || profile.status === "pending_review"}
+                  onClick={() => submitMutation.mutate()}
+                  variant="secondary"
+                >
+                  {submitMutation.isPending ? "Submitting..." : "Submit for review"}
+                </Button>
+              </div>
+            </DashboardSection>
+
+            <DashboardSection title="Quick actions">
+              <QuickActionGrid actions={providerActions} />
+            </DashboardSection>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <DashboardSection
+              action={{ href: "/dashboard/artisan/quote-requests", label: "Manage quotes" }}
+              title="Latest quote requests"
+            >
+              <div className="space-y-3">
+                {dashboard.recent_quote_requests.map((quote) => (
+                  <div className="rounded-md border border-white/10 bg-white/5 p-4" key={quote.id}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-brand-text">{quote.project_title}</p>
+                        <p className="mt-1 text-sm text-brand-muted">{quote.customer_name}</p>
+                      </div>
+                      <QuoteRequestStatusBadge status={quote.status} />
+                    </div>
+                  </div>
+                ))}
+                {dashboard.recent_quote_requests.length === 0 ? (
+                  <EmptyDashboardState message="New customer quote requests will appear here." />
+                ) : null}
+              </div>
+            </DashboardSection>
+
+            <DashboardSection
+              action={{ href: "/dashboard/artisan/reviews", label: "Manage reviews" }}
+              title="Latest reviews"
+            >
+              <div className="space-y-4">
+                {dashboard.latest_reviews.slice(0, 2).map((review) => (
+                  <ReviewCard key={review.id} mode="provider" review={review} />
+                ))}
+                {dashboard.latest_reviews.length === 0 ? (
+                  <EmptyDashboardState message="Published customer reviews will appear here." />
+                ) : null}
+              </div>
+            </DashboardSection>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <DashboardSection title="Response reminders">
+              <div className="space-y-3">
+                {dashboard.response_reminders.map((review) => (
+                  <Link
+                    className="block rounded-md border border-white/10 bg-white/5 p-4"
+                    href="/dashboard/artisan/reviews"
+                    key={review.id}
+                  >
+                    <p className="font-semibold text-brand-text">{review.title}</p>
+                    <p className="mt-1 text-sm text-brand-muted">
+                      Published review awaiting your response
+                    </p>
+                  </Link>
+                ))}
+                {dashboard.response_reminders.length === 0 ? (
+                  <EmptyDashboardState message="Reviews waiting for provider responses will appear here." />
+                ) : null}
+              </div>
+            </DashboardSection>
+
+            <DashboardSection title="Recent activity">
+              <ActivityTimeline activity={dashboard.activity} />
+            </DashboardSection>
+          </div>
         </div>
       ) : null}
     </main>
