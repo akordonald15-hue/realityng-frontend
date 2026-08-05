@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { Footer } from "@/components/layout/footer";
+import { WalkthroughVideoPlayer } from "@/components/inspections/inspection-widgets";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyMapPanel } from "@/components/maps/property-map-panel";
 import { CompareButton } from "@/components/properties/compare-button";
@@ -16,6 +17,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { listPublicWalkthroughs } from "@/lib/api/inspections";
 import { getPublicProperty } from "@/lib/api/properties";
 import type { Property } from "@/lib/api/properties";
 import {
@@ -109,6 +111,11 @@ export default function PropertyDetailPage() {
   const gallery = useMemo(() => property?.image_gallery ?? [], [property]);
   const cover = gallery.find((image) => image.is_cover) ?? gallery[0];
   const imageCount = property?.image_count ?? gallery.length;
+  const walkthroughsQuery = useQuery({
+    queryKey: ["public-property-walkthroughs", property?.id],
+    queryFn: () => listPublicWalkthroughs(property?.id ?? ""),
+    enabled: Boolean(property?.id),
+  });
 
   return (
     <div className="min-h-screen bg-brand-background pb-24 text-brand-text lg:pb-0">
@@ -245,6 +252,8 @@ export default function PropertyDetailPage() {
                   </p>
                 </section>
 
+                <WalkthroughVideoPlayer walkthroughs={walkthroughsQuery.data ?? []} />
+
                 <section>
                   <h2 className="font-heading text-3xl font-semibold text-brand-text">
                     Amenities and utilities
@@ -368,6 +377,20 @@ export default function PropertyDetailPage() {
                       href={`/apply/${property.id}?slug=${property.slug}`}
                     >
                       Apply for this property
+                    </ProtectedActionLink>
+                    <ProtectedActionLink
+                      actionLabel="Request inspection"
+                      className={buttonClasses("secondary", "w-full")}
+                      href={`/properties/${property.slug}/request-inspection`}
+                    >
+                      Request inspection
+                    </ProtectedActionLink>
+                    <ProtectedActionLink
+                      actionLabel="Manage walkthrough videos"
+                      className={buttonClasses("secondary", "w-full")}
+                      href={`/dashboard/properties/${property.id}/walkthroughs`}
+                    >
+                      Manage walkthroughs
                     </ProtectedActionLink>
                   </div>
                 </Card>
