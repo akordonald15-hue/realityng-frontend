@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { FormMessage } from "@/components/forms/form-message";
+import { SuspensionBanner } from "@/components/services/governance-widgets";
 import { ProviderCompletenessChecklist } from "@/components/services/provider-completeness-checklist";
 import { ProviderStatusBadge } from "@/components/services/provider-status-badge";
 import { QuoteRequestStatusBadge } from "@/components/services/quote-request-status-badge";
@@ -45,6 +46,16 @@ const providerActions = [
     href: "/dashboard/artisan/reviews",
     label: "Reviews",
     description: "Respond to published reviews and track customer trust signals.",
+  },
+  {
+    href: "/dashboard/artisan/complaints",
+    label: "Complaints",
+    description: "Track governance complaints linked to your provider profile.",
+  },
+  {
+    href: "/dashboard/artisan/appeals",
+    label: "Appeals",
+    description: "Submit warning or suspension appeals through the approved workflow.",
   },
 ];
 
@@ -118,6 +129,14 @@ export default function ArtisanDashboardPage() {
 
       {dashboard && profile ? (
         <div className="mt-8 space-y-8">
+          {profile.status === "suspended" ? (
+            <SuspensionBanner
+              expiresAt={profile.suspension_expires_at}
+              reason={profile.suspended_reason}
+              type={profile.suspension_type}
+            />
+          ) : null}
+
           <Card className="p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>

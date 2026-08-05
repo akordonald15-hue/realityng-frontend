@@ -33,14 +33,19 @@ const adminActions = [
     description: "Publish, hide, restore, remove, and dispute customer reviews.",
   },
   {
+    href: "/admin/services/complaints",
+    label: "Complaints",
+    description: "Review, escalate, resolve, or close services marketplace complaints.",
+  },
+  {
+    href: "/admin/services/appeals",
+    label: "Appeals",
+    description: "Approve, reject, or reopen warning and suspension appeals.",
+  },
+  {
     href: "/admin/services/quote-requests",
     label: "Quote requests",
     description: "Monitor submitted, responded, closed, and cancelled customer enquiries.",
-  },
-  {
-    href: "/verification",
-    label: "Trust standards",
-    description: "Review verification and public trust-signal expectations.",
   },
 ];
 

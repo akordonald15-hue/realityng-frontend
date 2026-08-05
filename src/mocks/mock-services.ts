@@ -4,9 +4,14 @@ import type {
   AdminProviderFilters,
   CustomerServicesDashboard,
   OwnerServiceProvider,
+  PaginatedProviderAppeals,
+  PaginatedServiceComplaints,
   PaginatedServiceProviders,
   PaginatedQuoteRequests,
   PaginatedServiceReviews,
+  ProviderAppeal,
+  ProviderAppealFilters,
+  ProviderAppealPayload,
   PortfolioImage,
   PortfolioImageMetadataPayload,
   PortfolioImagePayload,
@@ -15,6 +20,9 @@ import type {
   QuoteRequestFilters,
   QuoteRequestPayload,
   ServiceBookingSummary,
+  ServiceComplaint,
+  ServiceComplaintFilters,
+  ServiceComplaintPayload,
   ServiceProvider,
   ServiceProviderFilters,
   ProviderServicesDashboard,
@@ -512,6 +520,59 @@ let mockQuoteRequests: QuoteRequest[] = [
   },
 ];
 
+let mockServiceComplaints: ServiceComplaint[] = [
+  {
+    id: "complaint-demo-service-quality",
+    complainant: "customer-demo",
+    complainant_email: "ada@example.com",
+    provider: {
+      id: "provider-bright-spark",
+      slug: "bright-spark-electrical",
+      business_name: "Bright Spark Electrical",
+      provider_type: "individual",
+      display_location: "Lekki, Lagos",
+    },
+    quote_request: "quote-demo-electrical",
+    review: null,
+    booking: null,
+    complaint_type: "customer",
+    category: "service_quality",
+    subject: "Follow-up needed on repair scope",
+    description: "The customer wants the provider response reviewed by operations.",
+    status: "open",
+    assigned_admin: null,
+    assigned_admin_email: "",
+    resolution_notes: "",
+    evidence: [],
+    created_at: "2026-08-02T11:00:00Z",
+    updated_at: "2026-08-02T11:00:00Z",
+  },
+];
+
+let mockProviderAppeals: ProviderAppeal[] = [
+  {
+    id: "appeal-demo-warning",
+    provider: {
+      id: "provider-bright-spark",
+      slug: "bright-spark-electrical",
+      business_name: "Bright Spark Electrical",
+      provider_type: "individual",
+      display_location: "Lekki, Lagos",
+    },
+    submitted_by: "provider-owner",
+    submitted_by_email: "artisan@example.com",
+    appeal_type: "warning",
+    reason: "We have updated our response workflow and request warning review.",
+    status: "submitted",
+    admin_notes: "",
+    decided_by: null,
+    decided_by_email: "",
+    decided_at: null,
+    created_at: "2026-08-03T10:00:00Z",
+    updated_at: "2026-08-03T10:00:00Z",
+  },
+];
+
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -643,6 +704,47 @@ function updateQuoteRequestStatus(id: string, status: QuoteRequest["status"]) {
   });
   if (!updated) throw new Error("Quote request was not found.");
   return updated;
+}
+
+function filterComplaints(filters: ServiceComplaintFilters = {}) {
+  let complaints = [...mockServiceComplaints];
+  if (filters.status) {
+    complaints = complaints.filter((complaint) => complaint.status === filters.status);
+  }
+  if (filters.category) {
+    complaints = complaints.filter((complaint) => complaint.category === filters.category);
+  }
+  if (filters.provider) {
+    complaints = complaints.filter((complaint) => complaint.provider.id === filters.provider);
+  }
+  if (filters.search) {
+    complaints = complaints.filter(
+      (complaint) =>
+        matchesText(complaint.subject, filters.search) ||
+        matchesText(complaint.description, filters.search) ||
+        matchesText(complaint.provider.business_name, filters.search),
+    );
+  }
+  complaints.sort((a, b) =>
+    filters.ordering === "oldest"
+      ? a.created_at.localeCompare(b.created_at)
+      : b.created_at.localeCompare(a.created_at),
+  );
+  return complaints;
+}
+
+function filterAppeals(filters: ProviderAppealFilters = {}) {
+  let appeals = [...mockProviderAppeals];
+  if (filters.status) {
+    appeals = appeals.filter((appeal) => appeal.status === filters.status);
+  }
+  if (filters.appeal_type) {
+    appeals = appeals.filter((appeal) => appeal.appeal_type === filters.appeal_type);
+  }
+  if (filters.provider) {
+    appeals = appeals.filter((appeal) => appeal.provider.id === filters.provider);
+  }
+  return appeals.sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
 export async function mockGetTradeCategories(): Promise<TradeCategory[]> {
@@ -1035,12 +1137,33 @@ export async function mockAdminSuspendProvider(
   payload: AdminProviderDecisionPayload,
 ): Promise<OwnerServiceProvider> {
   if (requireOwnerProfile().id !== id) return mockAdminGetProvider(id);
-  return updateMockProviderStatus("suspended", { suspended_reason: payload.reason ?? "" });
+  return updateMockProviderStatus("suspended", {
+    suspended_reason: payload.reason ?? "",
+    suspension_type: payload.suspension_type ?? "temporary",
+    suspension_expires_at: payload.suspension_expires_at ?? null,
+  });
+}
+
+export async function mockAdminWarnProvider(
+  id: string,
+  payload: AdminProviderDecisionPayload,
+): Promise<OwnerServiceProvider> {
+  const provider = requireOwnerProfile();
+  if (provider.id !== id) return mockAdminGetProvider(id);
+  return updateMockProviderStatus(provider.status, {
+    warning_count: (provider.warning_count ?? 0) + 1,
+    last_warning_reason: payload.reason ?? "",
+  });
 }
 
 export async function mockAdminReactivateProvider(id: string): Promise<OwnerServiceProvider> {
   if (requireOwnerProfile().id !== id) return mockAdminGetProvider(id);
-  return updateMockProviderStatus("active");
+  return updateMockProviderStatus("active", {
+    suspended_reason: "",
+    suspension_type: "",
+    suspension_expires_at: null,
+    appeal_status: "",
+  });
 }
 
 export async function mockCreateQuoteRequest(
@@ -1287,6 +1410,188 @@ export async function mockAdminModerateServiceReview(
     published_at:
       action === "publish" || action === "restore" ? new Date().toISOString() : undefined,
   });
+}
+
+export async function mockSubmitServiceComplaint(
+  payload: ServiceComplaintPayload,
+): Promise<ServiceComplaint> {
+  const provider =
+    mockProviders.find((item) => item.id === payload.provider_id) ?? requireOwnerProfile();
+  const now = new Date().toISOString();
+  const complaint: ServiceComplaint = {
+    id: createId("complaint"),
+    complainant: "mock-user",
+    complainant_email: "demo@realityng.com",
+    provider: {
+      id: provider.id,
+      slug: provider.slug,
+      business_name: provider.business_name,
+      provider_type: provider.provider_type,
+      display_location: provider.display_location,
+    },
+    quote_request: payload.quote_request_id ?? null,
+    review: payload.review_id ?? null,
+    booking: payload.booking_id ?? null,
+    complaint_type: payload.complaint_type,
+    category: payload.category,
+    subject: payload.subject,
+    description: payload.description,
+    status: "open",
+    assigned_admin: null,
+    assigned_admin_email: "",
+    resolution_notes: "",
+    evidence: [],
+    created_at: now,
+    updated_at: now,
+  };
+  mockServiceComplaints = [complaint, ...mockServiceComplaints];
+  return complaint;
+}
+
+export async function mockListMyServiceComplaints(
+  filters: ServiceComplaintFilters = {},
+): Promise<PaginatedServiceComplaints> {
+  const results = filterComplaints(filters);
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockListProviderComplaints(
+  filters: ServiceComplaintFilters = {},
+): Promise<PaginatedServiceComplaints> {
+  const provider = requireOwnerProfile();
+  const results = filterComplaints(filters).filter(
+    (complaint) => complaint.provider.id === provider.id || complaint.complainant === "mock-user",
+  );
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockSubmitProviderAppeal(
+  payload: ProviderAppealPayload,
+): Promise<ProviderAppeal> {
+  const provider = requireOwnerProfile();
+  const now = new Date().toISOString();
+  const appeal: ProviderAppeal = {
+    id: createId("appeal"),
+    provider: {
+      id: provider.id,
+      slug: provider.slug,
+      business_name: provider.business_name,
+      provider_type: provider.provider_type,
+      display_location: provider.display_location,
+    },
+    submitted_by: "mock-user",
+    submitted_by_email: "artisan@example.com",
+    appeal_type: payload.appeal_type,
+    reason: payload.reason,
+    status: "submitted",
+    admin_notes: "",
+    decided_by: null,
+    decided_by_email: "",
+    decided_at: null,
+    created_at: now,
+    updated_at: now,
+  };
+  mockProviderAppeals = [appeal, ...mockProviderAppeals];
+  mockOwnerProfile = { ...provider, appeal_status: "submitted", updated_at: now };
+  return appeal;
+}
+
+export async function mockListProviderAppeals(
+  filters: ProviderAppealFilters = {},
+): Promise<PaginatedProviderAppeals> {
+  const provider = requireOwnerProfile();
+  const results = filterAppeals(filters).filter((appeal) => appeal.provider.id === provider.id);
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockAdminListComplaints(
+  filters: ServiceComplaintFilters = {},
+): Promise<PaginatedServiceComplaints> {
+  const results = filterComplaints(filters);
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockAdminGetComplaint(id: string): Promise<ServiceComplaint> {
+  const complaint = mockServiceComplaints.find((item) => item.id === id);
+  if (!complaint) throw new Error("Complaint was not found.");
+  return complaint;
+}
+
+export async function mockAdminModerateComplaint(
+  id: string,
+  action:
+    | "review"
+    | "resolve"
+    | "reject"
+    | "escalate"
+    | "close"
+    | "await-customer"
+    | "await-provider",
+  notes = "",
+): Promise<ServiceComplaint> {
+  const statusByAction: Record<typeof action, ServiceComplaint["status"]> = {
+    review: "under_review",
+    resolve: "resolved",
+    reject: "rejected",
+    escalate: "escalated",
+    close: "closed",
+    "await-customer": "awaiting_customer",
+    "await-provider": "awaiting_provider",
+  };
+  const now = new Date().toISOString();
+  let updated: ServiceComplaint | undefined;
+  mockServiceComplaints = mockServiceComplaints.map((complaint) => {
+    if (complaint.id !== id) return complaint;
+    updated = {
+      ...complaint,
+      status: statusByAction[action],
+      resolution_notes: notes || complaint.resolution_notes,
+      updated_at: now,
+    };
+    return updated;
+  });
+  if (!updated) throw new Error("Complaint was not found.");
+  return updated;
+}
+
+export async function mockAdminListAppeals(
+  filters: ProviderAppealFilters = {},
+): Promise<PaginatedProviderAppeals> {
+  const results = filterAppeals(filters);
+  return { count: results.length, next: null, previous: null, results };
+}
+
+export async function mockAdminGetAppeal(id: string): Promise<ProviderAppeal> {
+  const appeal = mockProviderAppeals.find((item) => item.id === id);
+  if (!appeal) throw new Error("Appeal was not found.");
+  return appeal;
+}
+
+export async function mockAdminModerateAppeal(
+  id: string,
+  action: "approve" | "reject" | "reopen",
+  notes = "",
+): Promise<ProviderAppeal> {
+  const statusByAction: Record<typeof action, ProviderAppeal["status"]> = {
+    approve: "approved",
+    reject: "rejected",
+    reopen: "reopened",
+  };
+  const now = new Date().toISOString();
+  let updated: ProviderAppeal | undefined;
+  mockProviderAppeals = mockProviderAppeals.map((appeal) => {
+    if (appeal.id !== id) return appeal;
+    updated = {
+      ...appeal,
+      status: statusByAction[action],
+      admin_notes: notes || appeal.admin_notes,
+      decided_at: now,
+      updated_at: now,
+    };
+    return updated;
+  });
+  if (!updated) throw new Error("Appeal was not found.");
+  return updated;
 }
 
 function countQuotes() {

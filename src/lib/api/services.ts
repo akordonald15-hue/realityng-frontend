@@ -2,10 +2,17 @@ import { apiClient } from "@/lib/api/client";
 import { USE_MOCKS } from "@/lib/demo-mode";
 import {
   mockAdminApproveProvider,
+  mockAdminGetAppeal,
+  mockAdminGetComplaint,
+  mockAdminListAppeals,
+  mockAdminListComplaints,
   mockAdminGetProvider,
   mockAdminListProviders,
   mockAdminReactivateProvider,
   mockAdminRejectProvider,
+  mockAdminModerateAppeal,
+  mockAdminModerateComplaint,
+  mockAdminWarnProvider,
   mockAdminCloseQuoteRequest,
   mockAdminListQuoteRequests,
   mockAdminListServiceReviews,
@@ -30,7 +37,10 @@ import {
   mockGetServiceProvider,
   mockGetServiceProviders,
   mockGetTradeCategories,
+  mockListMyServiceComplaints,
   mockListPortfolioImages,
+  mockListProviderAppeals,
+  mockListProviderComplaints,
   mockListProviderTrades,
   mockListProviderQuoteRequests,
   mockListProviderServiceReviews,
@@ -44,6 +54,8 @@ import {
   mockMarkQuoteRequestResponded,
   mockMarkQuoteRequestViewed,
   mockSubmitProviderProfile,
+  mockSubmitProviderAppeal,
+  mockSubmitServiceComplaint,
   mockUpdateMyProviderProfile,
   mockUpdatePortfolioImage,
   mockUpdateProviderTrade,
@@ -176,6 +188,11 @@ export type OwnerServiceProvider = ServiceProvider & {
   rejection_reason?: string;
   more_info_message?: string;
   suspended_reason?: string;
+  warning_count?: number;
+  last_warning_reason?: string;
+  suspension_type?: ProviderSuspensionType | "";
+  suspension_expires_at?: string | null;
+  appeal_status?: ProviderAppealStatus | "";
   completion?: ProviderCompletion;
   portfolio_count?: number;
 };
@@ -244,7 +261,11 @@ export type AdminProviderDecisionPayload = {
   reason?: string;
   message?: string;
   review_notes?: string;
+  suspension_type?: ProviderSuspensionType;
+  suspension_expires_at?: string | null;
 };
+
+export type ProviderSuspensionType = "warning" | "temporary" | "permanent";
 
 export type QuoteRequestStatus = "submitted" | "viewed" | "responded" | "closed" | "cancelled";
 export type PreferredContactMethod = "phone" | "email" | "whatsapp";
@@ -391,6 +412,125 @@ export type PaginatedServiceReviews = {
   results: ServiceReview[];
 };
 
+export type ServiceComplaintType = "customer" | "provider";
+export type ServiceComplaintCategory =
+  | "provider_conduct"
+  | "customer_conduct"
+  | "review_abuse"
+  | "safety"
+  | "fraud"
+  | "service_quality"
+  | "other";
+export type ServiceComplaintStatus =
+  | "open"
+  | "under_review"
+  | "awaiting_customer"
+  | "awaiting_provider"
+  | "resolved"
+  | "rejected"
+  | "escalated"
+  | "closed";
+
+export type ServiceComplaint = {
+  id: string;
+  complainant: string;
+  complainant_email?: string;
+  provider: Pick<
+    ServiceProvider,
+    "id" | "slug" | "business_name" | "provider_type" | "display_location"
+  >;
+  quote_request?: string | null;
+  review?: string | null;
+  booking?: string | null;
+  complaint_type: ServiceComplaintType;
+  category: ServiceComplaintCategory;
+  subject: string;
+  description: string;
+  status: ServiceComplaintStatus;
+  assigned_admin?: string | null;
+  assigned_admin_email?: string | null;
+  resolution_notes?: string;
+  resolved_at?: string | null;
+  rejected_at?: string | null;
+  escalated_at?: string | null;
+  closed_at?: string | null;
+  evidence?: { id: string; file_url: string; caption: string; created_at: string }[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type ServiceComplaintPayload = {
+  provider_id: string;
+  quote_request_id?: string;
+  review_id?: string;
+  booking_id?: string;
+  complaint_type: ServiceComplaintType;
+  category: ServiceComplaintCategory;
+  subject: string;
+  description: string;
+};
+
+export type ServiceComplaintFilters = {
+  status?: ServiceComplaintStatus | "";
+  category?: ServiceComplaintCategory | "";
+  provider?: string;
+  search?: string;
+  ordering?: "newest" | "oldest" | "";
+};
+
+export type PaginatedServiceComplaints = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ServiceComplaint[];
+};
+
+export type ProviderAppealType = "warning" | "suspension";
+export type ProviderAppealStatus =
+  | "submitted"
+  | "under_review"
+  | "approved"
+  | "rejected"
+  | "reopened"
+  | "closed";
+
+export type ProviderAppeal = {
+  id: string;
+  provider: Pick<
+    ServiceProvider,
+    "id" | "slug" | "business_name" | "provider_type" | "display_location"
+  >;
+  submitted_by: string;
+  submitted_by_email?: string;
+  appeal_type: ProviderAppealType;
+  reason: string;
+  status: ProviderAppealStatus;
+  admin_notes?: string;
+  decided_by?: string | null;
+  decided_by_email?: string | null;
+  decided_at?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProviderAppealPayload = {
+  appeal_type: ProviderAppealType;
+  reason: string;
+};
+
+export type ProviderAppealFilters = {
+  status?: ProviderAppealStatus | "";
+  appeal_type?: ProviderAppealType | "";
+  provider?: string;
+};
+
+export type PaginatedProviderAppeals = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProviderAppeal[];
+};
+
 export type DashboardStat = {
   label: string;
   value: string;
@@ -470,7 +610,9 @@ function cleanFilters(
     | ServiceProviderFilters
     | AdminProviderFilters
     | QuoteRequestFilters
-    | ServiceReviewFilters,
+    | ServiceReviewFilters
+    | ServiceComplaintFilters
+    | ProviderAppealFilters,
 ): Record<string, string> {
   return Object.fromEntries(
     Object.entries(filters).filter(([, value]) => value !== undefined && value !== ""),
@@ -777,6 +919,20 @@ export async function adminSuspendProvider(
   return response.data;
 }
 
+export async function adminWarnProvider(
+  id: string,
+  payload: AdminProviderDecisionPayload,
+): Promise<OwnerServiceProvider> {
+  if (USE_MOCKS) {
+    return mockAdminWarnProvider(id, payload);
+  }
+  const response = await apiClient.post<OwnerServiceProvider>(
+    `/services/admin/providers/${id}/warn/`,
+    payload,
+  );
+  return response.data;
+}
+
 export async function adminReactivateProvider(id: string): Promise<OwnerServiceProvider> {
   if (USE_MOCKS) {
     return mockAdminReactivateProvider(id);
@@ -976,6 +1132,145 @@ export async function adminModerateServiceReview(
   const response = await apiClient.post<ServiceReview>(
     `/services/admin/reviews/${id}/${action}/`,
     { reason },
+  );
+  return response.data;
+}
+
+export async function submitServiceComplaint(
+  payload: ServiceComplaintPayload,
+): Promise<ServiceComplaint> {
+  if (USE_MOCKS) {
+    return mockSubmitServiceComplaint(payload);
+  }
+  const response = await apiClient.post<ServiceComplaint>("/services/complaints/", payload);
+  return response.data;
+}
+
+export async function listMyServiceComplaints(
+  filters: ServiceComplaintFilters = {},
+): Promise<PaginatedServiceComplaints> {
+  if (USE_MOCKS) {
+    return mockListMyServiceComplaints(filters);
+  }
+  const response = await apiClient.get<PaginatedServiceComplaints>("/services/complaints/", {
+    params: cleanFilters(filters),
+  });
+  return response.data;
+}
+
+export async function listProviderComplaints(
+  filters: ServiceComplaintFilters = {},
+): Promise<PaginatedServiceComplaints> {
+  if (USE_MOCKS) {
+    return mockListProviderComplaints(filters);
+  }
+  const response = await apiClient.get<PaginatedServiceComplaints>(
+    "/services/provider-profile/complaints/",
+    { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function submitProviderAppeal(
+  payload: ProviderAppealPayload,
+): Promise<ProviderAppeal> {
+  if (USE_MOCKS) {
+    return mockSubmitProviderAppeal(payload);
+  }
+  const response = await apiClient.post<ProviderAppeal>(
+    "/services/provider-profile/appeals/",
+    payload,
+  );
+  return response.data;
+}
+
+export async function listProviderAppeals(
+  filters: ProviderAppealFilters = {},
+): Promise<PaginatedProviderAppeals> {
+  if (USE_MOCKS) {
+    return mockListProviderAppeals(filters);
+  }
+  const response = await apiClient.get<PaginatedProviderAppeals>(
+    "/services/provider-profile/appeals/",
+    { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function adminListComplaints(
+  filters: ServiceComplaintFilters = {},
+): Promise<PaginatedServiceComplaints> {
+  if (USE_MOCKS) {
+    return mockAdminListComplaints(filters);
+  }
+  const response = await apiClient.get<PaginatedServiceComplaints>(
+    "/services/admin/complaints/",
+    { params: cleanFilters(filters) },
+  );
+  return response.data;
+}
+
+export async function adminGetComplaint(id: string): Promise<ServiceComplaint> {
+  if (USE_MOCKS) {
+    return mockAdminGetComplaint(id);
+  }
+  const response = await apiClient.get<ServiceComplaint>(`/services/admin/complaints/${id}/`);
+  return response.data;
+}
+
+export async function adminModerateComplaint(
+  id: string,
+  action:
+    | "review"
+    | "resolve"
+    | "reject"
+    | "escalate"
+    | "close"
+    | "await-customer"
+    | "await-provider",
+  notes = "",
+): Promise<ServiceComplaint> {
+  if (USE_MOCKS) {
+    return mockAdminModerateComplaint(id, action, notes);
+  }
+  const response = await apiClient.post<ServiceComplaint>(
+    `/services/admin/complaints/${id}/${action}/`,
+    { notes },
+  );
+  return response.data;
+}
+
+export async function adminListAppeals(
+  filters: ProviderAppealFilters = {},
+): Promise<PaginatedProviderAppeals> {
+  if (USE_MOCKS) {
+    return mockAdminListAppeals(filters);
+  }
+  const response = await apiClient.get<PaginatedProviderAppeals>("/services/admin/appeals/", {
+    params: cleanFilters(filters),
+  });
+  return response.data;
+}
+
+export async function adminGetAppeal(id: string): Promise<ProviderAppeal> {
+  if (USE_MOCKS) {
+    return mockAdminGetAppeal(id);
+  }
+  const response = await apiClient.get<ProviderAppeal>(`/services/admin/appeals/${id}/`);
+  return response.data;
+}
+
+export async function adminModerateAppeal(
+  id: string,
+  action: "approve" | "reject" | "reopen",
+  notes = "",
+): Promise<ProviderAppeal> {
+  if (USE_MOCKS) {
+    return mockAdminModerateAppeal(id, action, notes);
+  }
+  const response = await apiClient.post<ProviderAppeal>(
+    `/services/admin/appeals/${id}/${action}/`,
+    { notes },
   );
   return response.data;
 }

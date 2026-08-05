@@ -30,14 +30,14 @@ const quickActions = [
     description: "Track reviews submitted after completed service engagements.",
   },
   {
+    href: "/dashboard/services/complaints",
+    label: "My complaints",
+    description: "Submit and monitor services marketplace complaints.",
+  },
+  {
     href: "/services?ordering=-average_rating",
     label: "Recommended providers",
     description: "Start with highly rated and reviewed providers.",
-  },
-  {
-    href: "/verification",
-    label: "Verification standards",
-    description: "Review how RealityNG separates verification from ratings.",
   },
 ];
 
