@@ -33,9 +33,14 @@ export default function AdminServiceProvidersPage() {
             title="Service provider moderation"
             description="Review profile submissions, requested changes, suspensions, and public marketplace readiness."
           />
-          <Link className={buttonClasses("secondary")} href="/admin/services/quote-requests">
-            Quote requests
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link className={buttonClasses("secondary")} href="/admin/services/quote-requests">
+              Quote requests
+            </Link>
+            <Link className={buttonClasses("secondary")} href="/admin/services/reviews">
+              Reviews
+            </Link>
+          </div>
         </div>
         <Card className="mt-6 grid gap-3 p-4 md:grid-cols-4">
           <Input

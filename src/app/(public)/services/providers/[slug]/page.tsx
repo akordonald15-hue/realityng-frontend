@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { EmptyMarketplaceState, LoadingPlaceholder } from "@/components/services/marketplace-states";
+import { ProviderReviewsSection } from "@/components/services/provider-reviews-section";
 import { ProviderProfileHeader } from "@/components/services/provider-profile-header";
 import { RequestQuoteButton } from "@/components/services/request-quote-button";
 import { VerificationBadgeStack } from "@/components/services/verification-badge-stack";
@@ -130,9 +131,13 @@ export default function ServiceProviderProfilePage() {
                 }
               />
               <div className="mt-6">
-                <VerificationBadgeStack badges={provider.verification_badges} />
+                <VerificationBadgeStack
+                  badges={[...provider.verification_badges, ...(provider.review_trust_signals ?? [])]}
+                />
               </div>
             </Card>
+
+            <ProviderReviewsSection provider={provider} />
           </div>
 
           <aside className="h-fit rounded-md border border-white/10 bg-brand-surface p-5 shadow-glow lg:sticky lg:top-24">
