@@ -9,16 +9,21 @@ Sprint 9.6 adds services marketplace governance screens for customers, providers
 Customer:
 
 - `/dashboard/services/complaints`
+- `/dashboard/services/complaints/[id]`
 
 Provider:
 
 - `/dashboard/artisan/complaints`
+- `/dashboard/artisan/complaints/[id]`
 - `/dashboard/artisan/appeals`
+- `/dashboard/artisan/appeals/[id]`
 
 Admin:
 
 - `/admin/services/complaints`
+- `/admin/services/complaints/[id]`
 - `/admin/services/appeals`
+- `/admin/services/appeals/[id]`
 
 Updated:
 
@@ -35,8 +40,10 @@ Added:
 - `SuspensionBanner`
 - `AppealForm`
 - `AppealList`
+- `ComplaintDetail`
+- `AppealDetail`
 
-These live in `src/components/services/governance-widgets.tsx` and reuse the existing RealityNG card, button, section-header, and dashboard visual patterns.
+These live in `src/components/services/governance-widgets.tsx` and `src/components/services/governance-detail.tsx`, and reuse the existing RealityNG card, button, section-header, and dashboard visual patterns.
 
 ## API Client
 
@@ -56,6 +63,8 @@ All functions preserve the existing `NEXT_PUBLIC_USE_MOCKS` split. Real mode cal
 Customers can submit a complaint by providing a provider ID, category, subject, and description. Providers can view complaints tied to their profile and submit warning/suspension appeals. Admins can review complaint queues and appeal queues from services moderation pages.
 
 Suspended providers see a prominent governance banner on the artisan dashboard with reason, suspension type, and expiry when available.
+
+Complaint and appeal list items link to dedicated detail pages so customers, providers, and admins can inspect the moderation timeline, evidence captions, and decision state without exposing private backend-only fields.
 
 ## Security and Privacy
 
@@ -83,6 +92,7 @@ Coverage includes:
 - customer complaint form rendering/submission
 - provider complaint and appeal surfaces
 - admin complaint and appeal queues
+- customer, provider, and admin governance detail pages
 
 ## Jira Breakdown
 
@@ -93,6 +103,7 @@ Suggested Jira tasks:
 - Add provider appeal submission route
 - Add admin complaint moderation queue
 - Add admin appeal moderation queue
+- Add complaint and appeal detail routes
 - Add suspension banner to provider dashboard
 - Extend services API client for governance endpoints
 - Extend mock services for governance mode
@@ -102,7 +113,7 @@ Suggested Jira tasks:
 ## Known Limitations
 
 - Complaint evidence upload UI is not yet exposed, though the backend endpoint exists.
-- Admin detail pages can be expanded later for richer moderation history.
+- Detail pages can be expanded later for inline evidence upload and richer moderation history.
 - Notification delivery is deferred.
 - Real-time messaging is deferred.
 
