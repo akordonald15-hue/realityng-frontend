@@ -64,6 +64,11 @@ const dashboardLinks = [
     title: "Edit profile",
     description: "Keep contact and identity details current for property workflows.",
   },
+  {
+    href: "/dashboard/construction",
+    title: "Construction tracking",
+    description: "Monitor managed projects, milestone progress, evidence, and inspections.",
+  },
 ];
 
 const buyerActionLinks = [
@@ -87,6 +92,11 @@ const buyerActionLinks = [
     title: "Profile and contact",
     description: "Keep your details current for inquiries, viewings, and applications.",
   },
+  {
+    href: "/dashboard/construction",
+    title: "Construction updates",
+    description: "Follow project timelines and evidence where you are an approved stakeholder.",
+  },
 ];
 
 const supplyActionLinks = [
@@ -95,6 +105,11 @@ const supplyActionLinks = [
     href: "/dashboard/artisan",
     title: "Provider profile",
     description: "Manage trades, service areas, portfolio samples, and moderation status.",
+  },
+  {
+    href: "/dashboard/construction/operations",
+    title: "Construction operations",
+    description: "Submit project updates and monitor milestone inspection gates.",
   },
   {
     href: "/verification",
@@ -118,6 +133,11 @@ const adminActionLinks = [
     href: "/admin/services/providers",
     title: "Service provider queue",
     description: "Moderate artisan profiles, service areas, and portfolio readiness.",
+  },
+  {
+    href: "/admin/construction",
+    title: "Construction oversight",
+    description: "Monitor projects, stakeholders, progress updates, and inspection-linked milestones.",
   },
   {
     href: "/properties",

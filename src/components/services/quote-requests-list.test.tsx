@@ -6,6 +6,9 @@ import { QuoteRequestsList } from "@/components/services/quote-requests-list";
 import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
+  adminCloseQuoteRequest: vi.fn(),
+  markQuoteRequestClosed: vi.fn(),
+  markQuoteRequestResponded: vi.fn(),
   markQuoteRequestViewed: vi.fn(),
 }));
 
@@ -15,6 +18,9 @@ vi.mock("@/lib/api/services", async () => {
   );
   return {
     ...actual,
+    adminCloseQuoteRequest: (id: string) => mocks.adminCloseQuoteRequest(id),
+    markQuoteRequestClosed: (id: string) => mocks.markQuoteRequestClosed(id),
+    markQuoteRequestResponded: (id: string) => mocks.markQuoteRequestResponded(id),
     markQuoteRequestViewed: (id: string) => mocks.markQuoteRequestViewed(id),
   };
 });
@@ -22,6 +28,9 @@ vi.mock("@/lib/api/services", async () => {
 describe("QuoteRequestsList", () => {
   it("renders quote request details and allows provider status action", async () => {
     const user = userEvent.setup();
+    mocks.adminCloseQuoteRequest.mockResolvedValue({});
+    mocks.markQuoteRequestClosed.mockResolvedValue({});
+    mocks.markQuoteRequestResponded.mockResolvedValue({});
     mocks.markQuoteRequestViewed.mockResolvedValue({});
 
     renderWithQueryClient(
