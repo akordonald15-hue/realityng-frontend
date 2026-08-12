@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
+import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Button } from "@/components/ui/button";
+import { useNotificationSocket } from "@/hooks/use-notification-socket";
 import {
   listNotifications,
   markAllNotificationsRead,
@@ -14,6 +17,23 @@ import {
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+
+  const handleRealtimeNotification = useCallback(
+    (notification: Notification) => {
+      queryClient.setQueryData<Notification[]>(["notifications"], (current = []) => {
+        if (current.some((item) => item.id === notification.id)) {
+          return current;
+        }
+        return [notification, ...current];
+      });
+    },
+    [queryClient],
+  );
+
+  useNotificationSocket({
+    enabled: true,
+    onNotification: handleRealtimeNotification,
+  });
 
   const notificationsQuery = useQuery({
     queryKey: ["notifications"],
@@ -60,6 +80,12 @@ export default function NotificationsPage() {
               Mark all read
             </Button>
           )}
+          <Link
+            className="text-sm font-semibold text-brand-secondary hover:underline"
+            href="/settings/notifications"
+          >
+            Preferences
+          </Link>
         </div>
 
         <section className="mt-6 flex flex-col gap-2">

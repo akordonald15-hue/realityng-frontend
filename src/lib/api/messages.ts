@@ -26,6 +26,7 @@ export type ConversationThread = {
   is_closed: boolean;
   participants: ConversationParticipant[];
   last_message: Message | null;
+  unread_count: number;
   created_at: string;
   updated_at: string;
 };
@@ -102,4 +103,11 @@ export async function markThreadRead(
     `/messages/threads/${threadId}/mark-read/`,
   );
   return response.data;
+}
+
+export async function getUnreadMessageCount(): Promise<number> {
+  const response = await apiClient.get<{ count?: number; unread_count?: number }>(
+    "/messages/threads/unread-count/",
+  );
+  return response.data.count ?? response.data.unread_count ?? 0;
 }

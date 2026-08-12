@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   createThread,
+  getUnreadMessageCount,
   listThreadMessages,
   listThreads,
   markThreadRead,
@@ -56,5 +57,11 @@ describe("message API client", () => {
     mocks.post.mockResolvedValueOnce({ data: { marked_read: true } });
     await markThreadRead("thread-1");
     expect(mocks.post).toHaveBeenCalledWith("/messages/threads/thread-1/mark-read/");
+  });
+
+  it("supports unread message count endpoint", async () => {
+    mocks.get.mockResolvedValueOnce({ data: { unread_count: 5 } });
+    await expect(getUnreadMessageCount()).resolves.toBe(5);
+    expect(mocks.get).toHaveBeenCalledWith("/messages/threads/unread-count/");
   });
 });

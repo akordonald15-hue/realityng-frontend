@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useOptionalAuth } from "@/providers/auth-provider";
+import { useNotificationSocket } from "@/hooks/use-notification-socket";
 import {
   getUnreadNotificationCount,
   listNotifications,
@@ -34,6 +35,24 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleRealtimeNotification = useCallback(
+    (notification: Notification, nextUnreadCount: number) => {
+      setNotifications((prev) => {
+        if (prev.some((item) => item.id === notification.id)) {
+          return prev;
+        }
+        return [notification, ...prev].slice(0, 8);
+      });
+      setUnreadCount(nextUnreadCount);
+    },
+    [],
+  );
+
+  useNotificationSocket({
+    enabled: isAuthenticated,
+    onNotification: handleRealtimeNotification,
+  });
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -89,12 +108,14 @@ export function NotificationBell() {
       <div className="absolute right-0 top-full mt-3 w-80 rounded-md border border-white/10 bg-brand-surface p-2 shadow-glow">
         <div className="flex items-center justify-between px-2 py-1 text-sm font-semibold text-brand-text">
           <span>Notifications</span>
-          <Link
-            className="text-xs font-medium text-brand-secondary hover:underline"
-            href="/dashboard/notifications"
-          >
-            View all
-          </Link>
+          <div className="flex gap-2 text-xs font-medium text-brand-secondary">
+            <Link className="hover:underline" href="/settings/notifications">
+              Settings
+            </Link>
+            <Link className="hover:underline" href="/dashboard/notifications">
+              View all
+            </Link>
+          </div>
         </div>
         {isLoading ? (
           <p className="px-2 py-4 text-sm text-brand-muted">Loading...</p>

@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Button } from "@/components/ui/button";
-import { getThread, listThreadMessages, markThreadRead, sendMessage } from "@/lib/api/messages";
+import { useMessageSocket } from "@/hooks/use-message-socket";
+import {
+  getThread,
+  listThreadMessages,
+  markThreadRead,
+  sendMessage,
+  type Message,
+} from "@/lib/api/messages";
 
 export default function MessageThreadPage() {
   const params = useParams<{ id: string }>();
@@ -39,12 +46,38 @@ export default function MessageThreadPage() {
     void markThreadRead(threadId);
   }, [threadId]);
 
+  const mergeRealtimeMessage = useCallback(
+    (message: Message) => {
+      queryClient.setQueryData<Message[]>(
+        ["message-thread-messages", threadId],
+        (current = []) => {
+          if (current.some((item) => item.id === message.id)) {
+            return current;
+          }
+          return [...current, message];
+        },
+      );
+      void queryClient.invalidateQueries({ queryKey: ["message-threads"] });
+    },
+    [queryClient, threadId],
+  );
+
+  const { connectionState, sendRealtimeMessage } = useMessageSocket({
+    enabled: Boolean(threadId),
+    onMessage: mergeRealtimeMessage,
+    threadId,
+  });
+
   const messages = messagesQuery.data ?? [];
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const trimmed = body.trim();
-    if (!trimmed) return;
+    if (!trimmed || sendMutation.isPending) return;
+    if (sendRealtimeMessage(trimmed)) {
+      setBody("");
+      return;
+    }
     sendMutation.mutate(trimmed);
   }
 
@@ -57,6 +90,9 @@ export default function MessageThreadPage() {
           }
           title="Conversation"
         />
+        <p className="mt-2 text-xs text-brand-muted">
+          Realtime: {connectionState === "connected" ? "connected" : "standard delivery"}
+        </p>
 
         <section className="mt-6 flex flex-col gap-3">
           {messagesQuery.isLoading ? (

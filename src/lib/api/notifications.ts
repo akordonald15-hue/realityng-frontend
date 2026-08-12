@@ -31,6 +31,30 @@ export type Notification = {
   created_at: string;
 };
 
+export type NotificationPreference = {
+  id: string;
+  in_app_enabled: boolean;
+  email_enabled: boolean;
+  lead_notifications: boolean;
+  viewing_notifications: boolean;
+  application_notifications: boolean;
+  message_notifications: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type UpdateNotificationPreferencePayload = Partial<
+  Pick<
+    NotificationPreference,
+    | "in_app_enabled"
+    | "email_enabled"
+    | "lead_notifications"
+    | "viewing_notifications"
+    | "application_notifications"
+    | "message_notifications"
+  >
+>;
+
 export type NotificationListParams = {
   is_read?: boolean;
   notification_type?: NotificationType;
@@ -81,4 +105,19 @@ export async function markAllNotificationsRead(): Promise<{ marked: number }> {
     "/notifications/mark-all-read/",
   );
   return { marked: response.data.marked ?? response.data.marked_read ?? 0 };
+}
+
+export async function getNotificationPreferences(): Promise<NotificationPreference> {
+  const response = await apiClient.get<NotificationPreference>("/notification-preferences/me/");
+  return response.data;
+}
+
+export async function updateNotificationPreferences(
+  payload: UpdateNotificationPreferencePayload,
+): Promise<NotificationPreference> {
+  const response = await apiClient.patch<NotificationPreference>(
+    "/notification-preferences/me/",
+    payload,
+  );
+  return response.data;
 }

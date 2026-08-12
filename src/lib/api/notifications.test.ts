@@ -5,10 +5,13 @@ import {
   listNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  getNotificationPreferences,
+  updateNotificationPreferences,
 } from "@/lib/api/notifications";
 
 const mocks = vi.hoisted(() => ({
   get: vi.fn(),
+  patch: vi.fn(),
   post: vi.fn(),
 }));
 
@@ -19,6 +22,7 @@ vi.mock("@/lib/demo-mode", () => ({
 vi.mock("@/lib/api/client", () => ({
   apiClient: {
     get: mocks.get,
+    patch: mocks.patch,
     post: mocks.post,
   },
 }));
@@ -58,5 +62,29 @@ describe("notification API client", () => {
     mocks.post.mockResolvedValueOnce({ data: { marked_read: 4 } });
     await expect(markAllNotificationsRead()).resolves.toEqual({ marked: 4 });
     expect(mocks.post).toHaveBeenCalledWith("/notifications/mark-all-read/");
+  });
+
+  it("uses current-user preference endpoints", async () => {
+    mocks.get.mockResolvedValueOnce({
+      data: { id: "preference-1", email_enabled: true },
+    });
+    await expect(getNotificationPreferences()).resolves.toEqual({
+      id: "preference-1",
+      email_enabled: true,
+    });
+    expect(mocks.get).toHaveBeenCalledWith("/notification-preferences/me/");
+
+    mocks.patch.mockResolvedValueOnce({
+      data: { id: "preference-1", message_notifications: false },
+    });
+    await expect(
+      updateNotificationPreferences({ message_notifications: false }),
+    ).resolves.toEqual({
+      id: "preference-1",
+      message_notifications: false,
+    });
+    expect(mocks.patch).toHaveBeenCalledWith("/notification-preferences/me/", {
+      message_notifications: false,
+    });
   });
 });
