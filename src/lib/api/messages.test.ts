@@ -36,8 +36,15 @@ describe("message API client", () => {
     mocks.get.mockResolvedValueOnce({
       data: { count: 1, next: null, previous: null, results: [{ id: "message-1" }] },
     });
-    await expect(listThreadMessages("thread-1")).resolves.toEqual([{ id: "message-1" }]);
-    expect(mocks.get).toHaveBeenCalledWith("/messages/threads/thread-1/messages/");
+    await expect(listThreadMessages("thread-1")).resolves.toEqual({
+      count: 1,
+      next: null,
+      previous: null,
+      results: [{ id: "message-1" }],
+    });
+    expect(mocks.get).toHaveBeenCalledWith("/messages/threads/thread-1/messages/", {
+      params: {},
+    });
   });
 
   it("uses integrated thread mutation endpoints", async () => {
@@ -49,9 +56,10 @@ describe("message API client", () => {
     });
 
     mocks.post.mockResolvedValueOnce({ data: { id: "message-1" } });
-    await sendMessage("thread-1", "Hello");
+    await sendMessage("thread-1", "Hello", "client-id");
     expect(mocks.post).toHaveBeenCalledWith("/messages/threads/thread-1/messages/", {
       body: "Hello",
+      client_message_id: "client-id",
     });
 
     mocks.post.mockResolvedValueOnce({ data: { marked_read: true } });
@@ -63,5 +71,17 @@ describe("message API client", () => {
     mocks.get.mockResolvedValueOnce({ data: { unread_count: 5 } });
     await expect(getUnreadMessageCount()).resolves.toBe(5);
     expect(mocks.get).toHaveBeenCalledWith("/messages/threads/unread-count/");
+  });
+
+  it("passes cursor and page options to message history", async () => {
+    mocks.get.mockResolvedValueOnce({
+      data: { count: 0, next: null, previous: null, results: [] },
+    });
+
+    await listThreadMessages("thread-1", { after: "message-1", page: 2 });
+
+    expect(mocks.get).toHaveBeenCalledWith("/messages/threads/thread-1/messages/", {
+      params: { after: "message-1", page: 2 },
+    });
   });
 });

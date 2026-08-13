@@ -14,6 +14,7 @@ import {
   markThreadRead,
   sendMessage,
   type Message,
+  type MessagePage,
 } from "@/lib/api/messages";
 
 export default function MessageThreadPage() {
@@ -21,6 +22,12 @@ export default function MessageThreadPage() {
   const threadId = params.id;
   const queryClient = useQueryClient();
   const [body, setBody] = useState("");
+  const [historyPage, setHistoryPage] = useState(1);
+  const [loadedMessages, setLoadedMessages] = useState<Message[]>([]);
+  const [nextHistoryPage, setNextHistoryPage] = useState<number | null>(null);
+  const [pendingClientMessages, setPendingClientMessages] = useState<
+    Record<string, string>
+  >({});
 
   const threadQuery = useQuery({
     queryKey: ["message-thread", threadId],
@@ -28,17 +35,30 @@ export default function MessageThreadPage() {
   });
 
   const messagesQuery = useQuery({
-    queryKey: ["message-thread-messages", threadId],
-    queryFn: () => listThreadMessages(threadId),
+    queryKey: ["message-thread-messages", threadId, historyPage],
+    queryFn: () => listThreadMessages(threadId, { page: historyPage }),
   });
 
+  useEffect(() => {
+    setHistoryPage(1);
+    setLoadedMessages([]);
+    setNextHistoryPage(null);
+    setPendingClientMessages({});
+  }, [threadId]);
+
+  useEffect(() => {
+    const page = messagesQuery.data;
+    if (!page) return;
+    setLoadedMessages((current) => mergeMessages(current, page.results));
+    setNextHistoryPage(page.next ? historyPage + 1 : null);
+  }, [historyPage, messagesQuery.data]);
+
   const sendMutation = useMutation({
-    mutationFn: (text: string) => sendMessage(threadId, text),
-    onSuccess: () => {
+    mutationFn: ({ clientMessageId, text }: { clientMessageId: string; text: string }) =>
+      sendMessage(threadId, text, clientMessageId),
+    onSuccess: (message) => {
       setBody("");
-      void queryClient.invalidateQueries({
-        queryKey: ["message-thread-messages", threadId],
-      });
+      mergeMessageIntoCache(message);
     },
   });
 
@@ -46,39 +66,93 @@ export default function MessageThreadPage() {
     void markThreadRead(threadId);
   }, [threadId]);
 
-  const mergeRealtimeMessage = useCallback(
+  const mergeMessageIntoCache = useCallback(
     (message: Message) => {
-      queryClient.setQueryData<Message[]>(
-        ["message-thread-messages", threadId],
-        (current = []) => {
-          if (current.some((item) => item.id === message.id)) {
+      queryClient.setQueriesData<MessagePage>(
+        { queryKey: ["message-thread-messages", threadId] },
+        (current) => {
+          if (!current) {
             return current;
           }
-          return [...current, message];
+          const exists = current.results.some(
+            (item) =>
+              item.id === message.id ||
+              (message.client_message_id &&
+                item.client_message_id === message.client_message_id),
+          );
+          if (exists) {
+            return current;
+          }
+          return {
+            ...current,
+            count: current.count + 1,
+            results: [...current.results, message],
+          };
         },
       );
+      setLoadedMessages((current) => mergeMessages(current, [message]));
       void queryClient.invalidateQueries({ queryKey: ["message-threads"] });
     },
     [queryClient, threadId],
   );
 
+  const syncMissedMessages = useCallback(async () => {
+    const cached = queryClient.getQueryData<MessagePage>([
+      "message-thread-messages",
+      threadId,
+      historyPage,
+    ]);
+    const lastMessage = cached?.results.at(-1);
+    if (!lastMessage) {
+      void queryClient.invalidateQueries({
+        queryKey: ["message-thread-messages", threadId],
+      });
+      return;
+    }
+    try {
+      const page = await listThreadMessages(threadId, { after: lastMessage.id });
+      for (const message of page.results) {
+        mergeMessageIntoCache(message);
+      }
+    } catch {
+      void queryClient.invalidateQueries({
+        queryKey: ["message-thread-messages", threadId],
+      });
+    }
+  }, [historyPage, mergeMessageIntoCache, queryClient, threadId]);
+
   const { connectionState, sendRealtimeMessage } = useMessageSocket({
     enabled: Boolean(threadId),
-    onMessage: mergeRealtimeMessage,
+    onAccepted: ({ client_message_id }) => {
+      if (!client_message_id) return;
+      setPendingClientMessages((current) => {
+        const next = { ...current };
+        delete next[client_message_id];
+        return next;
+      });
+    },
+    onMessage: mergeMessageIntoCache,
+    onReconnect: syncMissedMessages,
     threadId,
   });
 
-  const messages = messagesQuery.data ?? [];
+  const messages = loadedMessages;
+  const hasMoreMessages = nextHistoryPage !== null;
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const trimmed = body.trim();
     if (!trimmed || sendMutation.isPending) return;
-    if (sendRealtimeMessage(trimmed)) {
+    const clientMessageId = crypto.randomUUID();
+    if (sendRealtimeMessage(trimmed, clientMessageId)) {
+      setPendingClientMessages((current) => ({
+        ...current,
+        [clientMessageId]: trimmed,
+      }));
       setBody("");
       return;
     }
-    sendMutation.mutate(trimmed);
+    sendMutation.mutate({ clientMessageId, text: trimmed });
   }
 
   return (
@@ -95,6 +169,16 @@ export default function MessageThreadPage() {
         </p>
 
         <section className="mt-6 flex flex-col gap-3">
+          {hasMoreMessages && (
+            <Button
+              className="self-center"
+              onClick={() => setHistoryPage(nextHistoryPage ?? historyPage)}
+              type="button"
+              variant="secondary"
+            >
+              Load more messages
+            </Button>
+          )}
           {messagesQuery.isLoading ? (
             <p className="text-sm text-brand-muted">Loading messages...</p>
           ) : messages.length > 0 ? (
@@ -109,6 +193,12 @@ export default function MessageThreadPage() {
           ) : (
             <p className="text-sm text-brand-muted">No messages yet.</p>
           )}
+          {Object.entries(pendingClientMessages).map(([clientMessageId, text]) => (
+            <Card className="border-dashed p-3 opacity-80" key={clientMessageId}>
+              <p className="text-sm text-brand-text">{text}</p>
+              <p className="mt-1 text-xs text-brand-muted">Sending...</p>
+            </Card>
+          ))}
         </section>
 
         {!threadQuery.data?.is_closed && (
@@ -126,5 +216,32 @@ export default function MessageThreadPage() {
         )}
       </main>
     </ProtectedRoute>
+  );
+}
+
+function mergeMessages(current: Message[], incoming: Message[]) {
+  const seen = new Set(current.map((message) => message.id));
+  const clientIds = new Set(
+    current
+      .map((message) => message.client_message_id)
+      .filter((clientId): clientId is string => Boolean(clientId)),
+  );
+  const merged = [...current];
+  for (const message of incoming) {
+    if (seen.has(message.id)) continue;
+    if (message.client_message_id && clientIds.has(message.client_message_id)) continue;
+    seen.add(message.id);
+    if (message.client_message_id) {
+      clientIds.add(message.client_message_id);
+    }
+    merged.push(message);
+  }
+  return merged.sort(
+    (left, right) => {
+      if (left.thread_sequence !== null && right.thread_sequence !== null) {
+        return left.thread_sequence - right.thread_sequence;
+      }
+      return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
+    },
   );
 }

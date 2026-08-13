@@ -12,6 +12,8 @@ export type Message = {
   thread: string;
   sender: string;
   body: string;
+  client_message_id: string | null;
+  thread_sequence: number | null;
   edited_at: string | null;
   created_at: string;
 };
@@ -44,6 +46,8 @@ type PaginatedResponse<T> = {
   previous: string | null;
   results: T[];
 };
+
+export type MessagePage = PaginatedResponse<Message>;
 
 const EMPTY_THREADS: ConversationThread[] = [];
 
@@ -78,20 +82,33 @@ export async function createThread(
   return response.data;
 }
 
-export async function listThreadMessages(threadId: string): Promise<Message[]> {
-  const response = await apiClient.get<Message[] | PaginatedResponse<Message>>(
+export async function listThreadMessages(
+  threadId: string,
+  options: { after?: string; page?: number } = {},
+): Promise<MessagePage> {
+  const response = await apiClient.get<Message[] | MessagePage>(
     `/messages/threads/${threadId}/messages/`,
+    { params: options },
   );
-  return unwrapList(response.data);
+  if (Array.isArray(response.data)) {
+    return {
+      count: response.data.length,
+      next: null,
+      previous: null,
+      results: response.data,
+    };
+  }
+  return response.data;
 }
 
 export async function sendMessage(
   threadId: string,
   body: string,
+  clientMessageId: string,
 ): Promise<Message> {
   const response = await apiClient.post<Message>(
     `/messages/threads/${threadId}/messages/`,
-    { body },
+    { body, client_message_id: clientMessageId },
   );
   return response.data;
 }

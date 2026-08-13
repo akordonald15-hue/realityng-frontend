@@ -7,18 +7,22 @@ import { createRealityNgWebSocket } from "@/lib/realtime/socket";
 
 type MessageSocketEvent =
   | { type: "message.created"; message: Message }
-  | { type: "message.accepted"; message_id: string }
+  | { type: "message.accepted"; message_id: string; client_message_id?: string | null }
   | { type: "error"; code: string; detail: unknown };
 
 type ConnectionState = "idle" | "connecting" | "connected" | "disconnected";
 
 export function useMessageSocket({
   enabled,
+  onAccepted,
   onMessage,
+  onReconnect,
   threadId,
 }: {
   enabled: boolean;
+  onAccepted?: (payload: { message_id: string; client_message_id: string | null }) => void;
   onMessage: (message: Message) => void;
+  onReconnect?: () => void;
   threadId: string;
 }) {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
@@ -43,13 +47,23 @@ export function useMessageSocket({
       }
 
       socket.onopen = () => {
+        const wasReconnect = attemptsRef.current > 0;
         attemptsRef.current = 0;
         setConnectionState("connected");
+        if (wasReconnect) {
+          onReconnect?.();
+        }
       };
       socket.onmessage = (event) => {
         const payload = parseMessageEvent(event.data);
         if (payload?.type === "message.created") {
           onMessage(payload.message);
+        }
+        if (payload?.type === "message.accepted") {
+          onAccepted?.({
+            message_id: payload.message_id,
+            client_message_id: payload.client_message_id ?? null,
+          });
         }
       };
       socket.onclose = () => {
@@ -76,14 +90,20 @@ export function useMessageSocket({
       socketRef.current?.close();
       socketRef.current = null;
     };
-  }, [enabled, onMessage, threadId]);
+  }, [enabled, onAccepted, onMessage, onReconnect, threadId]);
 
-  const sendRealtimeMessage = useCallback((body: string) => {
+  const sendRealtimeMessage = useCallback((body: string, clientMessageId: string) => {
     const socket = socketRef.current;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       return false;
     }
-    socket.send(JSON.stringify({ type: "message.send", body }));
+    socket.send(
+      JSON.stringify({
+        type: "message.send",
+        body,
+        client_message_id: clientMessageId,
+      }),
+    );
     return true;
   }, []);
 
