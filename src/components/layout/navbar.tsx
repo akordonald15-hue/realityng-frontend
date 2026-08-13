@@ -8,6 +8,7 @@ import { BrandLogo } from "@/components/brand/brand-logo";
 import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { useOptionalAuth } from "@/providers/auth-provider";
+import { NotificationBell } from "@/components/layout/notification-bell";
 
 const marketplaceLinks = [
   { href: "/properties?listing_type=sale", label: "Buy" },
@@ -63,11 +64,7 @@ export function Navbar() {
           />
         </Link>
         <Link aria-label="RealityNG home" className="flex shrink-0 items-center lg:hidden" href="/">
-          <BrandLogo
-            className="h-11 w-auto object-contain sm:h-12"
-            priority
-            showTagline={false}
-          />
+          <BrandLogo className="h-11 w-auto object-contain sm:h-12" priority showTagline={false} />
         </Link>
         <div className="hidden flex-1 items-center justify-center gap-5 text-sm font-semibold text-brand-muted lg:flex xl:gap-7">
           {marketplaceLinks.map((link) => (
@@ -106,6 +103,7 @@ export function Navbar() {
         <div className="hidden min-w-[8.75rem] items-center justify-end gap-4 text-sm font-medium text-brand-muted lg:flex">
           {!isLoading && isAuthenticated ? (
             <>
+              <NotificationBell />
               {protectedAccountLinks.slice(0, 1).map((link) => (
                 <Link
                   aria-current={isActive(link.href) ? "page" : undefined}
@@ -117,7 +115,9 @@ export function Navbar() {
                 </Link>
               ))}
               <details className="group relative">
-                <summary className={buttonClasses("secondary", "h-10 list-none hover:cursor-pointer")}>
+                <summary
+                  className={buttonClasses("secondary", "h-10 list-none hover:cursor-pointer")}
+                >
                   Account
                 </summary>
                 <div className="absolute right-0 top-full mt-3 w-52 rounded-md border border-white/10 bg-brand-surface p-2 shadow-glow">
@@ -160,9 +160,19 @@ export function Navbar() {
             variant="ghost"
           >
             <span aria-hidden="true" className="grid gap-1">
-              <span className={isOpen ? "h-0.5 w-5 translate-y-1.5 rotate-45 bg-current" : "h-0.5 w-5 bg-current"} />
+              <span
+                className={
+                  isOpen ? "h-0.5 w-5 translate-y-1.5 rotate-45 bg-current" : "h-0.5 w-5 bg-current"
+                }
+              />
               <span className={isOpen ? "h-0.5 w-5 opacity-0" : "h-0.5 w-5 bg-current"} />
-              <span className={isOpen ? "h-0.5 w-5 -translate-y-1.5 -rotate-45 bg-current" : "h-0.5 w-5 bg-current"} />
+              <span
+                className={
+                  isOpen
+                    ? "h-0.5 w-5 -translate-y-1.5 -rotate-45 bg-current"
+                    : "h-0.5 w-5 bg-current"
+                }
+              />
             </span>
           </Button>
         </div>
@@ -211,6 +221,13 @@ export function Navbar() {
           <div className="my-2 border-t border-white/10" />
           {!isLoading && isAuthenticated ? (
             <>
+              <Link
+                className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+                href="/dashboard/notifications"
+                onClick={() => setIsOpen(false)}
+              >
+                Notifications
+              </Link>
               {protectedAccountLinks.map((link) => (
                 <Link
                   className={
