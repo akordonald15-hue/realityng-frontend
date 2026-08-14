@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProtectedRoute } from "@/components/auth/protected-route";
@@ -141,6 +142,21 @@ export default function TransactionDetailPage() {
                 </p>
               </div>
               <TransactionStatusBadge status={transaction.status} />
+            </Card>
+
+            <Card className="mt-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-semibold text-brand-text">Escrow tracking</h2>
+                <p className="mt-1 text-sm text-brand-muted">
+                  View provider-confirmed funding, release conditions and settlement status.
+                </p>
+              </div>
+              <Link
+                className="inline-flex h-11 items-center justify-center rounded-md border border-brand-secondary/70 px-4 text-sm font-semibold text-brand-secondary transition hover:bg-brand-secondary/10"
+                href={`/dashboard/transactions/${transaction.id}/escrow`}
+              >
+                Open escrow
+              </Link>
             </Card>
 
             {actionError ? (

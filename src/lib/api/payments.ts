@@ -22,6 +22,36 @@ export type MilestoneStatus =
   | "disputed"
   | "cancelled";
 export type DisputeStatus = "open" | "under_review" | "resolved" | "closed";
+export type EscrowStatus =
+  | "draft"
+  | "awaiting_provider"
+  | "awaiting_funding"
+  | "partially_funded"
+  | "funded"
+  | "conditions_pending"
+  | "release_pending"
+  | "released"
+  | "refund_pending"
+  | "refunded"
+  | "disputed"
+  | "cancelled"
+  | "failed";
+export type EscrowFundingStatus =
+  | "funding_expected"
+  | "funding_claimed"
+  | "partially_confirmed"
+  | "confirmed_by_provider"
+  | "reversed";
+export type EscrowReleaseStatus =
+  | "not_requested"
+  | "requested"
+  | "approved"
+  | "sent_to_provider"
+  | "confirmed"
+  | "failed"
+  | "cancelled";
+export type EscrowRefundStatus = EscrowReleaseStatus;
+export type EscrowConditionStatus = "pending" | "satisfied" | "failed" | "waived";
 
 export type PaymentProof = {
   id: string;
@@ -81,6 +111,154 @@ export type Transaction = {
   updated_at: string;
 };
 
+export type EscrowProvider = {
+  id: string;
+  name: string;
+  slug: string;
+  status: "draft" | "sandbox" | "active" | "disabled";
+  integration_mode: "manual" | "sandbox" | "api";
+  supports_partial_funding: boolean;
+  supports_partial_release: boolean;
+  supports_refunds: boolean;
+  supports_webhooks: boolean;
+  supports_reconciliation: boolean;
+  supported_currencies: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type EscrowFundingEvent = {
+  id: string;
+  escrow: string;
+  provider_event_id: string;
+  provider_reference: string;
+  amount: string;
+  currency: string;
+  event_type: string;
+  provider_status: string;
+  occurred_at: string;
+  recorded_by: string | null;
+  raw_reference: string;
+  is_reconciled: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EscrowCondition = {
+  id: string;
+  escrow: string;
+  condition_type: string;
+  status: EscrowConditionStatus;
+  description: string;
+  required: boolean;
+  inspection_request: string | null;
+  construction_milestone: string | null;
+  satisfied_at: string | null;
+  satisfied_by: string | null;
+  failed_at: string | null;
+  failure_reason: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EscrowRelease = {
+  id: string;
+  escrow: string;
+  amount: string;
+  currency: string;
+  status: EscrowReleaseStatus;
+  requested_by: string;
+  approved_by: string | null;
+  provider_instruction_id: string;
+  provider_reference: string;
+  idempotency_key: string;
+  reason: string;
+  approved_at: string | null;
+  instructed_at: string | null;
+  confirmed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EscrowRefund = Omit<EscrowRelease, "status"> & {
+  status: EscrowRefundStatus;
+};
+
+export type EscrowSettlement = {
+  id: string;
+  escrow: string;
+  provider_settlement_reference: string;
+  gross_amount: string;
+  seller_amount: string;
+  platform_fee_amount: string;
+  provider_fee_amount: string;
+  currency: string;
+  status: string;
+  settled_at: string;
+  recorded_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EscrowReconciliationRecord = {
+  id: string;
+  escrow: string;
+  status: "matched" | "mismatch" | "pending_review" | "resolved";
+  expected_amount: string;
+  provider_amount: string;
+  expected_status: string;
+  provider_status: string;
+  mismatch_details: string;
+  checked_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EscrowTransaction = {
+  id: string;
+  transaction: string;
+  provider: EscrowProvider;
+  external_reference: string;
+  currency: string;
+  expected_amount: string;
+  confirmed_funded_amount: string;
+  status: EscrowStatus;
+  funding_status: EscrowFundingStatus;
+  release_status: EscrowReleaseStatus;
+  refund_status: EscrowRefundStatus;
+  reconciliation_status: "not_checked" | "matched" | "mismatch" | "pending_review" | "resolved";
+  platform_fee_type: "none" | "percentage" | "fixed" | "hybrid";
+  platform_fee_value: string;
+  expected_platform_fee: string;
+  provider_fee: string;
+  fee_status: "not_applicable" | "calculated" | "expected" | "instructed" | "settled";
+  created_by: string;
+  funded_at: string | null;
+  released_at: string | null;
+  refunded_at: string | null;
+  closed_at: string | null;
+  funding_events: EscrowFundingEvent[];
+  conditions: EscrowCondition[];
+  releases: EscrowRelease[];
+  refunds: EscrowRefund[];
+  settlements: EscrowSettlement[];
+  reconciliation_records: EscrowReconciliationRecord[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type EscrowReleasePayload = {
+  amount?: string;
+  reason?: string;
+  idempotency_key?: string;
+};
+
+export type EscrowRefundPayload = {
+  amount?: string;
+  reason: string;
+  idempotency_key?: string;
+};
+
 export type TransactionPayload = {
   property_id: string;
   application_id?: string | null;
@@ -124,6 +302,79 @@ export async function listTransactions(): Promise<Transaction[]> {
 
 export async function getTransaction(transactionId: string): Promise<Transaction> {
   const response = await apiClient.get<Transaction>(`/transactions/${transactionId}/`);
+  return response.data;
+}
+
+export async function getTransactionEscrow(transactionId: string): Promise<EscrowTransaction> {
+  const response = await apiClient.get<EscrowTransaction>(
+    `/transactions/${transactionId}/escrow/`,
+  );
+  return response.data;
+}
+
+export async function listEscrows(): Promise<EscrowTransaction[]> {
+  if (USE_MOCKS) return [];
+  const response = await apiClient.get<EscrowTransaction[] | PaginatedResponse<EscrowTransaction>>(
+    "/payment-escrows/",
+  );
+  return unwrapList(response.data);
+}
+
+export async function requestEscrowRelease({
+  escrowId,
+  payload,
+}: {
+  escrowId: string;
+  payload: EscrowReleasePayload;
+}): Promise<EscrowRelease> {
+  const response = await apiClient.post<EscrowRelease>(
+    `/payment-escrows/${escrowId}/request-release/`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function requestEscrowRefund({
+  escrowId,
+  payload,
+}: {
+  escrowId: string;
+  payload: EscrowRefundPayload;
+}): Promise<EscrowRefund> {
+  const response = await apiClient.post<EscrowRefund>(
+    `/payment-escrows/${escrowId}/request-refund/`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function approveEscrowRelease({
+  escrowId,
+  releaseId,
+}: {
+  escrowId: string;
+  releaseId: string;
+}): Promise<EscrowRelease> {
+  const response = await apiClient.post<EscrowRelease>(
+    `/payment-escrows/${escrowId}/approve-release/`,
+    { release_id: releaseId },
+  );
+  return response.data;
+}
+
+export async function confirmEscrowRelease({
+  escrowId,
+  releaseId,
+  providerReference,
+}: {
+  escrowId: string;
+  releaseId: string;
+  providerReference: string;
+}): Promise<EscrowRelease> {
+  const response = await apiClient.post<EscrowRelease>(
+    `/payment-escrows/${escrowId}/confirm-release/`,
+    { release_id: releaseId, provider_reference: providerReference },
+  );
   return response.data;
 }
 
