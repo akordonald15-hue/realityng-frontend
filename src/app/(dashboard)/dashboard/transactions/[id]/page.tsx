@@ -159,6 +159,21 @@ export default function TransactionDetailPage() {
               </Link>
             </Card>
 
+            <Card className="mt-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-semibold text-brand-text">Financing</h2>
+                <p className="mt-1 text-sm text-brand-muted">
+                  Apply for partner-reviewed rent or mortgage financing linked to this transaction.
+                </p>
+              </div>
+              <Link
+                className="inline-flex h-11 items-center justify-center rounded-md border border-brand-secondary/70 px-4 text-sm font-semibold text-brand-secondary transition hover:bg-brand-secondary/10"
+                href={`/dashboard/transactions/${transaction.id}/financing`}
+              >
+                Finance transaction
+              </Link>
+            </Card>
+
             {actionError ? (
               <div className="mt-4">
                 <p className="text-sm text-red-500">{actionError}</p>
