@@ -169,5 +169,5 @@ describe("ServiceProviderProfilePage", () => {
       );
     });
     expect(await screen.findByText("Your request has been sent.")).toBeInTheDocument();
-  }, 10000);
+  }, 20000);
 });

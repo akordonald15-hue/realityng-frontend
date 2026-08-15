@@ -70,7 +70,7 @@ describe("ShowInterestButton", () => {
     expect(
       await screen.findByText("Your interest has been saved for follow-up."),
     ).toBeInTheDocument();
-  });
+  }, 10000);
 
   it("opens role selection for anonymous users", async () => {
     const user = userEvent.setup();

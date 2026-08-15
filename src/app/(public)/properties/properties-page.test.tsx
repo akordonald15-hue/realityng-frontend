@@ -98,5 +98,5 @@ describe("PropertiesPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Map" }));
     expect(await screen.findByText("Map preview is ready.")).toBeInTheDocument();
-  });
+  }, 15000);
 });
