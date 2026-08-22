@@ -11,6 +11,10 @@ dist/
 
 # Testing
 coverage/
+playwright-report/
+test-results/
+test-artifacts/
+e2e/.generated/
 
 # Environment files
 .env
