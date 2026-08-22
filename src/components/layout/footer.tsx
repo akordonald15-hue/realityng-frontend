@@ -18,6 +18,7 @@ const trustLinks = [
   { href: "/verification", label: "Verification centre" },
   { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact" },
+  { href: "/fraud-reporting", label: "Report fraud or abuse" },
 ];
 
 const companyLinks = [
@@ -26,6 +27,8 @@ const companyLinks = [
   { href: "/terms", label: "Terms" },
   { href: "/data-deletion", label: "Data deletion" },
   { href: "/refunds", label: "Refunds and cancellations" },
+  { href: "/escrow-disclosure", label: "Escrow disclosure" },
+  { href: "/financing-disclosure", label: "Financing disclosure" },
 ];
 
 export function Footer() {

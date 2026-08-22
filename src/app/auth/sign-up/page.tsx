@@ -21,6 +21,10 @@ const signUpSchema = z.object({
   email: z.string().email("Enter a valid email address."),
   phone_number: z.string().optional(),
   password: z.string().min(8, "Password must be at least 8 characters."),
+  accepts_terms: z.boolean().refine(Boolean, "Accept the Terms to continue."),
+  accepts_privacy: z
+    .boolean()
+    .refine(Boolean, "Acknowledge the Privacy Notice to continue."),
 });
 
 type SignUpValues = z.infer<typeof signUpSchema>;
@@ -44,6 +48,8 @@ export default function SignUpPage() {
       email: "",
       phone_number: "",
       password: "",
+      accepts_terms: false,
+      accepts_privacy: false,
     },
   });
   useEffect(() => {
@@ -69,6 +75,8 @@ export default function SignUpPage() {
       await signUp({
         ...values,
         phone_number: values.phone_number || null,
+        terms_version: "2026-08",
+        privacy_version: "2026-08",
       });
       setSuccess("Account created. Continue to sign in.");
       router.push(`/auth/sign-in?${signInParams.toString()}`);
@@ -125,6 +133,22 @@ export default function SignUpPage() {
             >
               {showPassword ? "Hide password" : "Show password"}
             </Button>
+          </div>
+          <div className="space-y-3 rounded-md border border-white/10 p-4 text-sm text-brand-muted">
+            <label className="flex items-start gap-3">
+              <input className="mt-1" type="checkbox" {...register("accepts_terms")} />
+              <span>
+                I accept the <Link className="font-semibold text-brand-secondary" href="/terms">Terms and Conditions</Link>.
+              </span>
+            </label>
+            {errors.accepts_terms ? <p className="text-red-300">{errors.accepts_terms.message}</p> : null}
+            <label className="flex items-start gap-3">
+              <input className="mt-1" type="checkbox" {...register("accepts_privacy")} />
+              <span>
+                I acknowledge the <Link className="font-semibold text-brand-secondary" href="/privacy">Privacy Notice</Link>.
+              </span>
+            </label>
+            {errors.accepts_privacy ? <p className="text-red-300">{errors.accepts_privacy.message}</p> : null}
           </div>
           <FormMessage tone="error">{serverError}</FormMessage>
           <FormMessage tone="success">{success}</FormMessage>

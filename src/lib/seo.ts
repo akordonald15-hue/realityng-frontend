@@ -18,6 +18,9 @@ export const PUBLIC_ROUTES = [
   { path: "/terms", priority: 0.35, changeFrequency: "yearly" as const },
   { path: "/data-deletion", priority: 0.3, changeFrequency: "yearly" as const },
   { path: "/refunds", priority: 0.3, changeFrequency: "yearly" as const },
+  { path: "/escrow-disclosure", priority: 0.3, changeFrequency: "yearly" as const },
+  { path: "/financing-disclosure", priority: 0.3, changeFrequency: "yearly" as const },
+  { path: "/fraud-reporting", priority: 0.5, changeFrequency: "monthly" as const },
 ];
 
 export function absoluteUrl(path: string) {

@@ -31,6 +31,8 @@ describe("SignUpPage", () => {
 
     await user.type(screen.getByLabelText("Email"), "ada@example.com");
     await user.type(screen.getByLabelText("Password"), "Str0ngPass123!");
+    await user.click(screen.getByLabelText(/I accept the Terms/));
+    await user.click(screen.getByLabelText(/I acknowledge the Privacy Notice/));
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     expect(await screen.findByText("Account created. Continue to sign in.")).toBeInTheDocument();

@@ -35,8 +35,8 @@ export const aboutPage: PublicInfoPageProps = {
       body: "The platform currently includes authentication, roles, property listings, media, favorites, inquiries, viewings, rental applications, verification workflows, and a guided assistant.",
     },
     {
-      title: "Future roadmap",
-      body: "Future phases include richer location intelligence, artisan marketplace workflows, construction tracking, notifications, messaging, payments, and production AI provider activation.",
+      title: "Financial workflow boundary",
+      body: "RealityNG can record and coordinate escrow and financing workflows, but it does not hold funds, underwrite credit, approve loans, or guarantee partner outcomes. Live partner activation remains disabled pending professional approval.",
     },
   ],
   cta: {
@@ -314,6 +314,10 @@ export const termsPage: PublicInfoPageProps = {
       body: "Verification badges represent platform review status. They do not guarantee legal title, payment safety, future availability, or transaction success.",
     },
     {
+      title: "Financial workflow limitations",
+      body: "RealityNG is not a bank, lender, underwriter, credit bureau, escrow custodian, insurer, investment platform, or legal adviser. External partners own custody, underwriting, pricing, contracting, disbursement, and repayment decisions.",
+    },
+    {
       title: "Prohibited behavior",
       body: "Users must not misuse accounts, scrape private data, impersonate others, upload harmful files, bypass permissions, or pressure users into unsafe payments.",
     },
@@ -354,27 +358,27 @@ export const dataDeletionPage: PublicInfoPageProps = {
 
 export const refundsPage: PublicInfoPageProps = {
   eyebrow: "Refunds and cancellations",
-  title: "Payment workflows are not active yet, so refunds are not currently processed in-app.",
+  title: "Refund and cancellation responsibility depends on the underlying provider or counterparty agreement.",
   description:
     "RealityNG does not currently run production payment, escrow, lease-payment, or booking-payment workflows. Future payment features will need dedicated terms.",
   badge: "Payment features pending",
   highlights: [
     "Do not treat external payments as RealityNG-protected payments.",
-    "Payments, disputes, proof uploads, and transaction tracking belong to future approved sprints.",
+    "RealityNG may record disputes and partner-reported statuses but does not hold funds or guarantee refunds.",
     "Use caution before sending money outside the platform.",
   ],
   sections: [
     {
       title: "Current payment status",
-      body: "The current platform supports discovery, inquiries, viewings, rental applications, verification, dashboards, and assistant guidance. Production payment handling is out of scope.",
+      body: "RealityNG includes transaction and escrow-orchestration records, but live custody providers remain disabled pending professional and partner approval.",
     },
     {
       title: "External payments",
       body: "If a user pays a third party outside RealityNG, that payment is not processed, held, or protected by RealityNG.",
     },
     {
-      title: "Future payment workflows",
-      body: "Future phases may include payment milestones, proofs, dispute tracking, and transaction history. Those features will require additional policies.",
+      title: "Recorded financial workflows",
+      body: "A status, proof, dispute, release, or refund record in RealityNG is workflow evidence, not a guarantee that money was received, released, recovered, or refunded.",
     },
     {
       title: "Cancellation guidance",
@@ -386,4 +390,57 @@ export const refundsPage: PublicInfoPageProps = {
     href: "/safety",
     body: "Review payment safety guidance before taking any transaction step outside RealityNG.",
   },
+};
+
+export const escrowDisclosurePage: PublicInfoPageProps = {
+  eyebrow: "Escrow disclosure",
+  title: "RealityNG records partner escrow workflows but does not hold or control money.",
+  badge: "Live activation disabled",
+  description: "Any future live custody relationship is between transaction participants and an approved escrow provider under the provider's approved terms.",
+  highlights: [
+    "RealityNG does not control a provider bank account or guarantee release or refund.",
+    "Displayed statuses depend on authenticated partner or authorized operational records.",
+    "Do not send funds based only on a screen, message, or unverified payment instruction.",
+  ],
+  sections: [
+    { title: "RealityNG's role", body: "The platform can record expected amounts, conditions, events, disputes, reconciliation and partner references as an orchestration and record layer." },
+    { title: "Provider's role", body: "An approved external provider would own custody, settlement execution and provider-specific obligations. Partner terms require professional approval." },
+    { title: "No guarantee", body: "RealityNG does not guarantee transaction completion, funding, release, counterparty conduct, recovery or refund." },
+  ],
+  cta: { label: "Report a concern", href: "/fraud-reporting", body: "Stop and report inconsistent instructions or suspected impersonation before taking another financial step." },
+};
+
+export const financingDisclosurePage: PublicInfoPageProps = {
+  eyebrow: "Financing disclosure",
+  title: "Financing decisions belong to the financing partner, not RealityNG.",
+  badge: "Partner submission disabled",
+  description: "RealityNG can collect a draft application, record consent and display partner-owned responses only after the relevant approvals and activation gate.",
+  highlights: [
+    "RealityNG does not approve or reject loans, underwrite, score credit, set final terms, disburse funds or collect repayments.",
+    "Submitting information does not guarantee eligibility, an offer, timing or funding.",
+    "Private documents must be shared only through authorized platform routes.",
+  ],
+  sections: [
+    { title: "Consent and sharing", body: "Specific, versioned consent is required before application data can be sent to a financing partner. Account acceptance is not financing consent." },
+    { title: "Partner responsibility", body: "The partner owns assessment, any credit checks, pricing, contracting, approval, rejection, disbursement and repayment administration." },
+    { title: "Withdrawal and records", body: "Ask support to stop future sharing where possible. Prior disclosures and records may remain subject to approved contractual, dispute, fraud and legal requirements." },
+  ],
+  cta: { label: "Read privacy information", href: "/privacy", body: "Review how RealityNG describes personal and private-document handling." },
+};
+
+export const fraudReportingPage: PublicInfoPageProps = {
+  eyebrow: "Fraud and abuse reporting",
+  title: "Pause the workflow and report suspected fraud, impersonation, abuse, or unsafe payment instructions.",
+  badge: "Trust and safety",
+  description: "Send only the minimum evidence needed for RealityNG to identify and preserve the relevant platform records.",
+  highlights: [
+    "Email safety@realityng.com with the listing, profile, transaction, escrow or financing reference.",
+    "Include dates and controlled screenshots; never send passwords, recovery codes or full card details.",
+    "For immediate danger, contact the appropriate emergency authority before platform support.",
+  ],
+  sections: [
+    { title: "What to report", body: "Suspicious listings or providers, identity abuse, verification abuse, payment redirection, escrow or financing impersonation, harassment, and unauthorized document access." },
+    { title: "What happens next", body: "Trust and Safety triages the report, preserves relevant evidence, restricts platform access where justified, and routes financial, privacy or security incidents to the accountable owner." },
+    { title: "Outcome and appeal", body: "RealityNG records the decision and provides an appropriate status. Affected users may request review through the support channel, subject to privacy and security limits." },
+  ],
 };
