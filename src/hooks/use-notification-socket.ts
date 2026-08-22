@@ -24,6 +24,11 @@ export function useNotificationSocket({
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attemptsRef = useRef(0);
   const socketRef = useRef<WebSocket | null>(null);
+  const onNotificationRef = useRef(onNotification);
+
+  useEffect(() => {
+    onNotificationRef.current = onNotification;
+  }, [onNotification]);
 
   useEffect(() => {
     if (!enabled) {
@@ -48,7 +53,7 @@ export function useNotificationSocket({
       socket.onmessage = (event) => {
         const payload = parseNotificationEvent(event.data);
         if (payload?.type === "notification.created") {
-          onNotification(payload.notification, payload.unread_count);
+          onNotificationRef.current(payload.notification, payload.unread_count);
         }
       };
       socket.onclose = () => {
@@ -75,7 +80,7 @@ export function useNotificationSocket({
       socketRef.current?.close();
       socketRef.current = null;
     };
-  }, [enabled, onNotification]);
+  }, [enabled]);
 
   return { connectionState };
 }

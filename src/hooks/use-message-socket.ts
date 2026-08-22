@@ -29,6 +29,15 @@ export function useMessageSocket({
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attemptsRef = useRef(0);
+  const onAcceptedRef = useRef(onAccepted);
+  const onMessageRef = useRef(onMessage);
+  const onReconnectRef = useRef(onReconnect);
+
+  useEffect(() => {
+    onAcceptedRef.current = onAccepted;
+    onMessageRef.current = onMessage;
+    onReconnectRef.current = onReconnect;
+  }, [onAccepted, onMessage, onReconnect]);
 
   useEffect(() => {
     if (!enabled || !threadId) {
@@ -51,16 +60,16 @@ export function useMessageSocket({
         attemptsRef.current = 0;
         setConnectionState("connected");
         if (wasReconnect) {
-          onReconnect?.();
+          onReconnectRef.current?.();
         }
       };
       socket.onmessage = (event) => {
         const payload = parseMessageEvent(event.data);
         if (payload?.type === "message.created") {
-          onMessage(payload.message);
+          onMessageRef.current(payload.message);
         }
         if (payload?.type === "message.accepted") {
-          onAccepted?.({
+          onAcceptedRef.current?.({
             message_id: payload.message_id,
             client_message_id: payload.client_message_id ?? null,
           });
@@ -90,7 +99,7 @@ export function useMessageSocket({
       socketRef.current?.close();
       socketRef.current = null;
     };
-  }, [enabled, onAccepted, onMessage, onReconnect, threadId]);
+  }, [enabled, threadId]);
 
   const sendRealtimeMessage = useCallback((body: string, clientMessageId: string) => {
     const socket = socketRef.current;
