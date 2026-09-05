@@ -22,37 +22,71 @@ describe("SignInPage", () => {
     mocks.signIn.mockReset();
   });
 
-  it("shows demo mode without exposing demo credentials", () => {
+  it("renders the identifier step with demo mode context", () => {
     render(<SignInPage />);
 
-    expect(screen.getByRole("status")).toHaveTextContent("Demo mode is active");
+    expect(screen.getByRole("heading", { name: "Sign in/Sign up" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Create account" })).toHaveAttribute(
+      "href",
+      "/auth/sign-up",
+    );
+    expect(screen.getByText(/Demo mode is active/)).toBeInTheDocument();
     expect(screen.queryByText(/password123/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/admin@realityng.com/i)).not.toBeInTheDocument();
   });
 
-  it("validates email and password", async () => {
+  it("validates the identifier before showing the password step", async () => {
     const user = userEvent.setup();
     render(<SignInPage />);
 
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
 
     expect(await screen.findByText("Enter a valid email address.")).toBeInTheDocument();
-    expect(screen.getByText("Password is required.")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Enter password" })).not.toBeInTheDocument();
     expect(mocks.signIn).not.toHaveBeenCalled();
   });
 
-  it("submits valid login details", async () => {
+  it("moves from identifier to password and submits valid login details", async () => {
     const user = userEvent.setup();
     mocks.signIn.mockResolvedValueOnce(undefined);
     render(<SignInPage />);
 
-    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Email address"), "ada@example.com");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await screen.findByRole("heading", { name: "Enter password" });
     await user.type(screen.getByLabelText("Password"), "Str0ngPass123!");
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
 
     expect(mocks.signIn).toHaveBeenCalledWith(
       { email: "ada@example.com", password: "Str0ngPass123!" },
       undefined,
+    );
+    expect(await screen.findByRole("heading", { name: "Logged In" })).toBeInTheDocument();
+  });
+
+  it("shows backend errors without leaving the password step", async () => {
+    const user = userEvent.setup();
+    mocks.signIn.mockRejectedValueOnce(new Error("Invalid login"));
+    render(<SignInPage />);
+
+    await user.type(screen.getByLabelText("Email address"), "ada@example.com");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.type(await screen.findByLabelText("Password"), "bad-password");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(await screen.findByText("Something went wrong. Please try again.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Enter password" })).toBeInTheDocument();
+  });
+
+  it("keeps forgot-password navigation on the password step", async () => {
+    const user = userEvent.setup();
+    render(<SignInPage />);
+
+    await user.type(screen.getByLabelText("Email address"), "ada@example.com");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(await screen.findByRole("link", { name: "Forgot Password" })).toHaveAttribute(
+      "href",
+      "/auth/forgot-password",
     );
   });
 
@@ -62,9 +96,10 @@ describe("SignInPage", () => {
     window.history.pushState({}, "", "/auth/sign-in?next=%2Fonboarding%2Frole-setup&role=buyer");
     render(<SignInPage />);
 
-    await user.type(screen.getByLabelText("Email"), "buyer@realityng.com");
-    await user.type(screen.getByLabelText("Password"), "password123");
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.type(screen.getByLabelText("Email address"), "buyer@realityng.com");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.type(await screen.findByLabelText("Password"), "password123");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
 
     expect(mocks.signIn).toHaveBeenCalledWith(
       { email: "buyer@realityng.com", password: "password123" },

@@ -33,7 +33,7 @@ export function BrandSplash() {
     <div
       aria-label="RealityNG loading"
       aria-live="polite"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-[radial-gradient(circle_at_center,rgba(17,36,29,0.96),#081c15_62%,#020806_100%)] px-6 text-center transition-opacity duration-500"
+      className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-[radial-gradient(circle_at_center,rgba(17,36,29,0.96),#081c15_62%,#020806_100%)] px-6 text-center transition-opacity duration-500"
       role="status"
     >
       <div className="flex flex-col items-center">

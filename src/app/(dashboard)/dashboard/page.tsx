@@ -2,13 +2,20 @@
 
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
+import { ApplicationRequestCard } from "@/components/dashboard/application-request-card";
+import { FormMessage } from "@/components/forms/form-message";
+import { PageContainer } from "@/components/layout/page-container";
 import { PropertyCard } from "@/components/properties/property-card";
 import { ViewingRequestButton } from "@/components/properties/viewing-request-button";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { MetricCard } from "@/components/ui/metric-card";
+import { SegmentedTabs } from "@/components/ui/segmented-tabs";
 import { Select } from "@/components/ui/select";
+import { StatusChip } from "@/components/ui/status-chip";
 import { WorkflowStatusBadge } from "@/components/workflow/status-badge";
 import {
   approveApplication,
@@ -19,7 +26,7 @@ import {
   withdrawApplication,
   type RentalApplication,
 } from "@/lib/api/applications";
-import { getDashboardOverview } from "@/lib/api/dashboard";
+import { getDashboardOverview, type DashboardOverview } from "@/lib/api/dashboard";
 import {
   formatInquiryStatus,
   inquiryStatusOptions,
@@ -41,6 +48,7 @@ import {
 } from "@/lib/api/viewings";
 import type { ActivityItem, TransactionItem } from "@/lib/api/workflow";
 import { isAdmin, isApprovedProfessional } from "@/lib/auth/permissions";
+import { formatPrice } from "@/lib/properties/format";
 import { useAuth } from "@/providers/auth-provider";
 
 const dashboardLinks = [
@@ -137,7 +145,8 @@ const adminActionLinks = [
   {
     href: "/admin/construction",
     title: "Construction oversight",
-    description: "Monitor projects, stakeholders, progress updates, and inspection-linked milestones.",
+    description:
+      "Monitor projects, stakeholders, progress updates, and inspection-linked milestones.",
   },
   {
     href: "/properties",
@@ -920,7 +929,9 @@ function metricValue(
   metrics: { label: string; value: string }[] | undefined,
   labels: string | string[],
 ) {
-  const labelSet = new Set((Array.isArray(labels) ? labels : [labels]).map((label) => label.toLowerCase()));
+  const labelSet = new Set(
+    (Array.isArray(labels) ? labels : [labels]).map((label) => label.toLowerCase()),
+  );
   return metrics?.find((metric) => labelSet.has(metric.label.toLowerCase()))?.value ?? "0";
 }
 
@@ -1061,6 +1072,367 @@ function BuyerJourneySummary({
   );
 }
 
+const buyerDashboardTabs = [
+  { label: "Overview", value: "overview" },
+  { label: "Requests", value: "requests" },
+  { label: "Saved", value: "saved" },
+  { label: "Viewed", value: "viewed" },
+  { label: "Activity", value: "activity" },
+];
+
+function DashboardIcon({ type }: { type: "file" | "check" | "heart" | "headset" }) {
+  const paths = {
+    file: (
+      <>
+        <path d="M7 3.5H14L19 8.5V20.5H7V3.5Z" />
+        <path d="M14 3.5V8.5H19" />
+        <path d="M10 13H16" />
+        <path d="M10 16H15" />
+      </>
+    ),
+    check: (
+      <>
+        <path d="M7 3.5H14L19 8.5V20.5H7V3.5Z" />
+        <path d="M14 3.5V8.5H19" />
+        <path d="M10 15L12 17L16 12" />
+      </>
+    ),
+    heart: (
+      <path d="M12 20S4.5 15.5 4.5 9.5A4.25 4.25 0 0 1 12 6.75A4.25 4.25 0 0 1 19.5 9.5C19.5 15.5 12 20 12 20Z" />
+    ),
+    headset: (
+      <>
+        <path d="M5 12A7 7 0 0 1 19 12" />
+        <path d="M5 12V15A2 2 0 0 0 7 17H8V11H7A2 2 0 0 0 5 13" />
+        <path d="M19 12V15A2 2 0 0 1 17 17H16V11H17A2 2 0 0 1 19 13" />
+        <path d="M16 17.5C15.3 19 13.9 20 12 20" />
+      </>
+    ),
+  };
+
+  return (
+    <svg aria-hidden="true" className="h-6 w-6" fill="none" viewBox="0 0 24 24">
+      <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8">
+        {paths[type]}
+      </g>
+    </svg>
+  );
+}
+
+function BuyerSectionHeader({
+  action,
+  description,
+  title,
+}: {
+  action?: React.ReactNode;
+  description?: string;
+  title: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h2 className="text-2xl font-medium leading-8 text-reality-text-primary">{title}</h2>
+        {description ? (
+          <p className="mt-2 text-base leading-6 text-reality-text-secondary">{description}</p>
+        ) : null}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function BuyerMetricGrid({
+  isLoading,
+  overview,
+}: {
+  isLoading: boolean;
+  overview?: DashboardOverview;
+}) {
+  const metricCards = [
+    {
+      icon: "file" as const,
+      label: "Active listing",
+      value: metricValue(overview?.metrics, "Active listings"),
+      detail: "Approved listings visible to this account.",
+    },
+    {
+      icon: "check" as const,
+      label: "My application",
+      value: metricValue(overview?.metrics, "My applications"),
+      detail: "Applications submitted for review.",
+    },
+    {
+      icon: "heart" as const,
+      label: "Saved property",
+      value: metricValue(overview?.metrics, "Saved properties"),
+      detail: "Shortlisted properties.",
+    },
+    {
+      icon: "headset" as const,
+      label: "Inquiries",
+      value: metricValue(overview?.metrics, ["My inquiries", "My interests"]),
+      detail: "Open conversations and requests.",
+    },
+  ];
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {metricCards.map((metric) => (
+        <MetricCard
+          className="rounded-[24px] border-[#f0f0f0] p-6 shadow-[0_4px_15px_rgba(0,0,0,0.04)]"
+          detail={metric.detail}
+          icon={<DashboardIcon type={metric.icon} />}
+          key={metric.label}
+          label={metric.label}
+          loading={isLoading}
+          value={metric.value}
+        />
+      ))}
+    </div>
+  );
+}
+
+function EmptyDashboardState({ children }: { children: React.ReactNode }) {
+  return (
+    <Card
+      className="flex min-h-[180px] items-center justify-center rounded-[24px] border-dashed p-6 text-center text-sm leading-6 text-reality-text-quaternary"
+      variant="reality"
+    >
+      {children}
+    </Card>
+  );
+}
+
+function DashboardPropertyRail({
+  cta,
+  empty,
+  properties,
+}: {
+  cta?: React.ReactNode;
+  empty: string;
+  properties: DashboardOverview["recommendedProperties"];
+}) {
+  if (properties.length === 0) {
+    return <EmptyDashboardState>{empty}</EmptyDashboardState>;
+  }
+
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="flex gap-6">
+        {properties.slice(0, 4).map((property) => (
+          <div className="w-[314px] shrink-0" key={property.id}>
+            <PropertyCard property={property} variant="reality" />
+          </div>
+        ))}
+        {cta ? <div className="flex w-[220px] shrink-0 items-center">{cta}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+function BuyerActivityFeed({ activity }: { activity: ActivityItem[] }) {
+  if (activity.length === 0) {
+    return <EmptyDashboardState>No recent dashboard activity yet.</EmptyDashboardState>;
+  }
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {activity.slice(0, 6).map((item) => (
+        <Card className="rounded-[20px] p-4" key={item.id} variant="realityElevated">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-semibold text-reality-text-primary">{item.label}</p>
+              <p className="mt-1 text-sm text-reality-text-quaternary">{item.entity_type}</p>
+            </div>
+            <span className="shrink-0 text-xs text-reality-text-quaternary">
+              <ApplicationDate value={item.occurred_at} />
+            </span>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function BuyerApplicationsAndRequests({ overview }: { overview?: DashboardOverview }) {
+  const cards = [
+    ...(overview?.applications ?? []).map((item) => ({ item, type: "application" as const })),
+    ...(overview?.inquiries ?? []).map((item) => ({ item, type: "inquiry" as const })),
+    ...(overview?.viewings ?? []).map((item) => ({ item, type: "viewing" as const })),
+  ].slice(0, 4);
+
+  if (cards.length === 0) {
+    return (
+      <EmptyDashboardState>
+        Applications and requests will appear here after you show interest, request a viewing, or
+        submit an application.
+      </EmptyDashboardState>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="flex gap-6">
+        {cards.map(({ item, type }) => (
+          <ApplicationRequestCard
+            href={type === "application" ? `/dashboard/applications/${item.id}` : undefined}
+            item={item}
+            key={`${type}-${item.id}`}
+            type={type}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BuyerDashboard({
+  dashboardQuery,
+  overview,
+}: {
+  dashboardQuery: ReturnType<typeof useQuery<DashboardOverview>>;
+  overview?: DashboardOverview;
+}) {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
+  const showOverview = activeTab === "overview";
+  const showRequests = activeTab === "overview" || activeTab === "requests";
+  const showSaved = activeTab === "overview" || activeTab === "saved";
+  const showViewed = activeTab === "overview" || activeTab === "viewed";
+  const showActivity = activeTab === "overview" || activeTab === "activity";
+
+  return (
+    <main className="bg-reality-bg-primary pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
+      <PageContainer>
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            className="text-sm font-medium text-reality-text-tertiary transition hover:text-reality-brand-600"
+            href="/properties"
+          >
+            Back
+          </Link>
+          <Link className={buttonClasses("realitySecondary", "h-10 px-5")} href="/properties">
+            Explore properties
+          </Link>
+        </div>
+
+        <section className="mt-8">
+          <h1 className="text-4xl font-medium leading-[44px] text-reality-text-primary">
+            Hi, {user?.first_name || "there"}
+          </h1>
+          <p className="mt-2 text-xl leading-7 text-reality-text-secondary">Welcome Back!</p>
+        </section>
+
+        <div className="mt-10 overflow-x-auto pb-1">
+          <SegmentedTabs
+            className="min-w-max bg-transparent p-0"
+            items={buyerDashboardTabs}
+            label="Buyer dashboard sections"
+            onChange={setActiveTab}
+            value={activeTab}
+          />
+        </div>
+
+        {dashboardQuery.isError ? (
+          <FormMessage className="mt-6" tone="error" variant="reality">
+            Dashboard stats could not be loaded.
+          </FormMessage>
+        ) : null}
+
+        <div className="reality-reveal">
+          {showOverview ? (
+            <section className="mt-8">
+              <BuyerSectionHeader description="Your dashboard Summary" title="Overview" />
+              <div className="mt-6">
+                <BuyerMetricGrid isLoading={dashboardQuery.isLoading} overview={overview} />
+              </div>
+            </section>
+          ) : null}
+        </div>
+
+        {showRequests ? (
+          <section className="mt-16">
+            <BuyerSectionHeader title="Applications & Requests" />
+            <div className="mt-8">
+              <BuyerApplicationsAndRequests overview={overview} />
+            </div>
+          </section>
+        ) : null}
+
+        {showSaved ? (
+          <section className="mt-16">
+            <BuyerSectionHeader
+              description="Properties you showed interest in"
+              title="Saved Property"
+              action={
+                <Link
+                  className={buttonClasses("realitySecondary", "h-10 px-5")}
+                  href="/saved-properties"
+                >
+                  View all
+                </Link>
+              }
+            />
+            <div className="mt-8">
+              <DashboardPropertyRail
+                empty="Saved properties will appear here after you shortlist homes from the marketplace."
+                properties={overview?.savedProperties ?? []}
+              />
+            </div>
+          </section>
+        ) : null}
+
+        {showViewed ? (
+          <section className="mt-16">
+            <BuyerSectionHeader
+              description="Property you view recently"
+              title="Recently viewed property"
+            />
+            <div className="mt-8">
+              <DashboardPropertyRail
+                empty="Recently viewed properties will appear as you browse the marketplace."
+                properties={overview?.recentlyViewed ?? []}
+              />
+            </div>
+          </section>
+        ) : null}
+
+        {showOverview ? (
+          <section className="mt-16">
+            <BuyerSectionHeader
+              description="Browse more RealityNG listings matched from current marketplace data."
+              title="Recommended properties"
+              action={
+                <Link className={buttonClasses("reality", "h-10 px-5")} href="/properties">
+                  Browse
+                </Link>
+              }
+            />
+            <div className="mt-8">
+              <DashboardPropertyRail
+                empty="Recommendations will appear as marketplace data becomes available."
+                properties={overview?.recommendedProperties ?? []}
+              />
+            </div>
+          </section>
+        ) : null}
+
+        {showActivity ? (
+          <section className="mt-16">
+            <BuyerSectionHeader
+              description="Recent saves, requests, applications, and workflow updates."
+              title="Activity"
+            />
+            <div className="mt-8">
+              <BuyerActivityFeed activity={overview?.activity ?? []} />
+            </div>
+          </section>
+        ) : null}
+      </PageContainer>
+    </main>
+  );
+}
+
 function DashboardContent() {
   const { user } = useAuth();
   const dashboardQuery = useQuery({
@@ -1086,6 +1458,10 @@ function DashboardContent() {
     : isSupplyUser
       ? supplyActionLinks
       : buyerActionLinks;
+
+  if (!isAdminUser && !isSupplyUser) {
+    return <BuyerDashboard dashboardQuery={dashboardQuery} overview={overview} />;
+  }
 
   return (
     <main className="mx-auto max-w-7xl px-5 py-8 sm:px-6 lg:py-10">
@@ -1134,7 +1510,10 @@ function DashboardContent() {
             title={isSupplyUser ? "Pipeline visibility" : "Your property journey"}
           />
           <div className="mt-5">
-            <BuyerJourneySummary metrics={overview?.metrics} variant={isSupplyUser ? "supply" : "buyer"} />
+            <BuyerJourneySummary
+              metrics={overview?.metrics}
+              variant={isSupplyUser ? "supply" : "buyer"}
+            />
           </div>
         </section>
       ) : null}
@@ -1397,7 +1776,5 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
-  return (
-    <DashboardContent />
-  );
+  return <DashboardContent />;
 }

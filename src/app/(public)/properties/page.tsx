@@ -1,20 +1,53 @@
 "use client";
 
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { clsx } from "clsx";
 
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
-import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { PropertyMapPanel } from "@/components/maps/property-map-panel";
 import { PropertyCard } from "@/components/properties/property-card";
-import { PropertyFilterPanel } from "@/components/properties/property-filter-panel";
+import { PublicShell } from "@/components/layout/public-shell";
+import { StaggerReveal } from "@/components/motion/stagger-reveal";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SectionHeader } from "@/components/ui/section-header";
-import { getPublicProperties, type PropertyFilters } from "@/lib/api/properties";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import {
+  getPublicProperties,
+  propertyTypeOptions,
+  type PropertyFilters,
+} from "@/lib/api/properties";
+
+type ViewMode = "grid" | "map";
+
+const defaultOrdering = "-featured";
+
+const listingTypeOptions = [
+  { label: "Any listing", value: "" },
+  { label: "For rent", value: "rent" },
+  { label: "For sale", value: "sale" },
+  { label: "Shortlet", value: "shortlet" },
+  { label: "Apartment share", value: "apartment_share" },
+];
+
+const priceOptions = [
+  { label: "Any price", value: "" },
+  { label: "Up to ₦1m", value: "1000000" },
+  { label: "Up to ₦2.5m", value: "2500000" },
+  { label: "Up to ₦5m", value: "5000000" },
+  { label: "Up to ₦10m", value: "10000000" },
+  { label: "Up to ₦25m", value: "25000000" },
+  { label: "Up to ₦50m", value: "50000000" },
+];
+
+const sortOptions = [
+  { label: "Featured first", value: "-featured" },
+  { label: "Newest first", value: "-created_at" },
+  { label: "Lowest price", value: "price" },
+  { label: "Highest price", value: "-price" },
+];
 
 function filtersFromParams(params: URLSearchParams): PropertyFilters {
   return {
@@ -27,8 +60,12 @@ function filtersFromParams(params: URLSearchParams): PropertyFilters {
     listing_type: params.get("listing_type") ?? "",
     min_price: params.get("min_price") ?? "",
     max_price: params.get("max_price") ?? "",
-    ordering: params.get("ordering") ?? "-featured",
+    ordering: params.get("ordering") ?? defaultOrdering,
   };
+}
+
+function viewFromParams(params: URLSearchParams): ViewMode {
+  return params.get("view") === "map" ? "map" : "grid";
 }
 
 function cleanFilters(filters: PropertyFilters): PropertyFilters {
@@ -37,89 +74,134 @@ function cleanFilters(filters: PropertyFilters): PropertyFilters {
   ) as PropertyFilters;
 }
 
+function propertyTypeSelectOptions() {
+  return [
+    { label: "Any type", value: "" },
+    ...propertyTypeOptions.map((option) => ({ label: option.label, value: option.value })),
+  ];
+}
+
 function filterLabel(key: string, value: string) {
   const labels: Record<string, string> = {
     search: `Search: ${value}`,
     state: `State: ${value}`,
-    city: `City: ${value}`,
+    city: `Location: ${value}`,
     lga: `LGA: ${value}`,
     neighborhood: `Area: ${value}`,
     property_type: `Type: ${value.replaceAll("_", " ")}`,
     listing_type: `Listing: ${value.replaceAll("_", " ")}`,
-    min_price: `Min: ${value}`,
-    max_price: `Max: ${value}`,
+    min_price: `Min: ₦${Number(value).toLocaleString("en-NG")}`,
+    max_price: `Up to ₦${Number(value).toLocaleString("en-NG")}`,
     ordering: `Sort: ${value.replace("-", "").replaceAll("_", " ")}`,
   };
   return labels[key] ?? `${key}: ${value}`;
 }
 
+function resultCountLabel(count?: number) {
+  if (count === undefined) {
+    return "Loading properties";
+  }
+  return `${count} ${count === 1 ? "property" : "properties"} found`;
+}
+
 function PropertiesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialFilters = useMemo(() => filtersFromParams(searchParams), [searchParams]);
-  const [filters, setFilters] = useState<PropertyFilters>(initialFilters);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "map" | "split">("grid");
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const activeFilters = Object.entries(cleanFilters(filters)).filter(
-    ([key, value]) => !["ordering", "min_lat", "max_lat", "min_lng", "max_lng"].includes(key) && value,
+  const searchParamString = searchParams.toString();
+  const urlFilters = useMemo(
+    () => filtersFromParams(new URLSearchParams(searchParamString)),
+    [searchParamString],
   );
+  const viewMode = useMemo(
+    () => viewFromParams(new URLSearchParams(searchParamString)),
+    [searchParamString],
+  );
+  const [draftFilters, setDraftFilters] = useState<PropertyFilters>(urlFilters);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDraftFilters(urlFilters);
+  }, [urlFilters]);
+
+  const queryFilters = useMemo(() => {
+    return cleanFilters({
+      ...urlFilters,
+      ordering: urlFilters.ordering || defaultOrdering,
+    });
+  }, [urlFilters]);
+
+  const activeFilters = Object.entries(cleanFilters(urlFilters)).filter(
+    ([key, value]) =>
+      !["ordering", "min_lat", "max_lat", "min_lng", "max_lng"].includes(key) && value,
+  );
+
   const propertiesQuery = useQuery({
-    queryKey: ["public-properties", filters],
-    queryFn: () => getPublicProperties(filters),
+    queryKey: ["public-properties", queryFilters],
+    queryFn: () => getPublicProperties(queryFilters),
   });
 
-  function applyFilters(nextFilters: PropertyFilters) {
-    const next = {
-      ...nextFilters,
-      ordering: nextFilters.ordering || "-featured",
-    };
-    setFilters(next);
+  const properties = propertiesQuery.data?.results ?? [];
+  const mapReadyCount = properties.filter(
+    (property) => property.latitude && property.longitude,
+  ).length;
 
+  function replaceRoute(nextFilters: PropertyFilters, nextViewMode: ViewMode = viewMode) {
     const params = new URLSearchParams();
-    Object.entries(cleanFilters(next)).forEach(([key, value]) => {
-      if (key === "ordering" && value === "-featured") {
+    Object.entries(
+      cleanFilters({ ...nextFilters, ordering: nextFilters.ordering || defaultOrdering }),
+    ).forEach(([key, value]) => {
+      if (key === "ordering" && value === defaultOrdering) {
         return;
       }
       params.set(key, value);
     });
+    if (nextViewMode === "map") {
+      params.set("view", "map");
+    }
     router.replace(`/properties${params.toString() ? `?${params.toString()}` : ""}`, {
       scroll: false,
     });
   }
 
-  const properties = propertiesQuery.data?.results ?? [];
-  const mapReadyCount = properties.filter((property) => property.latitude && property.longitude)
-    .length;
-  const listingGridClass =
-    viewMode === "list" || viewMode === "split"
-      ? "grid gap-5"
-      : "grid gap-5 md:grid-cols-2 xl:grid-cols-3";
-
-  function viewButton(label: string, nextViewMode: typeof viewMode) {
-    return (
-      <Button
-        className={viewMode === nextViewMode ? "h-10" : "h-10 border-white/20"}
-        key={nextViewMode}
-        onClick={() => setViewMode(nextViewMode)}
-        variant={viewMode === nextViewMode ? "primary" : "secondary"}
-      >
-        {label}
-      </Button>
-    );
+  function applySearch() {
+    replaceRoute({
+      ...urlFilters,
+      city: draftFilters.city ?? "",
+      listing_type: draftFilters.listing_type ?? "",
+      property_type: draftFilters.property_type ?? "",
+      max_price: draftFilters.max_price ?? "",
+      ordering: draftFilters.ordering || defaultOrdering,
+    });
   }
 
-  function renderListings() {
+  function updateDraft(key: keyof PropertyFilters, value: string) {
+    setDraftFilters((current) => ({ ...current, [key]: value }));
+  }
+
+  function removeFilter(key: keyof PropertyFilters) {
+    replaceRoute({ ...urlFilters, [key]: "" });
+  }
+
+  function clearFilters() {
+    replaceRoute({ ordering: defaultOrdering }, "grid");
+  }
+
+  function changeView(nextViewMode: ViewMode) {
+    replaceRoute(urlFilters, nextViewMode);
+  }
+
+  function renderListings(compact = false) {
     if (propertiesQuery.isLoading) {
       return (
-        <div className={listingGridClass}>
-          {[1, 2, 3, 4, 5, 6].map((item) => (
+        <div
+          className={clsx(
+            "grid gap-6",
+            compact ? "md:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-4",
+          )}
+        >
+          {[1, 2, 3, 4, 5, 6, 7, 8].slice(0, compact ? 4 : 8).map((item) => (
             <div
-              className={
-                viewMode === "list" || viewMode === "split"
-                  ? "h-64 animate-pulse rounded-md bg-white/10"
-                  : "h-96 animate-pulse rounded-md bg-white/10"
-              }
+              className="h-[386px] w-full animate-pulse rounded-[2rem] bg-reality-bg-muted md:w-[314px]"
               key={item}
             />
           ))}
@@ -132,186 +214,241 @@ function PropertiesContent() {
     }
 
     return (
-      <div className={listingGridClass}>
+      <StaggerReveal
+        className={clsx(
+          "grid gap-x-6 gap-y-10",
+          compact ? "md:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-4",
+        )}
+        stagger={0.035}
+        y={12}
+      >
         {properties.map((property) => (
           <div
-            className={
-              selectedPropertyId === property.id
-                ? "rounded-md ring-2 ring-brand-secondary ring-offset-2 ring-offset-brand-background"
-                : "rounded-md"
-            }
+            className={clsx(
+              "rounded-[2rem]",
+              selectedPropertyId === property.id &&
+                "ring-2 ring-reality-brand-500 ring-offset-4 ring-offset-white",
+            )}
+            data-motion-child
             id={`property-result-${property.id}`}
             key={property.id}
             onFocus={() => setSelectedPropertyId(property.id)}
             onMouseEnter={() => setSelectedPropertyId(property.id)}
           >
-            <PropertyCard property={property} variant={viewMode === "grid" ? "grid" : "list"} />
+            <PropertyCard className="w-full md:w-[314px]" property={property} variant="reality" />
           </div>
         ))}
-      </div>
+      </StaggerReveal>
     );
   }
 
-  function removeFilter(key: keyof PropertyFilters) {
-    applyFilters({ ...filters, [key]: "" });
-  }
-
   return (
-    <div className="min-h-screen bg-brand-background text-brand-text">
-      <Navbar />
-      <main>
-        <section className="border-b border-white/10 bg-brand-surface/45">
-          <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-10 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
-            <SectionHeader
-              eyebrow="Browse"
-              title="Search Nigerian properties"
-              description="Browse approved sale, rent, shortlet, apartment-share, land, and commercial listings before account creation."
-            />
-            <div className="flex gap-3">
-              <Button
-                aria-controls="mobile-property-filters"
-                aria-expanded={mobileFiltersOpen}
-                className="lg:hidden"
-                onClick={() => setMobileFiltersOpen((open) => !open)}
-                variant="secondary"
-              >
-                Filters
+    <PublicShell variant="reality">
+      <main className="bg-white text-reality-text-primary">
+        <section className="mx-auto max-w-reality-wide px-4 pb-12 pt-24 text-center sm:px-6 md:pb-16 md:pt-44">
+          <h1 className="font-display text-[30px] font-medium leading-tight tracking-normal text-black md:text-7xl">
+            Explore Properties
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-reality-text-muted md:text-lg">
+            Search verified homes, shortlets, land, and commercial spaces.
+          </p>
+        </section>
+
+        <section className="mx-auto max-w-reality-wide px-4 pb-20 sm:px-6">
+          <div className="reality-reveal mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="grid w-full gap-3 md:grid-cols-[minmax(220px,299px)_174px_174px_174px_auto] md:items-end">
+              <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
+                <span>Location</span>
+                <Input
+                  onChange={(event) => updateDraft("city", event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      applySearch();
+                    }
+                  }}
+                  placeholder="Where"
+                  value={draftFilters.city ?? ""}
+                  variant="reality"
+                />
+              </label>
+              <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
+                <span>Type</span>
+                <Select
+                  onChange={(event) => updateDraft("property_type", event.target.value)}
+                  value={draftFilters.property_type ?? ""}
+                  variant="reality"
+                >
+                  {propertyTypeSelectOptions().map((option) => (
+                    <option key={option.value || "any"} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
+                <span>Listing</span>
+                <Select
+                  onChange={(event) => updateDraft("listing_type", event.target.value)}
+                  value={draftFilters.listing_type ?? ""}
+                  variant="reality"
+                >
+                  {listingTypeOptions.map((option) => (
+                    <option key={option.value || "any"} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
+                <span>Price range</span>
+                <Select
+                  onChange={(event) => updateDraft("max_price", event.target.value)}
+                  value={draftFilters.max_price ?? ""}
+                  variant="reality"
+                >
+                  {priceOptions.map((option) => (
+                    <option key={option.value || "any"} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <Button className="h-14 rounded-full px-7" onClick={applySearch} variant="reality">
+                Search
               </Button>
-              <ProtectedActionLink
-                actionLabel="List property"
-                className={buttonClasses("primary")}
-                href="/properties/new"
+            </div>
+
+            <div
+              aria-label="Property view"
+              className="hidden shrink-0 rounded-full border border-reality-border-secondary bg-white p-1 shadow-reality-xs md:flex"
+              role="group"
+            >
+              <button
+                aria-pressed={viewMode === "grid"}
+                className={clsx(
+                  "rounded-full px-4 py-2 text-sm font-medium transition",
+                  viewMode === "grid"
+                    ? "bg-black text-white"
+                    : "text-reality-text-muted hover:bg-reality-bg-muted hover:text-black",
+                )}
+                onClick={() => changeView("grid")}
+                type="button"
               >
-                List property
-              </ProtectedActionLink>
+                Grid
+              </button>
+              <button
+                aria-pressed={viewMode === "map"}
+                className={clsx(
+                  "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition",
+                  viewMode === "map"
+                    ? "bg-black text-white"
+                    : "text-reality-text-muted hover:bg-reality-bg-muted hover:text-black",
+                )}
+                onClick={() => changeView("map")}
+                type="button"
+              >
+                Map
+              </button>
             </div>
           </div>
-        </section>
-        <section className="mx-auto grid max-w-7xl gap-6 px-5 py-8 sm:px-6 lg:grid-cols-[320px_1fr]">
-          <aside className="hidden lg:block">
-            <div className="sticky top-28">
-              <PropertyFilterPanel filters={filters} onChange={applyFilters} />
+
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-lg font-medium text-black">
+                {resultCountLabel(propertiesQuery.data?.count)}
+              </p>
+              <p className="mt-1 text-sm text-reality-text-muted">
+                {mapReadyCount} listing{mapReadyCount === 1 ? "" : "s"} include public map data.
+              </p>
             </div>
-          </aside>
-          {mobileFiltersOpen ? (
-            <div
-              className="fixed inset-0 z-50 bg-black/70 px-4 py-5 lg:hidden"
-              id="mobile-property-filters"
-            >
-              <div className="ml-auto max-h-full max-w-md overflow-y-auto">
-                <div className="mb-3 flex justify-end">
-                  <Button onClick={() => setMobileFiltersOpen(false)} variant="secondary">
-                    Close filters
-                  </Button>
-                </div>
-                <PropertyFilterPanel
-                  filters={filters}
-                  onChange={(nextFilters) => {
-                    applyFilters(nextFilters);
-                    setMobileFiltersOpen(false);
-                  }}
+            <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary md:w-48">
+              <span>Sort</span>
+              <Select
+                onChange={(event) =>
+                  replaceRoute({ ...urlFilters, ordering: event.target.value || defaultOrdering })
+                }
+                value={urlFilters.ordering || defaultOrdering}
+                variant="reality"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          </div>
+
+          {activeFilters.length > 0 ? (
+            <div className="mb-8 flex flex-wrap gap-2">
+              {activeFilters.map(([key, value]) => (
+                <button
+                  className="rounded-full border border-reality-border-secondary bg-reality-bg-muted px-3 py-1.5 text-sm font-medium capitalize text-reality-text-primary transition hover:border-reality-brand-500"
+                  key={key}
+                  onClick={() => removeFilter(key as keyof PropertyFilters)}
+                  type="button"
+                >
+                  {filterLabel(key, value)} x
+                </button>
+              ))}
+              <button
+                className="rounded-full border border-reality-border-secondary px-3 py-1.5 text-sm font-medium text-reality-text-muted transition hover:text-black"
+                onClick={clearFilters}
+                type="button"
+              >
+                Clear all
+              </button>
+            </div>
+          ) : null}
+
+          {propertiesQuery.isError ? (
+            <Card className="mb-8 rounded-[2rem] border-reality-border-secondary bg-reality-bg-muted p-6 text-sm text-red-700">
+              Properties could not be loaded.
+              <Button
+                className="mt-4"
+                onClick={() => void propertiesQuery.refetch()}
+                variant="realitySecondary"
+              >
+                Try again
+              </Button>
+            </Card>
+          ) : null}
+
+          {viewMode === "map" ? (
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,652px)_minmax(420px,1fr)]">
+              <div>{renderListings(true)}</div>
+              <div className="hidden lg:block lg:sticky lg:top-28 lg:self-start">
+                <PropertyMapPanel
+                  onSelectProperty={(propertyId) => setSelectedPropertyId(propertyId || null)}
+                  properties={properties}
+                  selectedPropertyId={selectedPropertyId}
+                  variant="reality"
                 />
               </div>
             </div>
-          ) : null}
-          <section>
-            <div className="mb-5 rounded-md border border-white/10 bg-brand-surface/55 p-4">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-brand-text">
-                    {propertiesQuery.data
-                      ? `${propertiesQuery.data.count} approved listing${
-                          propertiesQuery.data.count === 1 ? "" : "s"
-                        }`
-                      : "Loading approved listings"}
-                  </p>
-                  <p className="mt-1 text-xs text-brand-muted">
-                    Public results only include approved properties.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2" role="group" aria-label="Property view mode">
-                  {viewButton("Grid", "grid")}
-                  {viewButton("List", "list")}
-                  {viewButton("Map", "map")}
-                  <span className="hidden lg:inline-flex">{viewButton("Split", "split")}</span>
-                </div>
-              </div>
-              <p className="mt-3 text-xs text-brand-muted">
-                {mapReadyCount} listing{mapReadyCount === 1 ? "" : "s"} include public map
-                metadata. Pins may be approximate to protect seller privacy.
+          ) : (
+            renderListings()
+          )}
+
+          {propertiesQuery.data?.results.length === 0 ? (
+            <Card className="rounded-[2rem] border-reality-border-secondary bg-reality-bg-muted p-8 text-center">
+              <h2 className="font-display text-3xl font-medium text-black">No properties found</h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-reality-text-muted">
+                Try removing a filter, changing the location, or browsing all verified listings.
               </p>
-              {activeFilters.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {activeFilters.map(([key, value]) => (
-                    <button
-                      className="rounded-full border border-brand-secondary/40 bg-brand-secondary/10 px-3 py-1 text-xs font-semibold text-brand-secondary"
-                      key={key}
-                      onClick={() => removeFilter(key as keyof PropertyFilters)}
-                      type="button"
-                    >
-                      {filterLabel(key, value)} x
-                    </button>
-                  ))}
-                  <button
-                    className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-brand-muted"
-                    onClick={() => applyFilters({ ordering: "-featured" })}
-                    type="button"
-                  >
-                    Clear all
-                  </button>
-                </div>
-              ) : null}
-            </div>
-            {propertiesQuery.isError ? (
-              <Card className="p-6 text-sm text-red-200">Properties could not be loaded.</Card>
-            ) : null}
-            {propertiesQuery.isLoading ? renderListings() : null}
-            {viewMode === "map" && properties.length > 0 && !propertiesQuery.isLoading ? (
-              <PropertyMapPanel
-                onSelectProperty={(propertyId) => setSelectedPropertyId(propertyId || null)}
-                properties={properties}
-                selectedPropertyId={selectedPropertyId}
-              />
-            ) : null}
-            {viewMode === "split" && properties.length > 0 && !propertiesQuery.isLoading ? (
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_440px]">
-                <div>{renderListings()}</div>
-                <div className="xl:sticky xl:top-28 xl:self-start">
-                  <PropertyMapPanel
-                    onSelectProperty={(propertyId) => setSelectedPropertyId(propertyId || null)}
-                    properties={properties}
-                    selectedPropertyId={selectedPropertyId}
-                  />
-                </div>
+              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+                <Button onClick={clearFilters} variant="reality">
+                  Clear filters
+                </Button>
+                <Link className={buttonClasses("realitySecondary")} href="/">
+                  Back home
+                </Link>
               </div>
-            ) : null}
-            {viewMode !== "map" && viewMode !== "split" && !propertiesQuery.isLoading
-              ? renderListings()
-              : null}
-            {propertiesQuery.data?.results.length === 0 ? (
-              <Card className="p-8">
-                <h2 className="font-heading text-2xl font-semibold text-brand-text">
-                  No approved listings match these filters.
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
-                  Try removing one or two filters, changing the city, or browsing all approved
-                  properties while new inventory is reviewed.
-                </p>
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                  <Button onClick={() => applyFilters({ ordering: "-featured" })}>
-                    Clear filters
-                  </Button>
-                  <Link className={buttonClasses("secondary")} href="/">
-                    Back to discovery
-                  </Link>
-                </div>
-              </Card>
-            ) : null}
-          </section>
+            </Card>
+          ) : null}
         </section>
       </main>
-      <Footer />
-    </div>
+    </PublicShell>
   );
 }
 
@@ -319,8 +456,18 @@ export default function PropertiesPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-brand-background px-6 py-10 text-brand-muted">
-          Loading properties...
+        <div className="min-h-screen bg-white px-6 py-10 text-reality-text-muted [color-scheme:light]">
+          <div className="mx-auto max-w-reality-wide">
+            <div className="h-10 w-56 animate-pulse rounded-[16px] bg-reality-bg-muted" />
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {[1, 2, 3, 4].map((item) => (
+                <div
+                  className="h-[386px] animate-pulse rounded-[32px] bg-reality-bg-muted"
+                  key={item}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       }
     >

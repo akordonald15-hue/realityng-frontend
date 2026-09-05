@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -22,6 +22,7 @@ export default function FinancingApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const transactionId = searchParams.get("transaction_id");
+  const productId = searchParams.get("product_id");
   const [selectedProduct, setSelectedProduct] = useState<FinancingProduct | null>(null);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
@@ -39,6 +40,16 @@ export default function FinancingApplyPage() {
     queryKey: ["financing", "products"],
     queryFn: () => listFinancingProducts(),
   });
+
+  useEffect(() => {
+    if (!productId || !productsQuery.data || selectedProduct) {
+      return;
+    }
+    const product = productsQuery.data.find((item) => item.id === productId);
+    if (product) {
+      setSelectedProduct(product);
+    }
+  }, [productId, productsQuery.data, selectedProduct]);
 
   const createMutation = useMutation({
     mutationFn: () => {
@@ -86,9 +97,7 @@ export default function FinancingApplyPage() {
         </section>
 
         <Card className="mt-6 p-4">
-          <h2 className="text-lg font-semibold text-brand-text">
-            Application details
-          </h2>
+          <h2 className="text-lg font-semibold text-brand-text">Application details</h2>
           <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={submit}>
             <label className="grid gap-1 text-sm text-brand-text">
               Amount requested
@@ -161,7 +170,11 @@ export default function FinancingApplyPage() {
               />
             </label>
             {error ? <p className="text-sm text-red-300 sm:col-span-2">{error}</p> : null}
-            <Button className="sm:col-span-2" disabled={!selectedProduct || createMutation.isPending} type="submit">
+            <Button
+              className="sm:col-span-2"
+              disabled={!selectedProduct || createMutation.isPending}
+              type="submit"
+            >
               {createMutation.isPending ? "Creating..." : "Create financing draft"}
             </Button>
           </form>

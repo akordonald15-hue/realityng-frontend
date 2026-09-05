@@ -16,6 +16,7 @@ type FavoriteButtonProps = {
   initialFavorited?: boolean;
   className?: string;
   compact?: boolean;
+  variant?: "legacy" | "reality";
 };
 
 function HeartIcon({ filled }: { filled: boolean }) {
@@ -41,6 +42,7 @@ export function FavoriteButton({
   initialFavorited = false,
   className,
   compact = false,
+  variant = "legacy",
 }: FavoriteButtonProps) {
   const auth = useOptionalAuth();
   const { openRoleSelection } = useRoleSelection();
@@ -90,6 +92,14 @@ export function FavoriteButton({
   }
 
   const label = isFavorited ? "Remove saved property" : "Save property";
+  const buttonVariant =
+    variant === "reality"
+      ? isFavorited
+        ? "reality"
+        : "realitySecondary"
+      : isFavorited
+        ? "primary"
+        : "secondary";
 
   return (
     <Button
@@ -98,13 +108,13 @@ export function FavoriteButton({
       aria-pressed={isFavorited}
       className={clsx(
         compact ? "h-10 w-10 gap-0 p-0" : "gap-2",
-        isFavorited ? "text-brand-background" : "",
+        variant === "legacy" && isFavorited ? "text-brand-background" : "",
         className,
       )}
       disabled={mutation.isPending}
       onClick={toggleFavorite}
       type="button"
-      variant={isFavorited ? "primary" : "secondary"}
+      variant={buttonVariant}
     >
       <HeartIcon filled={isFavorited} />
       {compact ? (

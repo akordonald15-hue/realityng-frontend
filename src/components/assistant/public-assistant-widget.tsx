@@ -166,7 +166,7 @@ export function PublicAssistantWidget() {
         }
       >
         {showGreeting ? (
-          <div className="assistant-fade-scale assistant-glass-panel pointer-events-auto max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-brand-text shadow-2xl sm:max-w-xs">
+          <div className="assistant-fade-scale assistant-glass-panel pointer-events-none max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-brand-text shadow-2xl sm:max-w-xs">
             <p className="font-semibold text-brand-lightGold">RealityNG AI</p>
             <p className="mt-2 text-brand-muted">{messages[0].content}</p>
           </div>

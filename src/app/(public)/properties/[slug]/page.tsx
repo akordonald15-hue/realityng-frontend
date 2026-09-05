@@ -2,24 +2,26 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { ProtectedActionLink } from "@/components/auth/protected-action-link";
-import { Footer } from "@/components/layout/footer";
-import { WalkthroughVideoPlayer } from "@/components/inspections/inspection-widgets";
-import { Navbar } from "@/components/layout/navbar";
+import { PageContainer } from "@/components/layout/page-container";
+import { PublicShell } from "@/components/layout/public-shell";
 import { PropertyMapPanel } from "@/components/maps/property-map-panel";
+import { ParallaxMedia } from "@/components/motion/parallax-media";
+import { StaggerReveal } from "@/components/motion/stagger-reveal";
 import { CompareButton } from "@/components/properties/compare-button";
 import { FavoriteButton } from "@/components/properties/favorite-button";
+import { PropertyCard } from "@/components/properties/property-card";
+import { PropertyDetailGallery } from "@/components/properties/property-detail-gallery";
 import { ShowInterestButton } from "@/components/properties/show-interest-button";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
-import { buttonClasses } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { listPublicWalkthroughs } from "@/lib/api/inspections";
-import { getPublicProperty } from "@/lib/api/properties";
-import type { Property } from "@/lib/api/properties";
+import { listPublicWalkthroughs, type PropertyWalkthrough } from "@/lib/api/inspections";
+import { getPublicProperties, getPublicProperty, type Property } from "@/lib/api/properties";
 import {
   formatListingType,
   formatPrice,
@@ -27,10 +29,6 @@ import {
   propertySize,
 } from "@/lib/properties/format";
 import { propertyJsonLd } from "@/lib/seo";
-
-function galleryAlt(index: number) {
-  return `Property gallery image ${index + 1}`;
-}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-NG", {
@@ -40,25 +38,42 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function displayLocation(property: Property) {
+  return property.display_location || `${property.city}, ${property.state}`;
+}
+
 function propertyFacts(property: Property) {
   return [
-    {
-      label: "Bedrooms",
-      value: property.bedrooms ?? "N/A",
-    },
-    {
-      label: "Bathrooms",
-      value: property.bathrooms ?? "N/A",
-    },
-    {
-      label: "Parking",
-      value: property.parking_spaces ?? "N/A",
-    },
-    {
-      label: property.property_type === "land" ? "Land size" : "Size",
-      value: propertySize(property),
-    },
-  ];
+    property.bedrooms !== undefined && property.bedrooms !== null
+      ? { label: "Bedrooms", value: property.bedrooms }
+      : null,
+    property.bathrooms !== undefined && property.bathrooms !== null
+      ? { label: "Bathrooms", value: property.bathrooms }
+      : null,
+    propertySize(property) !== "N/A"
+      ? {
+          label: property.property_type === "land" ? "Land size" : "Size (sqft)",
+          value: propertySize(property),
+        }
+      : null,
+  ].filter(Boolean) as Array<{ label: string; value: string | number }>;
+}
+
+function detailPairs(property: Property) {
+  return [
+    property.parking_spaces !== undefined && property.parking_spaces !== null
+      ? { label: "Parking", value: property.parking_spaces }
+      : null,
+    property.property_type
+      ? { label: "Type", value: formatPropertyType(property.property_type) }
+      : null,
+    property.listing_type
+      ? { label: "Listed for", value: formatListingType(property.listing_type) }
+      : null,
+    property.lga ? { label: "LGA", value: property.lga } : null,
+    property.neighborhood ? { label: "Area", value: property.neighborhood } : null,
+    property.landmark ? { label: "Landmark", value: property.landmark } : null,
+  ].filter(Boolean) as Array<{ label: string; value: string | number }>;
 }
 
 function fallbackAmenities(property: Property) {
@@ -77,27 +92,261 @@ function trustItems(property: Property) {
     {
       title: "Public approval",
       description:
-        "This property is visible through the approved public listing endpoint. Draft, pending, rejected, and archived listings are not shown here.",
+        "This listing is visible through the approved public property endpoint. Draft, rejected, and archived listings are not shown here.",
     },
     {
-      title: "Gallery transparency",
-      description:
-        property.image_count || property.image_gallery?.length
-          ? "The listing includes media for visual review before a user takes the next step."
-          : "No gallery has been attached yet, so request more evidence before making decisions.",
+      title: "Location privacy",
+      description: property.approximate_location
+        ? "The public pin is approximate to protect owners and occupants."
+        : "Location visibility follows the privacy setting supplied with the listing.",
     },
     {
       title: "Representative accountability",
       description: property.agent_name
         ? `${property.agent_name} is shown as the current representative for this listing.`
-        : "Representative details are limited on this listing. Use structured inquiry before sharing sensitive information.",
-    },
-    {
-      title: "Verification scope",
-      description:
-        "Identity and property verification workflows are available in RealityNG, but users should review each visible badge and limitation before relying on a claim.",
+        : "Representative details are limited, so use structured inquiry before sharing sensitive information.",
     },
   ];
+}
+
+function LoadingDetail() {
+  return (
+    <PublicShell variant="reality">
+      <PageContainer className="grid min-h-screen gap-8 py-10 lg:grid-cols-[1fr_360px]">
+        <div className="h-[627px] animate-pulse rounded-[32px] bg-reality-bg-muted" />
+        <div className="h-96 animate-pulse rounded-[24px] bg-reality-bg-muted" />
+      </PageContainer>
+    </PublicShell>
+  );
+}
+
+function ErrorDetail() {
+  return (
+    <PublicShell variant="reality">
+      <PageContainer className="py-16">
+        <Card className="rounded-[32px] border-reality-border-secondary bg-reality-bg-muted p-8">
+          <h1 className="font-display text-3xl font-medium text-black">
+            Property could not be loaded.
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-reality-text-muted">
+            The listing may be unavailable, archived, or temporarily unreachable.
+          </p>
+          <Link className={buttonClasses("reality", "mt-5 w-fit")} href="/properties">
+            Browse properties
+          </Link>
+        </Card>
+      </PageContainer>
+    </PublicShell>
+  );
+}
+
+function ShareButton({ property }: { property: Property }) {
+  const [message, setMessage] = useState("");
+
+  async function shareProperty() {
+    const url = `${window.location.origin}/properties/${property.slug}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: property.title, text: property.description, url });
+        return;
+      }
+      await navigator.clipboard?.writeText(url);
+      setMessage("Link copied");
+    } catch {
+      setMessage("Sharing unavailable");
+    }
+  }
+
+  return (
+    <div>
+      <Button className="gap-2" onClick={shareProperty} variant="realityGhost">
+        Share
+      </Button>
+      {message ? (
+        <p className="sr-only" role="status">
+          {message}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function ActionRail({ property }: { property: Property }) {
+  return (
+    <Card
+      className="rounded-[24px] border-reality-border-secondary bg-white p-5 shadow-reality-sm"
+      id="property-actions"
+    >
+      <div className="grid gap-3">
+        <ProtectedActionLink
+          actionLabel="Apply for property"
+          className={buttonClasses("reality", "w-full")}
+          href={`/apply/${property.id}?slug=${property.slug}`}
+        >
+          Apply for this property
+        </ProtectedActionLink>
+        <ProtectedActionLink
+          actionLabel="Request inspection"
+          className={buttonClasses("realitySecondary", "w-full")}
+          href={`/properties/${property.slug}/request-inspection`}
+        >
+          Request inspection
+        </ProtectedActionLink>
+        <Link className={buttonClasses("realitySecondary", "w-full")} href="#property-showcase">
+          Video showcase
+        </Link>
+        <ShowInterestButton
+          className="mt-0"
+          listingType={property.listing_type}
+          propertyId={property.id}
+          propertySlug={property.slug}
+          variant="reality"
+        />
+        <CompareButton property={property} variant="reality" />
+        <ProtectedActionLink
+          actionLabel="Manage walkthrough videos"
+          className={buttonClasses("realityGhost", "w-full")}
+          href={`/dashboard/properties/${property.id}/walkthroughs`}
+        >
+          Manage walkthroughs
+        </ProtectedActionLink>
+      </div>
+    </Card>
+  );
+}
+
+function RepresentativeCard({ property }: { property: Property }) {
+  return (
+    <Card className="rounded-[24px] border-reality-border-secondary bg-white p-5 shadow-reality-sm">
+      <h2 className="text-sm font-medium text-reality-text-primary">Representative</h2>
+      <div className="mt-4 flex items-center gap-3">
+        {property.agent_avatar_url ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            alt={property.agent_name ?? "Property representative"}
+            className="h-12 w-12 rounded-full object-cover"
+            decoding="async"
+            src={property.agent_avatar_url}
+          />
+        ) : (
+          <div className="h-12 w-12 rounded-full bg-reality-bg-muted" />
+        )}
+        <div>
+          <p className="font-medium text-black">{property.agent_name ?? "RealityNG"}</p>
+          <p className="text-sm text-reality-text-muted">
+            {property.agent_email ?? "Contact us through inquiry"}
+          </p>
+        </div>
+      </div>
+      <ShowInterestButton
+        className="mt-5"
+        listingType={property.listing_type}
+        propertyId={property.id}
+        propertySlug={property.slug}
+        variant="reality"
+      />
+      <Link className={buttonClasses("realitySecondary", "mt-3 w-full")} href="#property-actions">
+        View profile
+      </Link>
+    </Card>
+  );
+}
+
+function PropertyShowcase({
+  property,
+  walkthroughs,
+}: {
+  property: Property;
+  walkthroughs: PropertyWalkthrough[];
+}) {
+  const featured = walkthroughs.find((item) => item.is_featured) ?? walkthroughs[0];
+  const cover =
+    featured?.thumbnail_url ||
+    property.cover_image_url ||
+    property.image_gallery?.find((image) => image.is_cover)?.image_url ||
+    property.image_gallery?.[0]?.image_url;
+
+  return (
+    <section className="scroll-mt-28" id="property-showcase">
+      <h2 className="text-lg font-medium text-black">Property Showcase</h2>
+      <Card className="mt-5 overflow-hidden rounded-[24px] border-reality-border-secondary bg-reality-bg-muted p-0">
+        {featured ? (
+          <video
+            className="aspect-[16/9] w-full bg-black"
+            controls
+            poster={featured.thumbnail_url || cover || undefined}
+            preload="metadata"
+            src={featured.video_url}
+          />
+        ) : cover ? (
+          <div className="relative aspect-[16/9]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt={`${property.title} showcase`}
+              className="h-full w-full object-cover"
+              decoding="async"
+              loading="lazy"
+              src={cover}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="rounded-full bg-white p-4 text-sm font-semibold text-reality-text-primary shadow-reality-sm">
+                Video pending
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex aspect-[16/9] items-center justify-center px-8 text-center font-display text-3xl font-medium text-reality-brand-700">
+            RealityNG
+          </div>
+        )}
+        <div className="p-5">
+          <p className="font-medium text-black">{featured?.title ?? "No moderated video yet"}</p>
+          <p className="mt-2 text-sm leading-6 text-reality-text-muted">
+            {featured?.description ??
+              "Public walkthrough videos appear here after RealityNG moderation. Request an inspection or viewing for stronger evidence before making a decision."}
+          </p>
+        </div>
+      </Card>
+    </section>
+  );
+}
+
+function SimilarProperties({ currentProperty }: { currentProperty: Property }) {
+  const similarQuery = useQuery({
+    queryKey: ["public-properties", "similar", currentProperty.id],
+    queryFn: () =>
+      getPublicProperties({
+        city: currentProperty.city,
+        property_type: currentProperty.property_type,
+        listing_type: currentProperty.listing_type,
+        ordering: "-featured",
+      }),
+  });
+  const similar = (similarQuery.data?.results ?? [])
+    .filter((property) => property.id !== currentProperty.id)
+    .slice(0, 4);
+
+  if (similar.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <div>
+        <h2 className="text-lg font-medium text-black">Similar properties</h2>
+        <p className="mt-2 text-sm text-reality-text-muted">
+          List of recommended and great properties
+        </p>
+      </div>
+      <StaggerReveal className="mt-8 flex gap-6 overflow-x-auto pb-4" stagger={0.05} y={14}>
+        {similar.map((property) => (
+          <div data-motion-child key={property.id}>
+            <PropertyCard property={property} variant="reality" />
+          </div>
+        ))}
+      </StaggerReveal>
+    </section>
+  );
 }
 
 export default function PropertyDetailPage() {
@@ -108,358 +357,228 @@ export default function PropertyDetailPage() {
     enabled: Boolean(params.slug),
   });
   const property = propertyQuery.data;
-  const gallery = useMemo(() => property?.image_gallery ?? [], [property]);
-  const cover = gallery.find((image) => image.is_cover) ?? gallery[0];
-  const imageCount = property?.image_count ?? gallery.length;
   const walkthroughsQuery = useQuery({
     queryKey: ["public-property-walkthroughs", property?.id],
     queryFn: () => listPublicWalkthroughs(property?.id ?? ""),
     enabled: Boolean(property?.id),
   });
+  const facts = useMemo(() => (property ? propertyFacts(property) : []), [property]);
+  const details = useMemo(() => (property ? detailPairs(property) : []), [property]);
+
+  if (propertyQuery.isLoading) {
+    return <LoadingDetail />;
+  }
+
+  if (propertyQuery.isError) {
+    return <ErrorDetail />;
+  }
+
+  if (!property) {
+    return null;
+  }
+
+  const amenities = property.amenities?.length ? property.amenities : fallbackAmenities(property);
+  const walkthroughs = walkthroughsQuery.data ?? [];
 
   return (
-    <div className="min-h-screen bg-brand-background pb-24 text-brand-text lg:pb-0">
-      <Navbar />
-      <main>
-        <div className="mx-auto max-w-7xl px-5 py-6 sm:px-6">
-          <Link className="text-sm font-semibold text-brand-secondary" href="/properties">
-            Back to properties
-          </Link>
-        </div>
+    <PublicShell variant="reality">
+      <JsonLd data={propertyJsonLd(property)} id="realityng-property-jsonld" />
+      <main className="bg-white pb-20 text-reality-text-primary">
+        <PageContainer className="hidden py-8 lg:block">
+          <div className="flex items-center justify-between">
+            <Link
+              className="text-sm font-medium text-reality-text-tertiary transition hover:text-black"
+              href="/properties"
+            >
+              Back
+            </Link>
+            <div className="flex items-center gap-4">
+              <FavoriteButton
+                className="h-10"
+                initialFavorited={property.is_favorited}
+                propertyId={property.id}
+                propertySlug={property.slug}
+                variant="reality"
+              />
+              <ShareButton property={property} />
+            </div>
+          </div>
+        </PageContainer>
 
-        {propertyQuery.isLoading ? (
-          <section className="mx-auto grid max-w-7xl gap-8 px-5 pb-12 sm:px-6 lg:grid-cols-[1fr_380px]">
-            <div className="h-[520px] animate-pulse rounded-md bg-white/10" />
-            <div className="h-96 animate-pulse rounded-md bg-white/10" />
-          </section>
-        ) : null}
-
-        {propertyQuery.isError ? (
-          <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-6">
-            <Card className="p-8">
-              <h1 className="font-heading text-3xl font-semibold text-brand-text">
-                Property could not be loaded.
-              </h1>
-              <p className="mt-3 text-sm leading-6 text-brand-muted">
-                The listing may be unavailable, archived, or temporarily unreachable.
-              </p>
-              <Link className={buttonClasses("primary", "mt-5 w-fit")} href="/properties">
-                Browse properties
+        <PageContainer className="relative">
+          <div className="lg:hidden">
+            <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-4 pt-8">
+              <Link
+                aria-label="Back to properties"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl text-black shadow-reality-sm"
+                href="/properties"
+              >
+                <span aria-hidden="true">‹</span>
               </Link>
-            </Card>
-          </section>
-        ) : null}
-
-        {property ? (
-          <>
-            <JsonLd data={propertyJsonLd(property)} id="realityng-property-jsonld" />
-            <section className="mx-auto grid max-w-7xl gap-8 px-5 pb-10 sm:px-6 lg:grid-cols-[1fr_380px] lg:items-start">
-              <div className="space-y-8">
-                <div className="overflow-hidden rounded-md border border-white/10 bg-brand-surface">
-                  <div className="relative aspect-[16/10] bg-brand-primary">
-                    {cover ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        alt={cover.caption || property.title}
-                        className="h-full w-full object-cover"
-                        decoding="async"
-                        loading="eager"
-                        src={cover.image_url}
-                      />
-                    ) : property.cover_image_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        alt={property.title}
-                        className="h-full w-full object-cover"
-                        decoding="async"
-                        loading="eager"
-                        src={property.cover_image_url}
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#06271F,#0B3B2E)] px-6 text-center font-heading text-4xl text-brand-secondary">
-                        RealityNG
-                      </div>
-                    )}
-                    <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
-                      <Badge>Approved listing</Badge>
-                      {imageCount ? (
-                        <Badge variant="muted">
-                          {imageCount} image{imageCount === 1 ? "" : "s"}
-                        </Badge>
-                      ) : null}
-                    </div>
-                  </div>
-                  {gallery.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-2 p-2 sm:grid-cols-5">
-                      {gallery.slice(0, 5).map((image, index) => (
-                        <div
-                          className="aspect-square overflow-hidden rounded-sm bg-brand-background"
-                          key={image.id}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            alt={image.caption || galleryAlt(index)}
-                            className="h-full w-full object-cover"
-                            decoding="async"
-                            loading="lazy"
-                            src={image.image_url}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-
-                <section>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge>{formatListingType(property.listing_type)}</Badge>
-                    <Badge variant="muted">{formatPropertyType(property.property_type)}</Badge>
-                    {property.featured ? <Badge variant="green">Featured</Badge> : null}
-                  </div>
-                  <h1 className="mt-4 font-heading text-4xl font-semibold text-brand-text sm:text-5xl">
-                    {property.title}
-                  </h1>
-                  <p className="mt-3 text-brand-muted">
-                    {property.address}, {property.city}, {property.state}
-                  </p>
-                  <div className="mt-6 grid gap-3 sm:grid-cols-4">
-                    {propertyFacts(property).map((fact) => (
-                      <Card className="p-4" key={fact.label}>
-                        <p className="text-xs uppercase tracking-wide text-brand-muted">
-                          {fact.label}
-                        </p>
-                        <p className="mt-1 text-lg font-semibold text-brand-text">{fact.value}</p>
-                      </Card>
-                    ))}
-                  </div>
-                  {property.listing_type === "apartment_share" ? (
-                    <div className="mt-6 border-l-2 border-brand-secondary bg-brand-secondary/10 px-4 py-3">
-                      <p className="font-semibold text-brand-text">Apartment share</p>
-                      <p className="mt-1 text-sm leading-6 text-brand-muted">
-                        This listing offers shared occupancy. Confirm the available room, shared
-                        amenities, and household expectations with the listing owner.
-                      </p>
-                    </div>
-                  ) : null}
-                </section>
-
-                <section>
-                  <h2 className="font-heading text-3xl font-semibold text-brand-text">
-                    About this property
-                  </h2>
-                  <p className="mt-4 max-w-4xl text-base leading-8 text-brand-muted">
-                    {property.description}
-                  </p>
-                </section>
-
-                <WalkthroughVideoPlayer walkthroughs={walkthroughsQuery.data ?? []} />
-
-                <section>
-                  <h2 className="font-heading text-3xl font-semibold text-brand-text">
-                    Amenities and utilities
-                  </h2>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {(property.amenities?.length ? property.amenities : fallbackAmenities(property))
-                      .filter(Boolean)
-                      .map((item) => (
-                        <Badge key={item} variant="muted">
-                          {item}
-                        </Badge>
-                      ))}
-                  </div>
-                </section>
-
-                <section id="verification-report">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-secondary">
-                        Verification report
-                      </p>
-                      <h2 className="mt-3 font-heading text-3xl font-semibold text-brand-text">
-                        Trust signals and current limitations
-                      </h2>
-                    </div>
-                    <Link className="text-sm font-semibold text-brand-secondary" href="/verification">
-                      Open verification centre
-                    </Link>
-                  </div>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                    {trustItems(property).map((item) => (
-                      <Card className="p-5" key={item.title}>
-                        <h3 className="font-heading text-xl font-semibold text-brand-text">
-                          {item.title}
-                        </h3>
-                        <p className="mt-3 text-sm leading-6 text-brand-muted">
-                          {item.description}
-                        </p>
-                      </Card>
-                    ))}
-                  </div>
-                </section>
-
-                <section>
-                  <h2 className="font-heading text-3xl font-semibold text-brand-text">
-                    Location intelligence
-                  </h2>
-                  <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_320px]">
-                    <PropertyMapPanel properties={[property]} selectedPropertyId={property.id} />
-                    <Card className="p-5">
-                      <Badge>Privacy-first location</Badge>
-                      <p className="mt-4 text-sm leading-7 text-brand-muted">
-                        Public map pins may be approximate to protect owners and occupants. Exact
-                        access details, landmark context, and inspection instructions should be
-                        confirmed through a structured inquiry or viewing workflow.
-                      </p>
-                      <div className="mt-4 space-y-3 text-sm text-brand-muted">
-                        <p>
-                          <span className="font-semibold text-brand-text">Display area:</span>{" "}
-                          {property.display_location || `${property.city}, ${property.state}`}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-brand-text">Precision:</span>{" "}
-                          {property.location_metadata?.precision_label ?? "Not available"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-brand-text">Nearby context:</span>{" "}
-                          Schools, hospitals, supermarkets, banks, and transport routes will appear
-                          when Google Places data is configured and available for this area.
-                        </p>
-                      </div>
-                    </Card>
-                  </div>
-                </section>
-
-                <section>
-                  <h2 className="font-heading text-3xl font-semibold text-brand-text">
-                    Safety and reporting
-                  </h2>
-                  <Card className="mt-4 p-5">
-                    <p className="text-sm leading-7 text-brand-muted">
-                      Do not send money or sensitive documents outside approved RealityNG workflows.
-                      Use Show Interest first, confirm who you are speaking with, and request
-                      additional verification where needed.
-                    </p>
-                    <Link
-                      className={buttonClasses("secondary", "mt-4 w-fit")}
-                      href="/contact"
-                    >
-                      Get help
-                    </Link>
-                  </Card>
-                </section>
-              </div>
-
-              <aside className="space-y-5 lg:sticky lg:top-28">
-                <Card className="p-5" id="property-actions">
-                  <p className="text-sm uppercase tracking-wide text-brand-muted">Price</p>
-                  <p className="mt-2 font-heading text-4xl font-semibold text-brand-secondary">
-                    {formatPrice(property)}
-                  </p>
-                  <p className="mt-2 text-sm text-brand-muted">
-                    Listed for {formatListingType(property.listing_type)}
-                  </p>
-                  <div className="mt-5 grid gap-3">
-                    <FavoriteButton
-                      className="w-full"
-                      initialFavorited={property.is_favorited}
-                      propertyId={property.id}
-                      propertySlug={property.slug}
-                    />
-                    <CompareButton property={property} />
-                    <ShowInterestButton
-                      listingType={property.listing_type}
-                      propertyId={property.id}
-                      propertySlug={property.slug}
-                    />
-                    <ProtectedActionLink
-                      actionLabel="Apply for property"
-                      className={buttonClasses("secondary", "w-full")}
-                      href={`/apply/${property.id}?slug=${property.slug}`}
-                    >
-                      Apply for this property
-                    </ProtectedActionLink>
-                    <ProtectedActionLink
-                      actionLabel="Request inspection"
-                      className={buttonClasses("secondary", "w-full")}
-                      href={`/properties/${property.slug}/request-inspection`}
-                    >
-                      Request inspection
-                    </ProtectedActionLink>
-                    <ProtectedActionLink
-                      actionLabel="Manage walkthrough videos"
-                      className={buttonClasses("secondary", "w-full")}
-                      href={`/dashboard/properties/${property.id}/walkthroughs`}
-                    >
-                      Manage walkthroughs
-                    </ProtectedActionLink>
-                  </div>
-                </Card>
-
-                <Card className="p-5">
-                  <h2 className="font-heading text-2xl font-semibold text-brand-text">
-                    Representative
-                  </h2>
-                  <div className="mt-4 flex items-center gap-3">
-                    {property.agent_avatar_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        alt={property.agent_name ?? "Property representative"}
-                        className="h-14 w-14 rounded-md object-cover"
-                        decoding="async"
-                        src={property.agent_avatar_url}
-                      />
-                    ) : (
-                      <div className="flex h-14 w-14 items-center justify-center rounded-md bg-white/10 font-heading text-xl text-brand-secondary">
-                        RN
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-brand-text">
-                        {property.agent_name ?? "RealityNG representative"}
-                      </p>
-                      <p className="text-sm text-brand-muted">
-                        {property.agent_email ?? "Contact available after inquiry"}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-brand-muted">
-                    Use the structured inquiry flow so your interest, contact preference, and next
-                    actions can be tracked safely.
-                  </p>
-                </Card>
-
-                <Card className="p-5">
-                  <h2 className="font-heading text-2xl font-semibold text-brand-text">
-                    Next steps
-                  </h2>
-                  <ol className="mt-4 grid gap-3 text-sm text-brand-muted">
-                    <li>1. Review the gallery, facts, location, and verification notes.</li>
-                    <li>2. Show interest when the property fits your goal.</li>
-                    <li>3. Request a viewing from your dashboard after inquiry follow-up.</li>
-                    <li>4. Apply only when you are ready to proceed.</li>
-                  </ol>
-                </Card>
-              </aside>
-            </section>
-
-            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-brand-background/95 p-3 backdrop-blur lg:hidden">
-              <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3">
-                <Link className={buttonClasses("primary", "w-full")} href="#property-actions">
-                  Show interest
-                </Link>
-                <ProtectedActionLink
-                  actionLabel="Apply for property"
-                  className={buttonClasses("secondary", "w-full")}
-                  href={`/apply/${property.id}?slug=${property.slug}`}
-                >
-                  Apply
-                </ProtectedActionLink>
+              <div className="flex items-center gap-3">
+                <FavoriteButton
+                  compact
+                  className="h-10 w-10 border-0 bg-black/30 text-white hover:bg-black/45"
+                  initialFavorited={property.is_favorited}
+                  propertyId={property.id}
+                  propertySlug={property.slug}
+                  variant="reality"
+                />
+                <ShareButton property={property} />
               </div>
             </div>
-          </>
-        ) : null}
+          </div>
+          <ParallaxMedia>
+            <PropertyDetailGallery property={property} />
+          </ParallaxMedia>
+        </PageContainer>
+
+        <PageContainer className="mt-8 grid gap-10 lg:mt-12 lg:grid-cols-[minmax(0,700px)_360px] lg:items-start">
+          <StaggerReveal className="space-y-10" stagger={0.06} y={18}>
+            <section data-motion-child>
+              <p className="text-sm font-medium text-reality-text-muted">
+                For {formatListingType(property.listing_type)}
+              </p>
+              <h1 className="mt-2 font-body text-2xl font-semibold leading-8 text-black lg:text-[40px] lg:leading-[48px]">
+                {formatPrice(property)}
+              </h1>
+              <p className="mt-2 text-sm font-medium text-reality-text-secondary lg:text-base">
+                {displayLocation(property)}
+              </p>
+              <p className="sr-only">{property.title}</p>
+              {facts.length > 0 ? (
+                <div className="mt-6 flex gap-3 overflow-x-auto pb-1">
+                  {facts.map((fact) => (
+                    <Card
+                      className="min-w-[96px] rounded-[16px] border-0 bg-reality-bg-muted p-4 shadow-none"
+                      key={fact.label}
+                    >
+                      <p className="font-medium text-black">{fact.value}</p>
+                      <p className="mt-1 text-sm text-reality-text-muted">{fact.label}</p>
+                    </Card>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+
+            {details.length > 0 ? (
+              <section
+                className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm lg:max-w-md"
+                data-motion-child
+              >
+                {details.map((detail) => (
+                  <div className="flex gap-2" key={`${detail.label}-${detail.value}`}>
+                    <span className="text-reality-text-muted">{detail.label}</span>
+                    <span className="font-medium text-black">{detail.value}</span>
+                  </div>
+                ))}
+              </section>
+            ) : null}
+
+            <section data-motion-child>
+              <h2 className="text-lg font-medium text-black">About this property</h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-reality-text-muted">
+                {property.description}
+              </p>
+            </section>
+
+            {amenities.length > 0 ? (
+              <section data-motion-child>
+                <h2 className="text-lg font-medium text-black">Amenities and details</h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {amenities.map((item) => (
+                    <div
+                      className="flex items-center gap-3 text-sm text-reality-text-secondary"
+                      key={item}
+                    >
+                      <span className="h-2 w-2 rounded-full bg-reality-brand-500" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            <section data-motion-child>
+              <h2 className="text-lg font-medium text-black">Location</h2>
+              <div className="mt-5 overflow-hidden rounded-[24px]">
+                <PropertyMapPanel
+                  properties={[property]}
+                  selectedPropertyId={property.id}
+                  variant="reality"
+                />
+              </div>
+            </section>
+
+            <section data-motion-child>
+              <h2 className="text-lg font-medium text-black">Places around</h2>
+              <div className="mt-4 grid gap-3 text-sm text-reality-text-muted sm:grid-cols-2">
+                <p>
+                  <span className="font-medium text-black">Display area</span>
+                  <br />
+                  {displayLocation(property)}
+                </p>
+                <p>
+                  <span className="font-medium text-black">Precision</span>
+                  <br />
+                  {property.location_metadata?.precision_label ?? "Not available"}
+                </p>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-reality-text-muted">
+                Nearby schools, hospitals, stores, and transport POIs are not supplied by the
+                current public property API, so this section only shows real location metadata.
+              </p>
+            </section>
+
+            <div data-motion-child>
+              <PropertyShowcase property={property} walkthroughs={walkthroughs} />
+            </div>
+
+            <section data-motion-child>
+              <h2 className="text-lg font-medium text-black">Safety and trust</h2>
+              <div className="mt-5 grid gap-4">
+                {trustItems(property).map((item) => (
+                  <Card
+                    className="rounded-[20px] border-reality-border-secondary bg-reality-bg-muted p-5 shadow-none"
+                    key={item.title}
+                  >
+                    <h3 className="font-medium text-black">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-reality-text-muted">
+                      {item.description}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+              <p className="mt-5 text-sm leading-6 text-reality-text-muted">
+                Listed {formatDate(property.created_at)}. Do not send money or sensitive documents
+                outside approved RealityNG workflows.
+              </p>
+            </section>
+
+            <SimilarProperties currentProperty={property} />
+          </StaggerReveal>
+
+          <aside className="space-y-6 lg:sticky lg:top-28">
+            <ActionRail property={property} />
+            <RepresentativeCard property={property} />
+          </aside>
+        </PageContainer>
+
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-reality-border-secondary bg-white/95 p-3 shadow-reality-sm backdrop-blur lg:hidden">
+          <div className="mx-auto grid max-w-md grid-cols-2 gap-3">
+            <Link className={buttonClasses("realitySecondary", "w-full")} href="#property-actions">
+              Enquire
+            </Link>
+            <ProtectedActionLink
+              actionLabel="Apply for property"
+              className={buttonClasses("reality", "w-full")}
+              href={`/apply/${property.id}?slug=${property.slug}`}
+            >
+              Apply
+            </ProtectedActionLink>
+          </div>
+        </div>
       </main>
-      <Footer />
-    </div>
+    </PublicShell>
   );
 }

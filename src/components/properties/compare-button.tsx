@@ -13,9 +13,15 @@ type CompareButtonProps = {
   property: Property;
   compact?: boolean;
   className?: string;
+  variant?: "legacy" | "reality";
 };
 
-export function CompareButton({ property, compact = false, className }: CompareButtonProps) {
+export function CompareButton({
+  property,
+  compact = false,
+  className,
+  variant = "legacy",
+}: CompareButtonProps) {
   const auth = useOptionalAuth();
   const { addProperty, isSelected, properties, removeProperty } = useCompare();
   const { openRoleSelection } = useRoleSelection();
@@ -53,7 +59,15 @@ export function CompareButton({ property, compact = false, className }: CompareB
         disabled={!selected && properties.length >= MAX_COMPARE_PROPERTIES}
         onClick={toggle}
         type="button"
-        variant={selected ? "primary" : "secondary"}
+        variant={
+          variant === "reality"
+            ? selected
+              ? "reality"
+              : "realitySecondary"
+            : selected
+              ? "primary"
+              : "secondary"
+        }
       >
         {selected ? "Selected" : "Compare"}
       </Button>

@@ -69,15 +69,19 @@ describe("HomePage", () => {
 
     expect(screen.getByRole("heading", { name: "Find property in Nigeria with confidence." }))
       .toBeInTheDocument();
-    expect(screen.getByLabelText("Property goals")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Lagos.*View listings/i })).toHaveAttribute(
+    expect(screen.getByLabelText("Property listing type")).toBeInTheDocument();
+    expect(screen.getByRole("navigation")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Lagos/i })).toHaveAttribute(
       "href",
       "/properties?city=Lagos",
     );
     expect(
-      screen.getByRole("heading", { name: "Verification should be visible, specific, and honest" }),
+      screen.getByRole("heading", { name: "Everything you need to make property easier" }),
     ).toBeInTheDocument();
-    expect(await screen.findByText("Approved Lekki Apartment")).toBeInTheDocument();
+    expect(await screen.findAllByText("Approved Lekki Apartment")).toHaveLength(2);
+    expect(screen.getByRole("heading", { name: "Featured properties" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Newly added properties" })).toBeInTheDocument();
+    expect(screen.queryByText("Timothy Exodus")).not.toBeInTheDocument();
     expect(document.querySelector("#realityng-organization-jsonld")).toBeInTheDocument();
     expect(document.querySelector("#realityng-website-jsonld")).toBeInTheDocument();
   });
@@ -85,8 +89,8 @@ describe("HomePage", () => {
   it("builds a supported property-search URL from the hero form", async () => {
     renderWithQueryClient(<HomePage />);
 
-    fireEvent.click(screen.getByRole("tab", { name: "Rent" }));
-    fireEvent.change(screen.getByLabelText("Search city or area"), {
+    fireEvent.click(screen.getByRole("tab", { name: "For Rent" }));
+    fireEvent.change(screen.getByLabelText("Search location"), {
       target: { value: "Lagos" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Search properties" }));
@@ -96,5 +100,24 @@ describe("HomePage", () => {
     expect(url).toContain("/properties?");
     expect(url).toContain("city=Lagos");
     expect(url).toContain("listing_type=rent");
+  });
+
+  it("switches to sale search and preserves property detail URLs", async () => {
+    renderWithQueryClient(<HomePage />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "For Sale" }));
+    fireEvent.click(screen.getByRole("button", { name: "Search properties" }));
+
+    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith("/properties?listing_type=sale"));
+    const propertyLinks = await screen.findAllByRole("link", {
+      name: /View Approved Lekki Apartment/i,
+    });
+    expect(propertyLinks[0]).toHaveAttribute("href", "/properties/approved-lekki-apartment");
+  });
+
+  it("renders the mobile navigation trigger from the reality shell", () => {
+    renderWithQueryClient(<HomePage />);
+
+    expect(screen.getByRole("button", { name: "Toggle navigation" })).toBeInTheDocument();
   });
 });

@@ -1,23 +1,27 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import FinancingDashboardPage from "@/app/(dashboard)/dashboard/financing/page";
 import FinancingDetailPage from "@/app/(dashboard)/dashboard/financing/[id]/page";
+import FinancingApplyPage from "@/app/(dashboard)/dashboard/financing/apply/page";
 import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
+  push: vi.fn(),
+  searchParams: new URLSearchParams(),
   listFinancingApplications: vi.fn(),
   listFinancingProducts: vi.fn(),
   getFinancingApplication: vi.fn(),
   consentToFinancingApplication: vi.fn(),
+  createFinancingApplication: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ id: "app-1" }),
   usePathname: () => "/dashboard/financing/app-1",
-  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ replace: vi.fn(), push: mocks.push }),
+  useSearchParams: () => mocks.searchParams,
 }));
 
 vi.mock("@/components/auth/protected-route", () => ({
@@ -25,19 +29,18 @@ vi.mock("@/components/auth/protected-route", () => ({
 }));
 
 vi.mock("@/lib/api/financing", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api/financing")>(
-    "@/lib/api/financing",
-  );
+  const actual = await vi.importActual<typeof import("@/lib/api/financing")>("@/lib/api/financing");
   return {
     ...actual,
     listFinancingApplications: () => mocks.listFinancingApplications(),
     listFinancingProducts: () => mocks.listFinancingProducts(),
     getFinancingApplication: (id: string) => mocks.getFinancingApplication(id),
     consentToFinancingApplication: (id: string) => mocks.consentToFinancingApplication(id),
+    createFinancingApplication: (payload: unknown) => mocks.createFinancingApplication(payload),
   };
 });
 
-function product() {
+function product(overrides = {}) {
   return {
     id: "product-1",
     partner: {
@@ -82,6 +85,7 @@ function product() {
     ],
     created_at: "2026-08-15T00:00:00Z",
     updated_at: "2026-08-15T00:00:00Z",
+    ...overrides,
   };
 }
 
@@ -120,6 +124,11 @@ function application() {
 }
 
 describe("financing pages", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.searchParams = new URLSearchParams();
+  });
+
   it("renders applicant financing dashboard", async () => {
     mocks.listFinancingApplications.mockResolvedValue([application()]);
     mocks.listFinancingProducts.mockResolvedValue([product()]);
@@ -128,6 +137,74 @@ describe("financing pages", () => {
 
     expect(await screen.findByText("FIN-20260815-DEMO")).toBeInTheDocument();
     expect(screen.getAllByText("Rent Finance").length).toBeGreaterThan(0);
+  });
+
+  it("renders the Figma-aligned financing selector with supported products", async () => {
+    mocks.listFinancingApplications.mockResolvedValue([]);
+    mocks.listFinancingProducts.mockResolvedValue([product()]);
+
+    renderWithQueryClient(<FinancingDashboardPage />);
+
+    expect(await screen.findByRole("heading", { name: "Property financing" })).toBeInTheDocument();
+    expect(await screen.findByText("Manual Financing Partner")).toBeInTheDocument();
+    expect(screen.getByText("Up to ₦5,000,000")).toBeInTheDocument();
+    expect(screen.getByText("1-12 months")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Apply" })).toHaveAttribute(
+      "href",
+      "/dashboard/financing/apply?product_id=product-1",
+    );
+  });
+
+  it("supports keyboard-visible option selection before continuing", async () => {
+    const user = userEvent.setup();
+    mocks.listFinancingApplications.mockResolvedValue([]);
+    mocks.listFinancingProducts.mockResolvedValue([product()]);
+
+    renderWithQueryClient(<FinancingDashboardPage />);
+
+    const option = await screen.findByRole("button", { name: /Manual Financing Partner/i });
+    expect(option).toHaveAttribute("aria-pressed", "false");
+    await user.click(option);
+    expect(option).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("does not expose inactive financing products as fake working CTAs", async () => {
+    mocks.listFinancingApplications.mockResolvedValue([]);
+    mocks.listFinancingProducts.mockResolvedValue([product({ status: "draft" })]);
+
+    renderWithQueryClient(<FinancingDashboardPage />);
+
+    expect(await screen.findByText("No options")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Apply" })).not.toBeInTheDocument();
+  });
+
+  it("surfaces financing product API failures", async () => {
+    mocks.listFinancingApplications.mockResolvedValue([]);
+    mocks.listFinancingProducts.mockRejectedValue(new Error("Products unavailable"));
+
+    renderWithQueryClient(<FinancingDashboardPage />);
+
+    expect(await screen.findByText("Unavailable")).toBeInTheDocument();
+    expect(screen.getByText("Something went wrong. Please try again.")).toBeInTheDocument();
+  });
+
+  it("preselects a supported product when entering the existing apply flow", async () => {
+    const user = userEvent.setup();
+    mocks.searchParams = new URLSearchParams("product_id=product-1");
+    mocks.listFinancingProducts.mockResolvedValue([product()]);
+    mocks.createFinancingApplication.mockResolvedValue(application());
+
+    renderWithQueryClient(<FinancingApplyPage />);
+
+    expect(await screen.findByText("Rent Finance")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Amount requested"), "1200000");
+    await user.type(screen.getByLabelText("Monthly income band"), "NGN 1m - 2m");
+    await user.type(screen.getByLabelText("Purpose"), "Rent finance support");
+    await user.click(screen.getByRole("button", { name: "Create financing draft" }));
+
+    expect(mocks.createFinancingApplication).toHaveBeenCalledWith(
+      expect.objectContaining({ product_id: "product-1" }),
+    );
   });
 
   it("renders application detail and grants consent", async () => {

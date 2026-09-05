@@ -6,6 +6,24 @@
   color-scheme: dark;
   background: #06271f;
   color: #ffffff;
+  --font-display-stack: var(--font-display), "Source Serif 4", Georgia, serif;
+  --font-body-stack:
+    "General Sans", var(--font-body), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --reality-container: 1328px;
+  --reality-mobile: 393px;
+  --reality-green: #118a64;
+  --reality-text-primary: #171717;
+  --reality-text-secondary: #404040;
+  --reality-text-muted: #737373;
+  --reality-border-primary: #d4d4d4;
+  --reality-border-secondary: #e5e7eb;
+  --reality-radius-sm: 4px;
+  --reality-radius-md: 12px;
+  --reality-radius-lg: 32px;
+  --reality-radius-full: 9999px;
+  --reality-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --reality-shadow-sm: 0 4px 7.5px rgba(0, 0, 0, 0.04);
 }
 
 * {
@@ -17,12 +35,54 @@ body {
   min-height: 100vh;
   background: #06271f;
   color: #ffffff;
-  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    var(--font-body),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+.reality-reveal {
+  animation: reality-reveal 420ms ease-out both;
+}
+
+.reality-menu {
+  animation: reality-menu 180ms ease-out both;
+  transform-origin: top;
+}
+
+.reality-pressable {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.reality-pressable:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
+}
+
+.reality-card-hover {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.reality-card-hover:hover {
+  transform: translateY(-2px);
 }
 
 ::selection {
@@ -57,7 +117,14 @@ a {
   border-radius: 9999px;
   background:
     radial-gradient(circle, rgba(229, 196, 119, 0.2), rgba(23, 138, 88, 0.13) 34%, transparent 67%),
-    conic-gradient(from 110deg, transparent, rgba(229, 196, 119, 0.46), transparent, rgba(255, 248, 223, 0.24), transparent);
+    conic-gradient(
+      from 110deg,
+      transparent,
+      rgba(229, 196, 119, 0.46),
+      transparent,
+      rgba(255, 248, 223, 0.24),
+      transparent
+    );
   opacity: 0.74;
   animation: assistant-orb-halo 8s linear infinite;
 }
@@ -125,7 +192,9 @@ a {
   background:
     linear-gradient(145deg, rgba(9, 34, 47, 0.84), rgba(6, 39, 31, 0.78)),
     radial-gradient(circle at top right, rgba(201, 154, 61, 0.18), transparent 36%);
-  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34), 0 0 38px rgba(201, 154, 61, 0.13);
+  box-shadow:
+    0 26px 80px rgba(0, 0, 0, 0.34),
+    0 0 38px rgba(201, 154, 61, 0.13);
   backdrop-filter: blur(18px);
 }
 
@@ -141,6 +210,28 @@ a {
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes reality-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes reality-menu {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -4px, 0) scaleY(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scaleY(1);
   }
 }
 
@@ -226,12 +317,27 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
   .assistant-fade-scale,
   .assistant-orb,
   .assistant-orb-core,
   .assistant-orb-halo,
   .assistant-orb-ripple,
-  .assistant-orb-particle {
+  .assistant-orb-particle,
+  .reality-reveal,
+  .reality-menu {
     animation: none !important;
+  }
+
+  .reality-pressable,
+  .reality-card-hover,
+  .reality-card-hover:hover {
+    transform: none !important;
+    transition-duration: 1ms !important;
   }
 }

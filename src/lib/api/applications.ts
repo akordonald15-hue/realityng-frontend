@@ -4,6 +4,7 @@ import { USE_MOCKS } from "@/lib/demo-mode";
 import {
   mockApproveApplication,
   mockCreateApplication,
+  mockGetApplication,
   mockListMyApplications,
   mockListReceivedApplications,
   mockMarkApplicationUnderReview,
@@ -91,6 +92,14 @@ export async function listMyApplications(): Promise<PaginatedApplications> {
     return mockListMyApplications();
   }
   const response = await apiClient.get<PaginatedApplications>("/applications/");
+  return response.data;
+}
+
+export async function getApplication(applicationId: string): Promise<RentalApplication> {
+  if (USE_MOCKS) {
+    return mockGetApplication(applicationId);
+  }
+  const response = await apiClient.get<RentalApplication>(`/applications/${applicationId}/`);
   return response.data;
 }
 

@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { AuthCard } from "@/components/auth/auth-card";
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { SuccessState } from "@/components/ui/success-state";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { USE_MOCKS } from "@/lib/demo-mode";
 import { useAuth } from "@/providers/auth-provider";
@@ -20,6 +20,8 @@ const signInSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
+const identifierSchema = signInSchema.pick({ email: true });
+
 type SignInValues = z.infer<typeof signInSchema>;
 
 export default function SignInPage() {
@@ -27,14 +29,18 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
   const [queryParams, setQueryParams] = useState(() => new URLSearchParams());
+  const [step, setStep] = useState<"identifier" | "password" | "success">("identifier");
   const {
+    getValues,
     register,
     handleSubmit,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
+
   useEffect(() => {
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
@@ -47,6 +53,16 @@ export default function SignInPage() {
   }
   if (selectedRole) {
     createAccountParams.set("role", selectedRole);
+  }
+
+  async function continueToPassword() {
+    setServerError("");
+    const result = identifierSchema.safeParse({ email: getValues("email") });
+    if (!result.success) {
+      await trigger("email");
+      return;
+    }
+    setStep("password");
   }
 
   async function onSubmit(values: SignInValues) {
@@ -63,65 +79,114 @@ export default function SignInPage() {
         redirectPath = `${redirectPath}?${roleSetupParams.toString()}`;
       }
       await signIn(values, redirectPath);
+      setStep("success");
     } catch (error) {
       setServerError(getApiErrorMessage(error));
     }
   }
 
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
-      <Card className="w-full max-w-md p-6 text-center sm:p-8">
-        <Link aria-label="RealityNG home" className="mx-auto inline-flex" href="/">
-          <BrandLogo className="h-16 w-auto object-contain" priority />
-        </Link>
-        <h1 className="mt-8 font-heading text-3xl font-semibold text-brand-text">Sign in</h1>
-        <p className="mt-2 text-brand-muted">Access your RealityNG dashboard.</p>
-        {USE_MOCKS ? (
-          <div
-            className="mt-5 rounded border border-brand-secondary/40 bg-brand-secondary/10 p-3 text-left text-sm text-brand-muted"
-            role="status"
-          >
-            <p className="font-semibold text-brand-text">Demo mode is active</p>
-            <p className="mt-1">
-              This environment uses local mock data and does not connect to production services.
-            </p>
-          </div>
-        ) : null}
-        <form className="mt-8 space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
-          <TextField label="Email" error={errors.email} type="email" {...register("email")} />
-          <div className="space-y-2">
+  if (step === "success") {
+    return (
+      <AuthCard title="">
+        <SuccessState className="py-16" title="Logged In" />
+      </AuthCard>
+    );
+  }
+
+  if (step === "password") {
+    const email = getValues("email");
+
+    return (
+      <AuthCard
+        description={
+          <span>
+            Sign in as {email}{" "}
+            <button
+              className="font-medium text-reality-brand-600 underline"
+              onClick={() => {
+                setServerError("");
+                setStep("identifier");
+              }}
+              type="button"
+            >
+              Not you?
+            </button>
+          </span>
+        }
+        title="Enter password"
+      >
+        <form className="space-y-[97px]" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-4">
             <TextField
-              label="Password"
+              autoComplete="current-password"
               error={errors.password}
+              label="Password"
               type={showPassword ? "text" : "password"}
+              variant="reality"
               {...register("password")}
             />
-            <Button
-              className="mx-auto h-8 px-2 text-brand-secondary"
-              onClick={() => setShowPassword((value) => !value)}
-              type="button"
-              variant="ghost"
-            >
-              {showPassword ? "Hide password" : "Show password"}
-            </Button>
+            <div className="flex items-center justify-between gap-3">
+              <button
+                className="text-sm font-medium text-reality-brand-600 underline"
+                onClick={() => setShowPassword((value) => !value)}
+                type="button"
+              >
+                {showPassword ? "Hide password" : "Show password"}
+              </button>
+              <Link
+                className="text-sm font-medium text-reality-brand-600 underline"
+                href="/auth/forgot-password"
+              >
+                Forgot Password
+              </Link>
+            </div>
+            <FormMessage tone="error" variant="reality">
+              {serverError}
+            </FormMessage>
           </div>
-          <FormMessage tone="error">{serverError}</FormMessage>
-          <Button className="w-full" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Signing in..." : "Sign in"}
+          <Button className="h-12 w-full" disabled={isSubmitting} type="submit" variant="reality">
+            {isSubmitting ? "Signing in..." : "Continue"}
           </Button>
         </form>
-        <div className="mt-6 flex flex-col items-center justify-center gap-3 text-sm sm:flex-row sm:gap-6">
-          <Link className="font-semibold text-brand-secondary" href="/auth/forgot-password">
-            Forgot password?
-          </Link>
+      </AuthCard>
+    );
+  }
+
+  return (
+    <AuthCard description="Sign in or sign up to apply for a property" title="Sign in/Sign up">
+      {USE_MOCKS ? (
+        <FormMessage tone="info" variant="reality">
+          Demo mode is active. This environment uses local mock data.
+        </FormMessage>
+      ) : null}
+      <form
+        className="mt-6 space-y-[97px]"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void continueToPassword();
+        }}
+      >
+        <TextField
+          autoComplete="email"
+          error={errors.email}
+          label="Email address"
+          placeholder="johndoe@gmail.com"
+          type="email"
+          variant="reality"
+          {...register("email")}
+        />
+        <div className="space-y-3">
+          <Button className="h-12 w-full" type="submit" variant="reality">
+            Continue
+          </Button>
           <Link
-            className="font-semibold text-brand-secondary"
+            className="flex h-12 w-full items-center justify-center rounded-full border border-reality-border-primary bg-white px-[18px] text-sm font-semibold text-reality-text-secondary shadow-reality-xs transition hover:bg-reality-bg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 focus-visible:ring-offset-2"
             href={`/auth/sign-up${createAccountParams.toString() ? `?${createAccountParams}` : ""}`}
           >
             Create account
           </Link>
         </div>
-      </Card>
-    </main>
+      </form>
+    </AuthCard>
   );
 }

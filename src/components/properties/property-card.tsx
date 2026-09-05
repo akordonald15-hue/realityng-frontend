@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { clsx } from "clsx";
 
 import { CompareButton } from "@/components/properties/compare-button";
 import { FavoriteButton } from "@/components/properties/favorite-button";
@@ -14,7 +15,8 @@ import {
 
 type PropertyCardProps = {
   property: Property;
-  variant?: "grid" | "list";
+  variant?: "grid" | "list" | "reality";
+  className?: string;
 };
 
 function formatDate(value: string) {
@@ -40,17 +42,96 @@ function propertyFacts(property: Property) {
   ].filter(Boolean);
 }
 
-export function PropertyCard({ property, variant = "grid" }: PropertyCardProps) {
+export function PropertyCard({ property, variant = "grid", className }: PropertyCardProps) {
   const facts = propertyFacts(property);
   const imageCount = property.image_count ?? property.image_gallery?.length ?? 0;
 
+  if (variant === "reality") {
+    return (
+      <article className={clsx("reality-card-hover group relative w-[314px] shrink-0", className)}>
+        <div className="relative h-[286px] overflow-hidden rounded-[2rem] bg-reality-bg-muted">
+          {property.cover_image_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              alt={property.title}
+              className="h-full w-full object-cover transition duration-500 motion-safe:group-hover:scale-105"
+              decoding="async"
+              loading="lazy"
+              src={property.cover_image_url}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#eefaf5,#d9f5ea)] px-8 text-center font-display text-3xl font-semibold text-reality-brand-700">
+              RealityNG
+            </div>
+          )}
+          <div className="absolute right-4 top-4 rounded-full bg-white/70 px-3 py-1.5 text-sm font-medium text-black/70 backdrop-blur">
+            {formatPropertyType(property.property_type)}
+          </div>
+          <div className="absolute left-4 top-4">
+            <FavoriteButton
+              compact
+              initialFavorited={property.is_favorited}
+              propertyId={property.id}
+              propertySlug={property.slug}
+            />
+          </div>
+          {imageCount > 0 ? (
+            <span className="absolute bottom-4 left-4 rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+              {imageCount} image{imageCount === 1 ? "" : "s"}
+            </span>
+          ) : null}
+        </div>
+        <div className="mt-5 space-y-1">
+          <div className="flex items-center justify-between gap-3">
+            <Link
+              className="min-w-0 text-xl font-semibold leading-7 text-black transition hover:text-reality-brand-600 focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+              href={`/properties/${property.slug}`}
+            >
+              <span className="sr-only">{property.title}</span>
+              <span className="line-clamp-1">{formatPrice(property)}</span>
+            </Link>
+            <Link
+              aria-label={`View ${property.title}`}
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black transition hover:bg-reality-bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+              href={`/properties/${property.slug}`}
+            >
+              <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 20 20">
+                <path
+                  d="M5.833 14.167 14.167 5.833m0 0H7.5m6.667 0V12.5"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.7"
+                />
+              </svg>
+            </Link>
+          </div>
+          <div className="flex items-start justify-between gap-3 text-base leading-6 text-black">
+            <div className="flex min-w-0 flex-wrap gap-x-2 gap-y-1">
+              {facts.slice(0, 3).map((fact) => (
+                <span key={fact}>{fact}</span>
+              ))}
+            </div>
+            <span className="shrink-0 text-sm font-medium text-reality-text-muted">
+              For <span className="text-black">{formatListingType(property.listing_type)}</span>
+            </span>
+          </div>
+          <p className="line-clamp-1 text-base leading-6 text-reality-text-muted">
+            {property.display_location || `${property.city}, ${property.state}`}
+          </p>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <Card
-      className={
+      className={clsx(
         variant === "list"
           ? "group relative grid overflow-hidden md:grid-cols-[260px_1fr]"
-          : "group relative overflow-hidden"
-      }
+          : "group relative overflow-hidden",
+        className,
+      )}
     >
       <div className="absolute right-3 top-3 z-10">
         <FavoriteButton
@@ -72,7 +153,7 @@ export function PropertyCard({ property, variant = "grid" }: PropertyCardProps) 
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               alt={property.title}
-              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover transition duration-500 motion-safe:group-hover:scale-105"
               decoding="async"
               loading="lazy"
               src={property.cover_image_url}
@@ -111,9 +192,7 @@ export function PropertyCard({ property, variant = "grid" }: PropertyCardProps) 
               : "Exact map location approved"}
           </p>
         ) : null}
-        <p className="mt-3 text-2xl font-semibold text-brand-secondary">
-          {formatPrice(property)}
-        </p>
+        <p className="mt-3 text-2xl font-semibold text-brand-secondary">{formatPrice(property)}</p>
         <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-brand-muted">
           {facts.length > 0 ? (
             facts.map((fact) => (
