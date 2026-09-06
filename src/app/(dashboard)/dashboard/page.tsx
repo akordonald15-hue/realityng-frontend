@@ -1302,7 +1302,7 @@ function BuyerDashboard({
   const showActivity = activeTab === "overview" || activeTab === "activity";
 
   return (
-    <main className="bg-reality-bg-primary pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
+    <main className="min-h-screen bg-white pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
       <PageContainer>
         <div className="flex items-center justify-between gap-4">
           <Link
@@ -1320,12 +1320,12 @@ function BuyerDashboard({
           <h1 className="text-4xl font-medium leading-[44px] text-reality-text-primary">
             Hi, {user?.first_name || "there"}
           </h1>
-          <p className="mt-2 text-xl leading-7 text-reality-text-secondary">Welcome Back!</p>
+          <p className="mt-2 text-xl leading-7 text-reality-text-secondary">Welcome back!</p>
         </section>
 
         <div className="mt-10 overflow-x-auto pb-1">
           <SegmentedTabs
-            className="min-w-max bg-transparent p-0"
+            className="min-w-max border border-reality-border-secondary bg-reality-bg-muted p-1.5 shadow-reality-xs"
             items={buyerDashboardTabs}
             label="Buyer dashboard sections"
             onChange={setActiveTab}

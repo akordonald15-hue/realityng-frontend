@@ -177,10 +177,11 @@ describe("DashboardPage", () => {
   it("renders the Figma-aligned buyer dashboard with real user and metrics", async () => {
     mocks.getDashboardOverview.mockResolvedValueOnce(overview());
 
-    renderWithQueryClient(<DashboardPage />);
+    const { container } = renderWithQueryClient(<DashboardPage />);
 
     expect(await screen.findByRole("heading", { name: "Hi, Ify" })).toBeInTheDocument();
-    expect(screen.getByText("Welcome Back!")).toBeInTheDocument();
+    expect(screen.getByText("Welcome back!")).toBeInTheDocument();
+    expect(container.querySelector("main")).toHaveClass("bg-white", "text-reality-text-primary");
     expect(screen.getByRole("tablist", { name: "Buyer dashboard sections" })).toBeInTheDocument();
     expect(screen.getByText("Your dashboard Summary")).toBeInTheDocument();
     expect(screen.getByText("My application")).toBeInTheDocument();

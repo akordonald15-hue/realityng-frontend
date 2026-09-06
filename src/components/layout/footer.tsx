@@ -68,6 +68,7 @@ export function Footer({ variant = "legacy" }: FooterProps = {}) {
                 actionLabel="List property"
                 className="hover:text-reality-brand-500"
                 href="/properties/new"
+                role="landlord"
               >
                 List a Property
               </ProtectedActionLink>
@@ -134,6 +135,7 @@ export function Footer({ variant = "legacy" }: FooterProps = {}) {
               actionLabel="List property"
               className="hover:text-brand-text"
               href="/properties/new"
+              role="landlord"
             >
               List a Property
             </ProtectedActionLink>

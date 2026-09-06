@@ -4,14 +4,14 @@ export const motionEase = {
 } as const;
 
 export const motionDurations = {
-  reveal: 0.72,
-  hero: 0.78,
-  imageSettle: 1.05,
-  cardReveal: 0.52,
+  reveal: 0.92,
+  hero: 0.86,
+  imageSettle: 1.12,
+  cardReveal: 0.84,
 } as const;
 
 export const fadeUp = {
-  from: { autoAlpha: 0, y: 24 },
+  from: { autoAlpha: 0, y: 40 },
   to: {
     autoAlpha: 1,
     duration: motionDurations.reveal,
@@ -21,7 +21,7 @@ export const fadeUp = {
 } as const;
 
 export const heroReveal = {
-  from: { autoAlpha: 0, y: 30 },
+  from: { autoAlpha: 0, y: 36 },
   to: {
     autoAlpha: 1,
     duration: motionDurations.hero,
@@ -31,7 +31,7 @@ export const heroReveal = {
 } as const;
 
 export const imageSettle = {
-  from: { autoAlpha: 0.92, scale: 1.025 },
+  from: { autoAlpha: 0.9, scale: 1.035 },
   to: {
     autoAlpha: 1,
     duration: motionDurations.imageSettle,
@@ -41,10 +41,10 @@ export const imageSettle = {
 } as const;
 
 export const staggerChildren = {
-  amount: 0.08,
+  amount: 0.12,
   duration: motionDurations.cardReveal,
   ease: motionEase.emphasized,
-  y: 18,
+  y: 34,
 } as const;
 
 export const subtleParallax = {

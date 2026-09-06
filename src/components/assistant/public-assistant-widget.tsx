@@ -100,11 +100,11 @@ export function PublicAssistantWidget() {
     [isAuthenticated],
   );
   const orbState = isResponding
-    ? "speaking"
+    ? "thinking"
     : isInputFocused || isOpen
       ? "listening"
       : showGreeting
-        ? "speaking"
+        ? "thinking"
         : "idle";
 
   useEffect(() => {
@@ -167,17 +167,20 @@ export function PublicAssistantWidget() {
       >
         {showGreeting ? (
           <div className="assistant-fade-scale assistant-glass-panel pointer-events-none max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-brand-text shadow-2xl sm:max-w-xs">
-            <p className="font-semibold text-brand-lightGold">RealityNG AI</p>
+            <p className="font-semibold text-cyan-50">RealityNG AI</p>
             <p className="mt-2 text-brand-muted">{messages[0].content}</p>
           </div>
         ) : null}
         <button
           aria-label="Open RealityNG AI"
-          className="assistant-fade-scale pointer-events-auto group relative flex h-16 w-16 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-lightGold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background sm:h-[4.5rem] sm:w-[4.5rem]"
+          className="assistant-fade-scale pointer-events-auto group relative flex h-16 w-16 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820] sm:h-[4.5rem] sm:w-[4.5rem]"
           onClick={openAssistant}
           type="button"
         >
           <AssistantOrb state={orbState} size="md" />
+          <span className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-full border border-cyan-100/20 bg-[#062820]/88 px-3 py-1.5 text-xs font-semibold text-cyan-50 opacity-0 shadow-reality-sm backdrop-blur-md transition group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
+            Ask Reality AI
+          </span>
           <span className="sr-only">RealityNG AI</span>
         </button>
       </div>
@@ -198,7 +201,7 @@ export function PublicAssistantWidget() {
         </div>
         <button
           aria-label="Close RealityNG AI"
-          className="rounded-md px-2 py-1 text-brand-muted transition hover:bg-white/10 hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-lightGold"
+          className="rounded-md px-2 py-1 text-brand-muted transition hover:bg-white/10 hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80"
           onClick={() => setIsOpen(false)}
           type="button"
         >

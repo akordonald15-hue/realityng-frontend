@@ -151,11 +151,11 @@ describe("PropertyDetailPage", () => {
     expect(screen.getByText("Tunde Balogun")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Apply for this property" })).toHaveAttribute(
       "href",
-      "/apply/property-1?slug=approved-lekki-apartment",
+      "/auth/sign-up?next=%2Fapply%2Fproperty-1%3Fslug%3Dapproved-lekki-apartment",
     );
     expect(screen.getByRole("link", { name: "Request inspection" })).toHaveAttribute(
       "href",
-      "/properties/approved-lekki-apartment/request-inspection",
+      "/auth/sign-up?next=%2Fproperties%2Fapproved-lekki-apartment%2Frequest-inspection",
     );
     expect(screen.getAllByRole("button", { name: "Show interest" })[0]).toBeInTheDocument();
     expect(

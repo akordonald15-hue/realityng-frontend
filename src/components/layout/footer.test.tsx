@@ -14,7 +14,7 @@ describe("Footer", () => {
     );
     expect(screen.getByRole("link", { name: "List a Property" })).toHaveAttribute(
       "href",
-      "/properties/new",
+      "/auth/sign-up?next=%2Fproperties%2Fnew&role=landlord",
     );
     expect(screen.getByRole("link", { name: "Verification standards" })).toHaveAttribute(
       "href",
@@ -32,7 +32,7 @@ describe("Footer", () => {
     );
     expect(screen.getByRole("link", { name: "List a Property" })).toHaveAttribute(
       "href",
-      "/properties/new",
+      "/auth/sign-up?next=%2Fproperties%2Fnew&role=landlord",
     );
     expect(screen.getByText("Company")).toBeInTheDocument();
   });

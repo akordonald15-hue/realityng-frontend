@@ -6,15 +6,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 
-import { useRoleSelection } from "@/components/auth/role-selection-modal";
 import { PublicAssistantWidget } from "@/components/assistant/public-assistant-widget";
 import { PublicShell } from "@/components/layout/public-shell";
 import { StaggerReveal } from "@/components/motion/stagger-reveal";
 import { PropertyCard } from "@/components/properties/property-card";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Button, buttonClasses } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { ListboxSelect } from "@/components/ui/listbox-select";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs";
 import { getPublicProperties, propertyTypeOptions } from "@/lib/api/properties";
 import type { ListingType, Property, PropertyFilters } from "@/lib/api/properties";
@@ -77,12 +75,12 @@ const cities = [
   {
     city: "Abuja",
     areas: "Maitama, Wuse, Jabi, Gwarinpa, Asokoro",
-    imageSrc: "/home/city-abuja.png",
+    imageSrc: "/home/city-abuja.webp",
   },
   {
     city: "Port Harcourt",
     areas: "Old GRA, Trans Amadi, Peter Odili Road",
-    imageSrc: "/home/city-port-harcourt.png",
+    imageSrc: "/home/city-port-harcourt.webp",
   },
   { city: "Uyo", areas: "Ewet Housing, Shelter Afrique, Ring Road" },
   { city: "Enugu", areas: "Independence Layout, New Haven, GRA" },
@@ -98,6 +96,7 @@ const roleCards = [
     tone: "secondary",
     icon: BuildingsIcon,
     nextPath: "/properties/new",
+    role: "landlord",
   },
   {
     title: "Agents",
@@ -107,6 +106,7 @@ const roleCards = [
     tone: "primary",
     icon: UsersIcon,
     nextPath: "/properties/new",
+    role: "agent",
   },
   {
     title: "For Artisan",
@@ -116,6 +116,7 @@ const roleCards = [
     tone: "neutral",
     icon: ToolsIcon,
     nextPath: "/services",
+    role: "artisan",
   },
 ];
 
@@ -186,48 +187,41 @@ function HeroSearch() {
         onChange={(value) => setMode(value as ListingType)}
         value={mode}
       />
-      <div className="grid w-full gap-1 rounded-[2rem] bg-[#062820] p-1 shadow-reality-xs md:h-16 md:grid-cols-[1fr_1fr_1fr_56px] md:rounded-full">
+      <div className="grid w-full rounded-[1.75rem] bg-[#062820]/95 p-1 shadow-[0_18px_45px_rgba(0,0,0,0.18)] ring-1 ring-white/10 backdrop-blur md:h-16 md:grid-cols-[1fr_1fr_1fr_56px] md:rounded-full">
         <SearchField icon={MapPinIcon} label="Location">
-          <Input
+          <input
             aria-label="Search location"
-            className="h-5 border-0 bg-transparent p-0 text-sm text-white placeholder:text-white/60 focus:ring-0"
+            className="h-5 w-full min-w-0 border-0 bg-transparent p-0 text-sm font-medium text-white/75 outline-none placeholder:text-white/60 focus-visible:text-white"
             onChange={(event) => setCity(event.target.value)}
             placeholder="Where"
             value={city}
           />
         </SearchField>
         <SearchField icon={BuildingsIcon} label="Type">
-          <Select
+          <ListboxSelect
             aria-label="Property type"
-            className="h-5 border-0 bg-transparent p-0 text-sm text-white/60 focus:ring-0"
-            onChange={(event) => setPropertyType(event.target.value)}
+            onChange={setPropertyType}
+            options={[
+              { label: "Any type", value: "" },
+              ...propertyTypeOptions.map((option) => ({
+                label: option.label,
+                value: option.value,
+              })),
+            ]}
             value={propertyType}
-          >
-            <option value="">Any type</option>
-            {propertyTypeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+          />
         </SearchField>
         <SearchField icon={BanknoteIcon} label="Price range">
-          <Select
+          <ListboxSelect
             aria-label="Maximum price"
-            className="h-5 border-0 bg-transparent p-0 text-sm text-white/60 focus:ring-0"
-            onChange={(event) => setMaxPrice(event.target.value)}
+            onChange={setMaxPrice}
+            options={priceOptions}
             value={maxPrice}
-          >
-            {priceOptions.map((option) => (
-              <option key={option.label} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+          />
         </SearchField>
         <Button
           aria-label="Search properties"
-          className="h-14 rounded-full bg-[#c99a3d] px-6 text-white hover:bg-[#bc8936] md:size-14 md:px-0"
+          className="h-14 w-full rounded-[1.35rem] !border-0 bg-[#0f5d49] px-6 text-white shadow-none ring-0 transition hover:bg-reality-brand-500 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820] active:scale-[0.98] md:h-full md:rounded-full md:px-0"
           onClick={submitSearch}
           variant="reality"
         >
@@ -249,13 +243,13 @@ function SearchField({
   label: string;
 }) {
   return (
-    <label className="flex h-14 items-center gap-3 rounded-full bg-[#0a3b2e] px-4 text-left shadow-reality-xs backdrop-blur">
+    <div className="flex h-14 items-center gap-3 rounded-[1.35rem] bg-[#0a3b2e] px-4 text-left transition focus-within:bg-[#0d4637] focus-within:ring-1 focus-within:ring-white/45 md:rounded-none md:bg-transparent md:px-6 md:focus-within:bg-white/5 md:[&:not(:last-of-type)]:border-r md:[&:not(:last-of-type)]:border-white/10">
       <Icon className="size-4 shrink-0 text-white" />
       <span className="grid min-w-0 flex-1 gap-0.5">
         <span className="text-xs font-medium leading-[18px] text-white">{label}</span>
         {children}
       </span>
-    </label>
+    </div>
   );
 }
 
@@ -271,8 +265,8 @@ function PropertyRail({
   title: string;
 }) {
   return (
-    <section>
-      <div className="mb-8 flex items-start justify-between gap-5 md:mb-14">
+    <StaggerReveal as="section" className="block" stagger={0.11} y={36}>
+      <div className="mb-8 flex items-start justify-between gap-5 md:mb-14" data-motion-child>
         <div>
           <h2 className="font-display text-[2rem] font-medium leading-none text-black md:text-[3.75rem] md:leading-none">
             <Link className="group inline-flex items-center gap-3" href="/properties">
@@ -286,19 +280,15 @@ function PropertyRail({
         </div>
       </div>
       {properties.length > 0 ? (
-        <StaggerReveal
-          className="-mx-6 flex snap-x gap-6 overflow-x-auto px-6 pb-3 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0 md:pb-0"
-          stagger={0.05}
-          y={14}
-        >
+        <div className="flex snap-x gap-6 overflow-x-auto pb-3 2xl:grid 2xl:grid-cols-4 2xl:overflow-visible 2xl:pb-0">
           {properties.map((property) => (
             <div className="snap-start" data-motion-child key={property.id}>
               <PropertyCard property={property} variant="reality" />
             </div>
           ))}
-        </StaggerReveal>
+        </div>
       ) : (
-        <div className="rounded-[2rem] bg-reality-bg-muted p-8 text-reality-text-muted">
+        <div className="rounded-[2rem] bg-reality-bg-muted p-8 text-reality-text-muted" data-motion-child>
           Approved public listings will appear here when inventory is available.
         </div>
       )}
@@ -307,7 +297,7 @@ function PropertyRail({
           {ctaLabel}
         </Link>
       ) : null}
-    </section>
+    </StaggerReveal>
   );
 }
 
@@ -356,10 +346,8 @@ function CityCard({
 
 function RoleCard({
   card,
-  onSelect,
 }: {
   card: (typeof roleCards)[number];
-  onSelect: (nextPath: string) => void;
 }) {
   const Icon = card.icon;
   const toneClass =
@@ -382,19 +370,17 @@ function RoleCard({
           <p className="mt-3 text-xs leading-[18px] text-black">{card.description}</p>
         </div>
       </div>
-      <Button
-        className="mt-6 h-12 px-[18px]"
-        onClick={() => onSelect(card.nextPath)}
-        variant="reality"
+      <Link
+        href={`/auth/sign-up?role=${encodeURIComponent(card.role)}&next=${encodeURIComponent(card.nextPath)}`}
+        className={buttonClasses("reality", "mt-6 h-12 px-[18px]")}
       >
         {card.button}
-      </Button>
+      </Link>
     </article>
   );
 }
 
 export default function HomePage() {
-  const { openRoleSelection } = useRoleSelection();
   const heroScope = useRef<HTMLElement>(null);
   const featuredQuery = useQuery({
     queryKey: ["homepage-featured-properties"],
@@ -413,13 +399,6 @@ export default function HomePage() {
     () => (latestQuery.data?.results ?? featuredQuery.data?.results ?? []).slice(0, 4),
     [featuredQuery.data, latestQuery.data],
   );
-
-  function handleRoleSelect(nextPath: string) {
-    openRoleSelection({
-      actionLabel: "Create account",
-      nextPath,
-    });
-  }
 
   useGSAP(
     () => {
@@ -469,19 +448,19 @@ export default function HomePage() {
       <PublicShell transparentHeader variant="reality">
         <main>
           <section
-            className="relative flex min-h-[956px] items-start justify-center overflow-hidden px-6 pb-12 pt-[167px] md:min-h-[1080px] md:px-0 md:pt-[289px]"
+            className="relative isolate flex min-h-[860px] items-start justify-center overflow-hidden bg-reality-brand-900 px-6 pb-12 pt-[132px] md:min-h-[820px] md:px-6 md:pt-[190px] xl:min-h-[900px] xl:px-0 xl:pt-[220px]"
             ref={heroScope}
           >
             <Image
               alt=""
-              className="absolute inset-0 -z-20 h-full w-full object-cover"
+              className="absolute inset-0 z-0 h-full w-full object-cover"
               data-hero-image
               fill
               priority
               sizes="100vw"
-              src="/home/hero-house.png"
+              src="/home/hero-house.webp"
             />
-            <div className="absolute inset-0 -z-10 bg-[#0a3b2e]/60" />
+            <div className="absolute inset-0 z-0 bg-[#0a3b2e]/60" />
             <div className="relative z-10 flex w-full max-w-[1066px] flex-col items-center gap-10 text-center text-white md:gap-[35px]">
               <div className="max-w-[725px]" data-hero-reveal>
                 <h1 className="font-display text-[3.75rem] font-semibold leading-none tracking-normal md:text-[4.5rem] md:leading-[90px]">
@@ -496,7 +475,7 @@ export default function HomePage() {
               </div>
             </div>
             <div
-              className="pointer-events-none absolute bottom-12 left-1/2 grid w-[334px] -translate-x-1/2 grid-cols-3 gap-3 text-left md:bottom-[125px] md:flex md:w-auto md:gap-8"
+              className="pointer-events-none absolute bottom-10 left-1/2 grid w-[334px] -translate-x-1/2 grid-cols-3 gap-3 text-left md:bottom-16 md:flex md:w-auto md:gap-8"
               data-hero-reveal
             >
               {trustItems.map((item) => {
@@ -513,19 +492,17 @@ export default function HomePage() {
             </div>
           </section>
 
-          <div className="reality-reveal mx-auto flex max-w-reality flex-col gap-16 px-6 py-14 md:gap-[88px] md:px-0 md:py-20">
-            <section>
-              <SectionHeading
-                align="center"
-                eyebrow="How it works"
-                subtitle="Browse, save, book a viewing, and keep track of everything in one place."
-                title="Find a property and take the next step"
-              />
-              <StaggerReveal
-                className="mt-8 grid grid-cols-2 gap-4 md:mt-12 md:grid-cols-4 md:gap-6"
-                stagger={0.05}
-                y={14}
-              >
+          <div className="reality-reveal mx-auto flex max-w-reality flex-col gap-12 px-6 py-12 md:gap-16 md:py-16 xl:gap-20 xl:px-0">
+            <StaggerReveal as="section" stagger={0.1} y={34}>
+              <div data-motion-child>
+                <SectionHeading
+                  align="center"
+                  eyebrow="How it works"
+                  subtitle="Browse, save, book a viewing, and keep track of everything in one place."
+                  title="Find a property and take the next step"
+                />
+              </div>
+              <div className="mt-8 grid grid-cols-2 gap-4 md:mt-12 md:grid-cols-4 md:gap-6">
                 {steps.map((step) => {
                   const Icon = step.icon;
                   return (
@@ -549,8 +526,8 @@ export default function HomePage() {
                     </Link>
                   );
                 })}
-              </StaggerReveal>
-            </section>
+              </div>
+            </StaggerReveal>
 
             {featuredQuery.isLoading ? (
               <RailSkeleton title="Featured properties" />
@@ -573,17 +550,15 @@ export default function HomePage() {
               />
             )}
 
-            <section>
-              <SectionHeading
-                align="center"
-                subtitle="Explore popular locations across Nigeria and refine your search from there."
-                title="Browse by city"
-              />
-              <StaggerReveal
-                className="-mx-6 mt-8 flex snap-x gap-6 overflow-x-auto px-6 pb-3 md:mx-0 md:grid md:grid-cols-3 md:px-0"
-                stagger={0.05}
-                y={14}
-              >
+            <StaggerReveal as="section" stagger={0.11} y={36}>
+              <div data-motion-child>
+                <SectionHeading
+                  align="center"
+                  subtitle="Explore popular locations across Nigeria and refine your search from there."
+                  title="Browse by city"
+                />
+              </div>
+              <div className="-mx-6 mt-8 flex snap-x gap-6 overflow-x-auto px-6 pb-3 md:mx-0 md:grid md:grid-cols-3 md:px-0">
                 {cities.map((city, index) => (
                   <div data-motion-child key={city.city}>
                     <CityCard
@@ -594,39 +569,37 @@ export default function HomePage() {
                     />
                   </div>
                 ))}
-              </StaggerReveal>
-            </section>
+              </div>
+            </StaggerReveal>
 
-            <section>
-              <SectionHeading
-                align="center"
-                subtitle="Whether you own properties, help people find them, or provide essential services, RealityNG gives you the tools to get things done with confidence."
-                title="Everything you need to make property easier"
-              />
-              <StaggerReveal
-                className="mt-8 grid gap-5 md:mt-14 md:grid-cols-3"
-                stagger={0.05}
-                y={14}
-              >
+            <StaggerReveal as="section" stagger={0.11} y={36}>
+              <div data-motion-child>
+                <SectionHeading
+                  align="center"
+                  subtitle="Whether you own properties, help people find them, or provide essential services, RealityNG gives you the tools to get things done with confidence."
+                  title="Everything you need to make property easier"
+                />
+              </div>
+              <div className="mt-8 grid gap-5 md:mt-14 md:grid-cols-3">
                 {roleCards.map((card) => (
                   <div data-motion-child key={card.title}>
-                    <RoleCard card={card} onSelect={handleRoleSelect} />
+                    <RoleCard card={card} />
                   </div>
                 ))}
-              </StaggerReveal>
-            </section>
+              </div>
+            </StaggerReveal>
 
             <StaggerReveal
               className="relative min-h-[520px] overflow-hidden rounded-[2rem] bg-reality-brand-600 px-8 py-12 md:min-h-[717px] md:rounded-[3.5rem] md:px-[130px]"
-              stagger={0.06}
-              y={18}
+              stagger={0.11}
+              y={34}
             >
               <Image
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
                 fill
                 sizes="(min-width: 768px) 1328px, 100vw"
-                src="/home/cta-businessman.png"
+                src="/home/cta-businessman.webp"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-reality-brand-600 via-reality-brand-600/70 to-transparent mix-blend-multiply" />
               <div
@@ -640,18 +613,12 @@ export default function HomePage() {
                   Create an account to save properties, book viewings, and keep track of the ones
                   you are interested in.
                 </p>
-                <button
+                <Link
                   className={buttonClasses("realitySecondary", "mt-6 h-12 w-fit px-[18px]")}
-                  onClick={() =>
-                    openRoleSelection({
-                      actionLabel: "Create account",
-                      nextPath: "/onboarding/role-setup",
-                    })
-                  }
-                  type="button"
+                  href="/auth/sign-up?next=%2Fonboarding%2Frole-setup"
                 >
                   Get Started
-                </button>
+                </Link>
               </div>
             </StaggerReveal>
           </div>
@@ -666,10 +633,10 @@ function RailSkeleton({ title }: { title: string }) {
   return (
     <section aria-label={`${title} loading`}>
       <div className="h-20 max-w-lg animate-pulse rounded-[1rem] bg-reality-bg-muted" />
-      <div className="mt-12 flex gap-6 overflow-hidden">
+      <div className="mt-8 flex snap-x gap-6 overflow-x-auto pb-3 md:mt-12 2xl:grid 2xl:grid-cols-4 2xl:overflow-hidden 2xl:pb-0">
         {[1, 2, 3, 4].map((item) => (
           <div
-            className="h-[392px] w-[314px] shrink-0 animate-pulse rounded-[2rem] bg-reality-bg-muted"
+            className="h-[392px] w-[314px] shrink-0 snap-start animate-pulse rounded-[2rem] bg-reality-bg-muted xl:w-auto"
             key={item}
           />
         ))}

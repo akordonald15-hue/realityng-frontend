@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import PropertiesPage from "@/app/(public)/properties/page";
@@ -99,9 +100,9 @@ describe("PropertiesPage", () => {
       screen.getByRole("link", { name: "View Approved Lekki Apartment" }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Location")).toHaveValue("Lagos");
-    expect(screen.getByLabelText("Listing")).toHaveValue("rent");
-    expect(screen.getByLabelText("Type")).toHaveValue("apartment");
-    expect(screen.getByLabelText("Price range")).toHaveValue("5000000");
+    expect(screen.getByLabelText("Listing type")).toHaveTextContent("For rent");
+    expect(screen.getByLabelText("Property type")).toHaveTextContent("Apartment");
+    expect(screen.getByLabelText("Maximum price")).toHaveTextContent("Up to ₦5m");
 
     await waitFor(() =>
       expect(mocks.getPublicProperties).toHaveBeenCalledWith(
@@ -117,15 +118,19 @@ describe("PropertiesPage", () => {
   });
 
   it("updates supported filters in the query string", async () => {
+    const user = userEvent.setup();
     mockResults();
 
     renderWithQueryClient(<PropertiesPage />);
 
     fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Abuja" } });
-    fireEvent.change(screen.getByLabelText("Listing"), { target: { value: "sale" } });
-    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "duplex" } });
-    fireEvent.change(screen.getByLabelText("Price range"), { target: { value: "10000000" } });
-    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+    await user.click(screen.getByLabelText("Listing type"));
+    await user.click(screen.getByRole("option", { name: "For sale" }));
+    await user.click(screen.getByLabelText("Property type"));
+    await user.click(screen.getByRole("option", { name: "Duplex" }));
+    await user.click(screen.getByLabelText("Maximum price"));
+    await user.click(screen.getByRole("option", { name: "Up to ₦10m" }));
+    await user.click(screen.getByRole("button", { name: "Search" }));
 
     expect(mocks.replace).toHaveBeenLastCalledWith(
       "/properties?city=Abuja&property_type=duplex&listing_type=sale&max_price=10000000",

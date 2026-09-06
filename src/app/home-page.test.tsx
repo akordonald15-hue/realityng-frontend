@@ -120,4 +120,16 @@ describe("HomePage", () => {
 
     expect(screen.getByRole("button", { name: "Toggle navigation" })).toBeInTheDocument();
   });
+
+  it("links homepage role CTAs into the redesigned sign-up flow", () => {
+    renderWithQueryClient(<HomePage />);
+
+    expect(screen.getAllByRole("link", { name: "List your property" })[0]).toHaveAttribute(
+      "href",
+      "/auth/sign-up?role=landlord&next=%2Fproperties%2Fnew",
+    );
+    expect(
+      screen.getAllByRole("link", { name: "Get Started" }).map((link) => link.getAttribute("href")),
+    ).toContain("/auth/sign-up?role=artisan&next=%2Fservices");
+  });
 });

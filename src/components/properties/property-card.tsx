@@ -81,7 +81,7 @@ export function PropertyCard({ property, variant = "grid", className }: Property
             </span>
           ) : null}
         </div>
-        <div className="mt-5 space-y-1">
+        <div className="mt-5 space-y-2">
           <div className="flex items-center justify-between gap-3">
             <Link
               className="min-w-0 text-xl font-semibold leading-7 text-black transition hover:text-reality-brand-600 focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-reality-brand-500"
@@ -92,7 +92,7 @@ export function PropertyCard({ property, variant = "grid", className }: Property
             </Link>
             <Link
               aria-label={`View ${property.title}`}
-              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black transition hover:bg-reality-bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full text-black transition hover:bg-reality-bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
               href={`/properties/${property.slug}`}
             >
               <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 20 20">
@@ -106,13 +106,13 @@ export function PropertyCard({ property, variant = "grid", className }: Property
               </svg>
             </Link>
           </div>
-          <div className="flex items-start justify-between gap-3 text-base leading-6 text-black">
-            <div className="flex min-w-0 flex-wrap gap-x-2 gap-y-1">
+          <div className="flex items-start justify-between gap-x-4 gap-y-1 text-base leading-6 text-black">
+            <div className="flex min-w-0 flex-1 flex-wrap gap-x-2 gap-y-1">
               {facts.slice(0, 3).map((fact) => (
                 <span key={fact}>{fact}</span>
               ))}
             </div>
-            <span className="shrink-0 text-sm font-medium text-reality-text-muted">
+            <span className="ml-auto shrink-0 whitespace-nowrap text-sm font-medium text-reality-text-muted">
               For <span className="text-black">{formatListingType(property.listing_type)}</span>
             </span>
           </div>

@@ -7,6 +7,7 @@ import { gsap, registerGsapPlugins, useGSAP } from "@/lib/motion/gsap";
 import { staggerChildren } from "@/lib/motion/presets";
 
 type StaggerRevealProps = HTMLAttributes<HTMLDivElement> & {
+  as?: "div" | "section";
   childSelector?: string;
   children: ReactNode;
   disabled?: boolean;
@@ -18,12 +19,13 @@ type StaggerRevealProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 export function StaggerReveal({
+  as: Component = "div",
   childSelector = "[data-motion-child]",
   children,
   disabled = false,
   duration = staggerChildren.duration,
   stagger = staggerChildren.amount,
-  start = "top 86%",
+  start = "top 84%",
   trigger = "scroll",
   y = staggerChildren.y,
   ...props
@@ -54,14 +56,19 @@ export function StaggerReveal({
         return;
       }
 
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+      const revealY = isMobile ? Math.min(y, 24) : y;
+      const revealDuration = isMobile ? Math.min(duration, 0.72) : duration;
+      const revealStagger = isMobile ? Math.min(stagger, 0.08) : stagger;
+
       gsap.fromTo(
         childrenToReveal,
-        { autoAlpha: 0, y },
+        { autoAlpha: 0, y: revealY },
         {
           autoAlpha: 1,
-          duration,
+          duration: revealDuration,
           ease: staggerChildren.ease,
-          stagger,
+          stagger: revealStagger,
           y: 0,
           ...(trigger === "scroll"
             ? {
@@ -79,8 +86,8 @@ export function StaggerReveal({
   );
 
   return (
-    <div ref={scope} {...props}>
+    <Component ref={scope} {...props}>
       {children}
-    </div>
+    </Component>
   );
 }

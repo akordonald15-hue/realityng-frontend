@@ -13,7 +13,7 @@ import { StaggerReveal } from "@/components/motion/stagger-reveal";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { ListboxSelect } from "@/components/ui/listbox-select";
 import {
   getPublicProperties,
   propertyTypeOptions,
@@ -227,13 +227,12 @@ function PropertiesContent() {
             className={clsx(
               "rounded-[2rem]",
               selectedPropertyId === property.id &&
-                "ring-2 ring-reality-brand-500 ring-offset-4 ring-offset-white",
+                "ring-2 ring-reality-brand-500/45 ring-offset-2 ring-offset-white",
             )}
             data-motion-child
             id={`property-result-${property.id}`}
             key={property.id}
             onFocus={() => setSelectedPropertyId(property.id)}
-            onMouseEnter={() => setSelectedPropertyId(property.id)}
           >
             <PropertyCard className="w-full md:w-[314px]" property={property} variant="reality" />
           </div>
@@ -255,8 +254,8 @@ function PropertiesContent() {
         </section>
 
         <section className="mx-auto max-w-reality-wide px-4 pb-20 sm:px-6">
-          <div className="reality-reveal mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="grid w-full gap-3 md:grid-cols-[minmax(220px,299px)_174px_174px_174px_auto] md:items-end">
+          <div className="reality-reveal mb-10 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+            <div className="grid w-full gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,299px)_174px_174px_174px_auto] xl:items-end">
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
                 <span>Location</span>
                 <Input
@@ -273,54 +272,42 @@ function PropertiesContent() {
               </label>
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
                 <span>Type</span>
-                <Select
-                  onChange={(event) => updateDraft("property_type", event.target.value)}
+                <ListboxSelect
+                  aria-label="Property type"
+                  onChange={(value) => updateDraft("property_type", value)}
+                  options={propertyTypeSelectOptions()}
                   value={draftFilters.property_type ?? ""}
                   variant="reality"
-                >
-                  {propertyTypeSelectOptions().map((option) => (
-                    <option key={option.value || "any"} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
+                />
               </label>
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
                 <span>Listing</span>
-                <Select
-                  onChange={(event) => updateDraft("listing_type", event.target.value)}
+                <ListboxSelect
+                  aria-label="Listing type"
+                  onChange={(value) => updateDraft("listing_type", value)}
+                  options={listingTypeOptions}
                   value={draftFilters.listing_type ?? ""}
                   variant="reality"
-                >
-                  {listingTypeOptions.map((option) => (
-                    <option key={option.value || "any"} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
+                />
               </label>
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
                 <span>Price range</span>
-                <Select
-                  onChange={(event) => updateDraft("max_price", event.target.value)}
+                <ListboxSelect
+                  aria-label="Maximum price"
+                  onChange={(value) => updateDraft("max_price", value)}
+                  options={priceOptions}
                   value={draftFilters.max_price ?? ""}
                   variant="reality"
-                >
-                  {priceOptions.map((option) => (
-                    <option key={option.value || "any"} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
+                />
               </label>
-              <Button className="h-14 rounded-full px-7" onClick={applySearch} variant="reality">
+              <Button className="h-14 rounded-full px-7 md:col-span-2 xl:col-span-1" onClick={applySearch} variant="reality">
                 Search
               </Button>
             </div>
 
             <div
               aria-label="Property view"
-              className="hidden shrink-0 rounded-full border border-reality-border-secondary bg-white p-1 shadow-reality-xs md:flex"
+              className="hidden shrink-0 rounded-full border border-reality-border-secondary bg-white p-1 shadow-reality-xs xl:flex"
               role="group"
             >
               <button
@@ -363,19 +350,13 @@ function PropertiesContent() {
             </div>
             <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary md:w-48">
               <span>Sort</span>
-              <Select
-                onChange={(event) =>
-                  replaceRoute({ ...urlFilters, ordering: event.target.value || defaultOrdering })
-                }
+              <ListboxSelect
+                aria-label="Sort properties"
+                onChange={(value) => replaceRoute({ ...urlFilters, ordering: value || defaultOrdering })}
+                options={sortOptions}
                 value={urlFilters.ordering || defaultOrdering}
                 variant="reality"
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
+              />
             </label>
           </div>
 

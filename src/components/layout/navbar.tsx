@@ -122,7 +122,7 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
             : "sticky top-0 border-b border-reality-border-secondary bg-white/95 text-reality-text-primary",
         )}
       >
-        <nav className="mx-auto flex min-h-[72px] w-full max-w-reality items-center justify-between gap-5 px-5 sm:px-6 lg:min-h-[88px] lg:px-0">
+        <nav className="mx-auto flex min-h-[72px] w-full max-w-reality items-center justify-between gap-5 px-5 sm:px-6 lg:min-h-[88px] lg:px-6 2xl:px-0">
           <Link aria-label="RealityNG home" className="shrink-0" href="/">
             <BrandLogo className="h-8 w-auto object-contain" priority showTagline={false} />
           </Link>
@@ -199,6 +199,7 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
                   actionLabel="List property"
                   className={buttonClasses("realitySecondary", "h-12")}
                   href="/properties/new"
+                  role="landlord"
                 >
                   List a Property
                 </ProtectedActionLink>
@@ -317,6 +318,7 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
                   className={buttonClasses("realitySecondary", "w-full justify-center")}
                   href="/properties/new"
                   onClick={() => setIsOpen(false)}
+                  role="landlord"
                 >
                   List a Property
                 </ProtectedActionLink>
@@ -363,6 +365,7 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
             actionLabel="List property"
             className="rounded-sm py-2 transition hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
             href="/properties/new"
+            role="landlord"
           >
             List a Property
           </ProtectedActionLink>
@@ -487,6 +490,7 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
             className="rounded-md px-3 py-2 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
             href="/properties/new"
             onClick={() => setIsOpen(false)}
+            role="landlord"
           >
             List a Property
           </ProtectedActionLink>

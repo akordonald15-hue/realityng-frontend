@@ -15,7 +15,7 @@ type ScrollRevealProps = HTMLAttributes<HTMLDivElement> & {
 export function ScrollReveal({
   children,
   disabled = false,
-  start = "top 84%",
+  start = "top 82%",
   ...props
 }: ScrollRevealProps) {
   const scope = useRef<HTMLDivElement>(null);
@@ -39,14 +39,21 @@ export function ScrollReveal({
         return;
       }
 
-      gsap.fromTo(element, fadeUp.from, {
-        ...fadeUp.to,
-        scrollTrigger: {
-          once: true,
-          start,
-          trigger: element,
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
+      gsap.fromTo(
+        element,
+        { ...fadeUp.from, y: isMobile ? 24 : fadeUp.from.y },
+        {
+          ...fadeUp.to,
+          duration: isMobile ? 0.72 : fadeUp.to.duration,
+          scrollTrigger: {
+            once: true,
+            start,
+            trigger: element,
+          },
         },
-      });
+      );
     },
     { dependencies: [disabled, start], scope },
   );
