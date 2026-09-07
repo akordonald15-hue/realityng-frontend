@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { clsx } from "clsx";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
@@ -57,8 +57,18 @@ function ChevronDownIcon({ className }: { className?: string }) {
   );
 }
 
-const realityGroups = [
+type RealityDropdownId = "rent" | "sale" | "company";
+
+type RealityNavGroup = {
+  href: string;
+  id?: RealityDropdownId;
+  label: string;
+  links?: Array<{ href: string; label: string }>;
+};
+
+const realityGroups: RealityNavGroup[] = [
   {
+    id: "rent",
     label: "For Rent",
     href: "/properties?listing_type=rent",
     links: [
@@ -67,6 +77,7 @@ const realityGroups = [
     ],
   },
   {
+    id: "sale",
     label: "For Sale",
     href: "/properties?listing_type=sale",
     links: [
@@ -80,6 +91,7 @@ const realityGroups = [
     href: "/services",
   },
   {
+    id: "company",
     label: "Company",
     href: "/about",
     links: [
@@ -102,6 +114,9 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const isLoading = auth?.isLoading ?? false;
   const [isOpen, setIsOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<RealityDropdownId | null>(null);
+  const realityNavRef = useRef<HTMLDivElement>(null);
+  const closeDropdownTimerRef = useRef<number | null>(null);
   const protectedAccountLinks = accountLinks.map((link) => ({
     ...link,
     href: isAuthenticated ? link.href : `/auth/sign-up?next=${encodeURIComponent(link.href)}`,
@@ -111,6 +126,65 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
     const targetPath = href.split("?")[0].split("#")[0];
     return pathname === targetPath;
   }
+
+  function cancelDropdownClose() {
+    if (closeDropdownTimerRef.current) {
+      window.clearTimeout(closeDropdownTimerRef.current);
+      closeDropdownTimerRef.current = null;
+    }
+  }
+
+  function openDropdown(dropdown: RealityDropdownId | null) {
+    cancelDropdownClose();
+    setActiveDropdown(dropdown);
+  }
+
+  function closeDropdownNow() {
+    cancelDropdownClose();
+    setActiveDropdown(null);
+  }
+
+  function scheduleDropdownClose() {
+    cancelDropdownClose();
+    closeDropdownTimerRef.current = window.setTimeout(() => {
+      setActiveDropdown(null);
+      closeDropdownTimerRef.current = null;
+    }, 140);
+  }
+
+  useEffect(() => {
+    closeDropdownNow();
+    setIsOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  useEffect(() => {
+    if (variant !== "reality") {
+      return;
+    }
+
+    function closeOnOutsideClick(event: MouseEvent) {
+      if (!realityNavRef.current?.contains(event.target as Node)) {
+        closeDropdownNow();
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeDropdownNow();
+      }
+    }
+
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      cancelDropdownClose();
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variant]);
 
   if (variant === "reality") {
     return (
@@ -126,26 +200,64 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
           <Link aria-label="RealityNG home" className="shrink-0" href="/">
             <BrandLogo className="h-8 w-auto object-contain" priority showTagline={false} />
           </Link>
-          <div className="hidden flex-1 items-center justify-center gap-[39px] text-sm font-normal lg:flex">
+          <div
+            className="hidden flex-1 items-center justify-center gap-[39px] text-sm font-normal lg:flex"
+            onMouseEnter={cancelDropdownClose}
+            onMouseLeave={scheduleDropdownClose}
+            onPointerEnter={cancelDropdownClose}
+            onPointerLeave={scheduleDropdownClose}
+            ref={realityNavRef}
+          >
             {realityGroups.map((group) =>
               group.links ? (
-                <details className="group relative" key={group.label}>
-                  <summary className="flex list-none items-center gap-2 rounded-sm py-2 transition hover:cursor-pointer hover:text-reality-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500">
+                <div
+                  className="relative"
+                  key={group.label}
+                  onFocus={() => openDropdown(group.id ?? null)}
+                  onMouseEnter={() => openDropdown(group.id ?? null)}
+                  onPointerEnter={() => openDropdown(group.id ?? null)}
+                >
+                  <button
+                    aria-expanded={activeDropdown === group.id}
+                    aria-haspopup="menu"
+                    className="flex items-center gap-2 rounded-sm py-2 transition hover:cursor-pointer hover:text-reality-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+                    onClick={() => {
+                      cancelDropdownClose();
+                      setActiveDropdown((current) =>
+                        current === group.id ? null : group.id ?? null,
+                      );
+                    }}
+                    type="button"
+                  >
                     <span>{group.label}</span>
-                    <ChevronDownIcon className="h-4 w-4 transition group-open:rotate-180" />
-                  </summary>
-                  <div className="reality-menu absolute left-1/2 top-full mt-3 w-60 -translate-x-1/2 rounded-reality border border-reality-border-secondary bg-white p-2 shadow-reality-sm">
-                    {group.links.map((link) => (
-                      <Link
-                        className="block rounded-[8px] px-3 py-2 text-sm text-reality-text-secondary transition hover:bg-reality-bg-muted hover:text-reality-text-primary"
-                        href={link.href}
-                        key={link.href}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </div>
-                </details>
+                    <ChevronDownIcon
+                      className={clsx(
+                        "h-4 w-4 transition",
+                        activeDropdown === group.id && "rotate-180",
+                      )}
+                    />
+                  </button>
+                  {activeDropdown === group.id ? (
+                    <div
+                      className="reality-menu absolute left-1/2 top-full z-50 mt-3 w-60 -translate-x-1/2 rounded-reality border border-reality-border-secondary bg-white p-2 shadow-reality-sm"
+                      onMouseEnter={cancelDropdownClose}
+                      onPointerEnter={cancelDropdownClose}
+                      role="menu"
+                    >
+                      {group.links.map((link) => (
+                        <Link
+                          className="block rounded-[8px] px-3 py-2 text-sm text-reality-text-secondary transition hover:bg-reality-bg-muted hover:text-reality-text-primary"
+                          href={link.href}
+                          key={link.href}
+                          onClick={closeDropdownNow}
+                          role="menuitem"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               ) : (
                 <Link
                   className="rounded-sm py-2 transition hover:text-reality-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
@@ -160,7 +272,7 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
           <div className="hidden items-center justify-end gap-[10px] text-sm font-semibold lg:flex">
             {!isLoading && isAuthenticated ? (
               <>
-                <NotificationBell />
+                <NotificationBell variant="reality" />
                 <Link
                   className="rounded-full border border-reality-border-primary bg-white px-[18px] py-3 text-reality-text-secondary shadow-reality-xs transition hover:bg-reality-bg-subtle"
                   href="/saved-properties"

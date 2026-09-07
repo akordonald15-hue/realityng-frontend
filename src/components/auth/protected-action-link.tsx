@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { AnchorHTMLAttributes } from "react";
+import { useCallback } from "react";
 
+import { useRealityAuthModal } from "@/components/auth/reality-auth-modal";
 import { useOptionalAuth } from "@/providers/auth-provider";
 
 type ProtectedActionLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
@@ -21,7 +24,11 @@ export function ProtectedActionLink({
   ...props
 }: ProtectedActionLinkProps) {
   const auth = useOptionalAuth();
-  void actionLabel;
+  const router = useRouter();
+  const { requireAuth } = useRealityAuthModal();
+  const continueToHref = useCallback(() => {
+    router.push(href);
+  }, [href, router]);
 
   if (auth?.isAuthenticated) {
     return (
@@ -31,16 +38,21 @@ export function ProtectedActionLink({
     );
   }
 
-  const signUpParams = new URLSearchParams({
-    next: href || "/",
-    ...(role ? { role } : {}),
-  });
-
   return (
     <Link
-      href={`/auth/sign-up?${signUpParams.toString()}`}
+      href={href}
       onClick={(event) => {
         onClick?.(event);
+        if (event.defaultPrevented) {
+          return;
+        }
+        event.preventDefault();
+        void requireAuth({
+          actionLabel,
+          nextPath: href || "/",
+          onAuthenticated: continueToHref,
+          role,
+        });
       }}
       {...props}
     >

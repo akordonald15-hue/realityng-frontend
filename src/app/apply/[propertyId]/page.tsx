@@ -364,7 +364,7 @@ function ApplicationForm() {
 
   if (mutation.isSuccess) {
     return (
-      <main className="flex min-h-[calc(100vh-88px)] items-center justify-center bg-reality-bg-primary px-5 py-12">
+      <main className="flex min-h-[calc(100vh-88px)] items-center justify-center bg-reality-bg-page px-5 py-12">
         <Card
           aria-live="polite"
           className="w-full max-w-[448px] border-0 px-8 py-12 sm:px-12"
@@ -399,7 +399,7 @@ function ApplicationForm() {
     Boolean(propertySlug) && !propertyQuery.isLoading && propertyQuery.isError;
 
   return (
-    <main className="bg-reality-bg-primary pb-16 pt-6 text-reality-text-primary lg:pb-24 lg:pt-8">
+    <main className="bg-reality-bg-page pb-16 pt-6 text-reality-text-primary lg:pb-24 lg:pt-8">
       <PageContainer>
         <Link
           className="inline-flex items-center gap-1 text-sm font-medium text-reality-text-tertiary transition hover:text-reality-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"

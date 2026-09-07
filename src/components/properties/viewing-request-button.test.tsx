@@ -7,7 +7,8 @@ import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   createViewing: vi.fn(),
-  openRoleSelection: vi.fn(),
+  requireAuth: vi.fn(),
+  isAuthenticated: true,
 }));
 
 vi.mock("@/lib/api/viewings", async () => {
@@ -24,13 +25,13 @@ vi.mock("@/lib/api/viewings", async () => {
 
 vi.mock("@/providers/auth-provider", () => ({
   useOptionalAuth: () => ({
-    isAuthenticated: true,
+    isAuthenticated: mocks.isAuthenticated,
   }),
 }));
 
-vi.mock("@/components/auth/role-selection-modal", () => ({
-  useRoleSelection: () => ({
-    openRoleSelection: mocks.openRoleSelection,
+vi.mock("@/components/auth/reality-auth-modal", () => ({
+  useRealityAuthModal: () => ({
+    requireAuth: mocks.requireAuth,
   }),
 }));
 
@@ -105,4 +106,24 @@ describe("ViewingRequestButton", () => {
     },
     10000,
   );
+
+  it("opens the Reality auth modal for anonymous users", async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, "", "/");
+    mocks.isAuthenticated = false;
+    mocks.requireAuth.mockResolvedValueOnce(false);
+
+    renderWithQueryClient(<ViewingRequestButton inquiryId="inquiry-1" />);
+
+    await user.click(screen.getByRole("button", { name: "Request viewing" }));
+
+    expect(mocks.requireAuth).toHaveBeenCalledWith({
+      actionLabel: "Request viewing",
+      nextPath: "/",
+      onAuthenticated: expect.any(Function),
+      role: "buyer",
+    });
+
+    mocks.isAuthenticated = true;
+  });
 });

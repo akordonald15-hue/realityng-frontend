@@ -187,7 +187,7 @@ function HeroSearch() {
         onChange={(value) => setMode(value as ListingType)}
         value={mode}
       />
-      <div className="grid w-full rounded-[1.75rem] bg-[#062820]/95 p-1 shadow-[0_18px_45px_rgba(0,0,0,0.18)] ring-1 ring-white/10 backdrop-blur md:h-16 md:grid-cols-[1fr_1fr_1fr_56px] md:rounded-full">
+      <div className="relative grid w-full overflow-visible rounded-[1.75rem] bg-[#062820]/95 p-1 shadow-[0_18px_45px_rgba(0,0,0,0.18)] ring-1 ring-white/10 backdrop-blur md:h-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_56px] md:rounded-full">
         <SearchField icon={MapPinIcon} label="Location">
           <input
             aria-label="Search location"
@@ -243,7 +243,7 @@ function SearchField({
   label: string;
 }) {
   return (
-    <div className="flex h-14 items-center gap-3 rounded-[1.35rem] bg-[#0a3b2e] px-4 text-left transition focus-within:bg-[#0d4637] focus-within:ring-1 focus-within:ring-white/45 md:rounded-none md:bg-transparent md:px-6 md:focus-within:bg-white/5 md:[&:not(:last-of-type)]:border-r md:[&:not(:last-of-type)]:border-white/10">
+    <div className="flex h-14 min-w-0 items-center gap-3 rounded-[1.35rem] bg-[#0a3b2e] px-4 text-left transition focus-within:bg-[#0d4637] md:rounded-none md:bg-transparent md:px-6 md:focus-within:bg-white/[0.04] md:[&:not(:last-of-type)]:border-r md:[&:not(:last-of-type)]:border-white/10">
       <Icon className="size-4 shrink-0 text-white" />
       <span className="grid min-w-0 flex-1 gap-0.5">
         <span className="text-xs font-medium leading-[18px] text-white">{label}</span>

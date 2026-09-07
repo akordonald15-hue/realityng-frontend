@@ -4,11 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import { useEffect, useState } from "react";
 
+import { useRealityAuthModal } from "@/components/auth/reality-auth-modal";
 import { Button } from "@/components/ui/button";
 import { createFavorite, deleteFavorite } from "@/lib/api/properties";
 import { getAccessToken } from "@/lib/auth/token-storage";
 import { useOptionalAuth } from "@/providers/auth-provider";
-import { useRoleSelection } from "@/components/auth/role-selection-modal";
 
 type FavoriteButtonProps = {
   propertyId: string;
@@ -45,7 +45,7 @@ export function FavoriteButton({
   variant = "legacy",
 }: FavoriteButtonProps) {
   const auth = useOptionalAuth();
-  const { openRoleSelection } = useRoleSelection();
+  const { requireAuth } = useRealityAuthModal();
   const queryClient = useQueryClient();
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
 
@@ -82,9 +82,11 @@ export function FavoriteButton({
   function toggleFavorite() {
     if (!auth?.isAuthenticated && !getAccessToken()) {
       const nextPath = propertySlug ? `/properties/${propertySlug}` : "/properties";
-      openRoleSelection({
+      void requireAuth({
         actionLabel: "Save property",
         nextPath,
+        onAuthenticated: () => mutation.mutate(true),
+        role: "buyer",
       });
       return;
     }

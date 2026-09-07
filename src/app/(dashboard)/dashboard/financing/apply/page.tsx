@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { PageContainer } from "@/components/layout/page-container";
 import { FinancingProductCard } from "@/components/payments/financing-widgets";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -80,34 +81,36 @@ export default function FinancingApplyPage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto max-w-5xl p-4">
-        <SectionHeader
-          title="Apply for financing"
-          description="Choose a partner product and create a private application draft."
-        />
+      <main className="min-h-screen bg-reality-bg-muted py-8 text-reality-text-primary sm:py-14">
+        <PageContainer className="max-w-5xl">
+          <SectionHeader
+            title="Apply for financing"
+            description="Choose a partner product and create a private application draft."
+          />
 
-        <section className="mt-6 grid gap-3">
-          {productsQuery.data?.map((product) => (
-            <FinancingProductCard
-              key={product.id}
-              product={product}
-              onSelect={() => setSelectedProduct(product)}
-            />
-          ))}
-        </section>
+          <section className="mt-6 grid gap-3">
+            {productsQuery.data?.map((product) => (
+              <FinancingProductCard
+                key={product.id}
+                product={product}
+                onSelect={() => setSelectedProduct(product)}
+              />
+            ))}
+          </section>
 
-        <Card className="mt-6 p-4">
-          <h2 className="text-lg font-semibold text-brand-text">Application details</h2>
-          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={submit}>
-            <label className="grid gap-1 text-sm text-brand-text">
+          <Card className="mt-6 rounded-[24px] p-5 sm:p-6" variant="reality">
+            <h2 className="text-lg font-semibold text-reality-text-primary">Application details</h2>
+            <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
+              <label className="grid gap-2 text-sm font-medium text-reality-text-secondary">
               Amount requested
               <Input
                 required
                 value={form.requested_amount}
                 onChange={(e) => setForm({ ...form, requested_amount: e.target.value })}
+                variant="reality"
               />
             </label>
-            <label className="grid gap-1 text-sm text-brand-text">
+            <label className="grid gap-2 text-sm font-medium text-reality-text-secondary">
               Tenor
               <Input
                 min={1}
@@ -116,69 +119,76 @@ export default function FinancingApplyPage() {
                 onChange={(e) =>
                   setForm({ ...form, preferred_tenor_months: Number(e.target.value) })
                 }
+                variant="reality"
               />
             </label>
-            <label className="grid gap-1 text-sm text-brand-text">
+            <label className="grid gap-2 text-sm font-medium text-reality-text-secondary">
               Employment status
               <Select
                 value={form.employment_status}
                 onChange={(e) => setForm({ ...form, employment_status: e.target.value })}
+                variant="reality"
               >
                 <option value="employed">Employed</option>
                 <option value="self_employed">Self-employed</option>
                 <option value="business_owner">Business owner</option>
               </Select>
             </label>
-            <label className="grid gap-1 text-sm text-brand-text">
+            <label className="grid gap-2 text-sm font-medium text-reality-text-secondary">
               Monthly income band
               <Input
                 required
                 value={form.monthly_income_band}
                 onChange={(e) => setForm({ ...form, monthly_income_band: e.target.value })}
+                variant="reality"
               />
             </label>
-            <label className="grid gap-1 text-sm text-brand-text">
+            <label className="grid gap-2 text-sm font-medium text-reality-text-secondary">
               State
               <Input
                 required
                 value={form.state}
                 onChange={(e) => setForm({ ...form, state: e.target.value })}
+                variant="reality"
               />
             </label>
-            <label className="grid gap-1 text-sm text-brand-text">
+            <label className="grid gap-2 text-sm font-medium text-reality-text-secondary">
               City
               <Input
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
+                variant="reality"
               />
             </label>
-            <label className="grid gap-1 text-sm text-brand-text sm:col-span-2">
+            <label className="grid gap-2 text-sm font-medium text-reality-text-secondary sm:col-span-2">
               Purpose
               <textarea
                 required
-                className="min-h-24 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-brand-text"
+                className="min-h-24 rounded-[12px] border border-reality-border-secondary bg-white p-3 text-sm text-reality-text-primary shadow-reality-sm outline-none transition focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                 value={form.purpose}
                 onChange={(e) => setForm({ ...form, purpose: e.target.value })}
               />
             </label>
-            <label className="grid gap-1 text-sm text-brand-text sm:col-span-2">
+            <label className="grid gap-2 text-sm font-medium text-reality-text-secondary sm:col-span-2">
               Message to RealityNG operations
               <textarea
-                className="min-h-20 rounded-md border border-white/10 bg-white/5 p-3 text-sm text-brand-text"
+                className="min-h-20 rounded-[12px] border border-reality-border-secondary bg-white p-3 text-sm text-reality-text-primary shadow-reality-sm outline-none transition focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                 value={form.applicant_message}
                 onChange={(e) => setForm({ ...form, applicant_message: e.target.value })}
               />
             </label>
-            {error ? <p className="text-sm text-red-300 sm:col-span-2">{error}</p> : null}
+            {error ? <p className="text-sm text-red-600 sm:col-span-2">{error}</p> : null}
             <Button
-              className="sm:col-span-2"
+              className="h-12 sm:col-span-2"
               disabled={!selectedProduct || createMutation.isPending}
               type="submit"
+              variant="reality"
             >
               {createMutation.isPending ? "Creating..." : "Create financing draft"}
             </Button>
           </form>
         </Card>
+        </PageContainer>
       </main>
     </ProtectedRoute>
   );

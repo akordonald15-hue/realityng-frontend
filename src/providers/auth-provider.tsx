@@ -14,7 +14,7 @@ type AuthContextValue = {
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshSession: () => Promise<void>;
-  signIn: (payload: LoginPayload, redirectTo?: string) => Promise<void>;
+  signIn: (payload: LoginPayload, redirectTo?: string | null) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<User>;
   signOut: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -44,11 +44,13 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   }, [refreshSession]);
 
   const signIn = useCallback(
-    async (payload: LoginPayload, redirectTo?: string) => {
+    async (payload: LoginPayload, redirectTo?: string | null) => {
       const response = await loginUser(payload);
       setTokens(response.access, response.refresh);
       setUser(response.user);
-      router.push(redirectTo || getRoleDashboardPath(response.user));
+      if (redirectTo !== null) {
+        router.push(redirectTo || getRoleDashboardPath(response.user));
+      }
     },
     [router],
   );

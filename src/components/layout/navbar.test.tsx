@@ -84,6 +84,43 @@ describe("Navbar", () => {
     );
   });
 
+  it("keeps only one desktop Reality dropdown open while switching menus", async () => {
+    const user = userEvent.setup();
+    render(<Navbar variant="reality" />);
+
+    const rent = screen.getByRole("button", { name: /For Rent/i });
+    const sale = screen.getByRole("button", { name: /For Sale/i });
+    const company = screen.getByRole("button", { name: /Company/i });
+
+    await user.hover(rent);
+
+    expect(rent).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("menuitem", { name: "Homes for rent" })).toBeVisible();
+    expect(screen.queryByRole("menuitem", { name: "Homes for sale" })).not.toBeInTheDocument();
+
+    await user.hover(sale);
+
+    expect(rent).toHaveAttribute("aria-expanded", "false");
+    expect(sale).toHaveAttribute("aria-expanded", "true");
+    expect(screen.queryByRole("menuitem", { name: "Homes for rent" })).not.toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Homes for sale" })).toBeVisible();
+
+    await user.hover(company);
+
+    expect(sale).toHaveAttribute("aria-expanded", "false");
+    expect(company).toHaveAttribute("aria-expanded", "true");
+    expect(screen.queryByRole("menuitem", { name: "Homes for sale" })).not.toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "About RealityNG" })).toBeVisible();
+
+    const openMenus = screen.getAllByRole("menu");
+    expect(openMenus).toHaveLength(1);
+
+    await user.keyboard("{Escape}");
+
+    expect(company).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("menuitem", { name: "About RealityNG" })).not.toBeInTheDocument();
+  });
+
   it("renders authenticated Reality account navigation with existing sign-out behavior", async () => {
     const user = userEvent.setup();
     authMocks.auth = {

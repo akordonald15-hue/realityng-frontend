@@ -61,16 +61,16 @@ export function ListboxSelect({
   }
 
   return (
-    <div className={clsx("relative", className)}>
+    <div className={clsx(variant === "hero" ? "relative max-md:static" : "relative", className)}>
       <button
         aria-controls={listboxId}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={ariaLabel ?? label}
         className={clsx(
-          "flex w-full min-w-0 items-center justify-between gap-2 bg-transparent text-left text-sm outline-none transition focus-visible:rounded-sm focus-visible:ring-2",
+          "flex w-full min-w-0 items-center justify-between gap-2 bg-transparent text-left text-sm outline-none transition focus-visible:ring-2",
           variant === "hero"
-            ? "h-5 p-0 text-white/75 hover:text-white focus-visible:ring-white/70"
+            ? "h-5 rounded-[6px] p-0 text-white/75 hover:text-white focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820]"
             : "h-14 rounded-[12px] border border-reality-border-secondary bg-white px-4 text-reality-text-primary shadow-reality-sm hover:border-reality-brand-500 focus-visible:ring-reality-brand-500/20",
         )}
         onBlur={(event) => {
@@ -122,7 +122,10 @@ export function ListboxSelect({
       </button>
       {isOpen ? (
         <div
-          className="reality-menu absolute left-0 top-full z-50 mt-4 w-56 overflow-hidden rounded-[16px] border border-reality-border-secondary bg-white p-1.5 text-reality-text-primary shadow-reality-sm"
+          className={clsx(
+            "reality-menu absolute left-0 top-full z-50 max-h-72 overflow-y-auto rounded-[16px] border border-reality-border-secondary bg-white p-1.5 text-reality-text-primary shadow-reality-sm",
+            variant === "hero" ? "mt-3 w-full min-w-56 max-md:top-full" : "mt-4 w-56",
+          )}
           onBlur={(event) => {
             if (!event.currentTarget.parentElement?.contains(event.relatedTarget)) {
               setIsOpen(false);

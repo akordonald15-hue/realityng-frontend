@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({
   useParams: () => ({ slug: "bright-spark-electrical" }),
   usePathname: () => "/services/providers/bright-spark-electrical",
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 vi.mock("@/lib/api/services", async () => {

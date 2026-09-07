@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 
-import { useRoleSelection } from "@/components/auth/role-selection-modal";
+import { useRealityAuthModal } from "@/components/auth/reality-auth-modal";
 import { Button } from "@/components/ui/button";
 import { ModalShell } from "@/components/ui/modal-shell";
 import { Select } from "@/components/ui/select";
@@ -38,7 +38,7 @@ export function ShowInterestButton({
   const auth = useOptionalAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { openRoleSelection } = useRoleSelection();
+  const { requireAuth } = useRealityAuthModal();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasShownInterest, setHasShownInterest] = useState(false);
   const [inquiryType, setInquiryType] = useState<InquiryType>(() =>
@@ -79,9 +79,11 @@ export function ShowInterestButton({
 
   function showInterest() {
     if (!auth?.isAuthenticated) {
-      openRoleSelection({
+      void requireAuth({
         actionLabel: "Show interest",
         nextPath: `/properties/${propertySlug}?action=show-interest`,
+        onAuthenticated: () => setIsModalOpen(true),
+        role: "buyer",
       });
       return;
     }

@@ -312,21 +312,89 @@ function PropertyShowcase({
 }
 
 function SimilarProperties({ currentProperty }: { currentProperty: Property }) {
-  const similarQuery = useQuery({
-    queryKey: ["public-properties", "similar", currentProperty.id],
+  const primarySimilarQuery = useQuery({
+    queryKey: ["public-properties", "similar", currentProperty.id, "type"],
     queryFn: () =>
       getPublicProperties({
-        city: currentProperty.city,
         property_type: currentProperty.property_type,
         listing_type: currentProperty.listing_type,
         ordering: "-featured",
       }),
   });
-  const similar = (similarQuery.data?.results ?? [])
+  const fallbackSimilarQuery = useQuery({
+    queryKey: ["public-properties", "similar", currentProperty.id, "listing"],
+    queryFn: () =>
+      getPublicProperties({
+        listing_type: currentProperty.listing_type,
+        ordering: "-featured",
+      }),
+    enabled:
+      !primarySimilarQuery.isLoading &&
+      (primarySimilarQuery.data?.results ?? []).filter(
+        (property) => property.id !== currentProperty.id,
+      ).length === 0,
+  });
+  const broadSimilarQuery = useQuery({
+    queryKey: ["public-properties", "similar", currentProperty.id, "all"],
+    queryFn: () =>
+      getPublicProperties({
+        ordering: "-featured",
+      }),
+    enabled:
+      !fallbackSimilarQuery.isLoading &&
+      !primarySimilarQuery.isLoading &&
+      (primarySimilarQuery.data?.results ?? []).filter(
+        (property) => property.id !== currentProperty.id,
+      ).length === 0 &&
+      (fallbackSimilarQuery.data?.results ?? []).filter(
+        (property) => property.id !== currentProperty.id,
+      ).length === 0,
+  });
+  const sourceResults =
+    (primarySimilarQuery.data?.results ?? []).filter(
+      (property) => property.id !== currentProperty.id,
+    ).length > 0
+      ? primarySimilarQuery.data?.results
+      : (fallbackSimilarQuery.data?.results ?? []).filter(
+            (property) => property.id !== currentProperty.id,
+          ).length > 0
+        ? fallbackSimilarQuery.data?.results
+        : broadSimilarQuery.data?.results;
+  const similar = [...(sourceResults ?? [])]
     .filter((property) => property.id !== currentProperty.id)
+    .sort((a, b) => {
+      const aScore =
+        Number(a.city === currentProperty.city) +
+        Number(a.state === currentProperty.state) +
+        Number(a.neighborhood === currentProperty.neighborhood);
+      const bScore =
+        Number(b.city === currentProperty.city) +
+        Number(b.state === currentProperty.state) +
+        Number(b.neighborhood === currentProperty.neighborhood);
+      return bScore - aScore;
+    })
     .slice(0, 4);
 
-  if (similar.length === 0) {
+  if (primarySimilarQuery.isLoading || fallbackSimilarQuery.isLoading || broadSimilarQuery.isLoading) {
+    return (
+      <section>
+        <h2 className="text-lg font-medium text-black">Similar properties</h2>
+        <div className="mt-8 flex gap-6 overflow-hidden">
+          {[0, 1].map((item) => (
+            <div
+              className="h-[380px] w-[314px] shrink-0 animate-pulse rounded-[32px] bg-reality-bg-muted"
+              key={item}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (
+    (primarySimilarQuery.isError && fallbackSimilarQuery.isError && broadSimilarQuery.isError) ||
+    similar.length === 0
+  ) {
     return null;
   }
 
