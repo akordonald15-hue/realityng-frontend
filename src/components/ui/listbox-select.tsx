@@ -1,6 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
+import { createPortal } from "react-dom";
 import { useId, useRef, useState } from "react";
 
 type ListboxSelectOption = {
@@ -13,6 +14,7 @@ type ListboxSelectProps = {
   className?: string;
   label?: string;
   onChange: (value: string) => void;
+  onOpenChange?: (isOpen: boolean) => void;
   options: ListboxSelectOption[];
   placeholder?: string;
   value: string;
@@ -24,6 +26,7 @@ export function ListboxSelect({
   className,
   label,
   onChange,
+  onOpenChange,
   options,
   placeholder = "Select",
   value,
@@ -41,8 +44,13 @@ export function ListboxSelect({
   const selected = options.find((option) => option.value === value);
   const listboxId = `${id}-listbox`;
 
+  function updateOpen(nextOpen: boolean) {
+    setIsOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  }
+
   function closeAndFocus() {
-    setIsOpen(false);
+    updateOpen(false);
     buttonRef.current?.focus();
   }
 
@@ -60,6 +68,67 @@ export function ListboxSelect({
     setActiveIndex((current) => (current + delta + options.length) % options.length);
   }
 
+  function containsInteractiveTarget(target: EventTarget | null) {
+    if (!(target instanceof Node)) {
+      return false;
+    }
+
+    return Boolean(buttonRef.current?.contains(target) || document.getElementById(listboxId)?.contains(target));
+  }
+
+  const menu = isOpen ? (
+    <div
+      className={clsx(
+        "border border-reality-border-secondary bg-white text-reality-text-primary shadow-[0_20px_45px_rgba(3,37,31,0.22)] ring-1 ring-black/5",
+        variant === "hero"
+          ? "fixed left-1/2 top-[58%] z-50 w-[min(560px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-[24px] p-2.5 max-md:top-1/2 max-md:w-[calc(100vw-32px)]"
+          : "reality-menu absolute left-0 top-full z-50 mt-4 max-h-80 w-56 overflow-y-auto rounded-[16px] p-1.5",
+      )}
+      onBlur={(event) => {
+        if (!containsInteractiveTarget(event.relatedTarget)) {
+          updateOpen(false);
+        }
+      }}
+      role="presentation"
+    >
+      <div
+        aria-activedescendant={`${id}-option-${activeIndex}`}
+        className={clsx(variant === "hero" && "grid grid-cols-2 gap-1.5 sm:grid-cols-3")}
+        id={listboxId}
+        role="listbox"
+      >
+        {options.map((option, index) => {
+          const isSelected = option.value === value;
+          const isActive = index === activeIndex;
+          return (
+            <button
+              aria-selected={isSelected}
+              className={clsx(
+                "flex w-full items-center text-left text-sm transition focus:outline-none",
+                variant === "hero"
+                  ? "min-h-11 justify-center rounded-[16px] px-3 text-center font-medium"
+                  : "min-h-10 rounded-[12px] px-3",
+                isSelected
+                  ? "bg-reality-brand-500 text-white"
+                  : "text-reality-text-secondary hover:bg-reality-bg-muted hover:text-reality-text-primary",
+                isActive && !isSelected && "bg-reality-bg-muted text-reality-text-primary",
+              )}
+              id={`${id}-option-${index}`}
+              key={option.value || "empty"}
+              onClick={() => choose(index)}
+              onMouseEnter={() => setActiveIndex(index)}
+              role="option"
+              tabIndex={-1}
+              type="button"
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className={clsx(variant === "hero" ? "relative max-md:static" : "relative", className)}>
       <button
@@ -74,16 +143,16 @@ export function ListboxSelect({
             : "h-14 rounded-[12px] border border-reality-border-secondary bg-white px-4 text-reality-text-primary shadow-reality-sm hover:border-reality-brand-500 focus-visible:ring-reality-brand-500/20",
         )}
         onBlur={(event) => {
-          if (!event.currentTarget.parentElement?.contains(event.relatedTarget)) {
-            setIsOpen(false);
+          if (!containsInteractiveTarget(event.relatedTarget)) {
+            updateOpen(false);
           }
         }}
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() => updateOpen(!isOpen)}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown") {
             event.preventDefault();
             if (!isOpen) {
-              setIsOpen(true);
+              updateOpen(true);
             } else {
               move(1);
             }
@@ -91,7 +160,7 @@ export function ListboxSelect({
           if (event.key === "ArrowUp") {
             event.preventDefault();
             if (!isOpen) {
-              setIsOpen(true);
+              updateOpen(true);
             } else {
               move(-1);
             }
@@ -101,7 +170,7 @@ export function ListboxSelect({
             if (isOpen) {
               choose(activeIndex);
             } else {
-              setIsOpen(true);
+              updateOpen(true);
             }
           }
           if (event.key === "Escape") {
@@ -120,48 +189,7 @@ export function ListboxSelect({
           v
         </span>
       </button>
-      {isOpen ? (
-        <div
-          className={clsx(
-            "reality-menu absolute left-0 top-full z-50 max-h-72 overflow-y-auto rounded-[16px] border border-reality-border-secondary bg-white p-1.5 text-reality-text-primary shadow-reality-sm",
-            variant === "hero" ? "mt-3 w-full min-w-56 max-md:top-full" : "mt-4 w-56",
-          )}
-          onBlur={(event) => {
-            if (!event.currentTarget.parentElement?.contains(event.relatedTarget)) {
-              setIsOpen(false);
-            }
-          }}
-          role="presentation"
-        >
-          <div aria-activedescendant={`${id}-option-${activeIndex}`} id={listboxId} role="listbox">
-            {options.map((option, index) => {
-              const isSelected = option.value === value;
-              const isActive = index === activeIndex;
-              return (
-                <button
-                  aria-selected={isSelected}
-                  className={clsx(
-                    "flex min-h-10 w-full items-center rounded-[12px] px-3 text-left text-sm transition focus:outline-none",
-                    isSelected
-                      ? "bg-reality-brand-500 text-white"
-                      : "text-reality-text-secondary hover:bg-reality-bg-muted hover:text-reality-text-primary",
-                    isActive && !isSelected && "bg-reality-bg-muted text-reality-text-primary",
-                  )}
-                  id={`${id}-option-${index}`}
-                  key={option.value || "empty"}
-                  onClick={() => choose(index)}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  role="option"
-                  tabIndex={-1}
-                  type="button"
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
+      {variant === "hero" && typeof document !== "undefined" ? createPortal(menu, document.body) : menu}
     </div>
   );
 }

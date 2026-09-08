@@ -160,7 +160,7 @@ function SectionHeading({
   );
 }
 
-function HeroSearch() {
+function HeroSearch({ onDropdownOpenChange }: { onDropdownOpenChange?: (isOpen: boolean) => void }) {
   const router = useRouter();
   const [mode, setMode] = useState<ListingType>("rent");
   const [city, setCity] = useState("");
@@ -201,6 +201,7 @@ function HeroSearch() {
           <ListboxSelect
             aria-label="Property type"
             onChange={setPropertyType}
+            onOpenChange={onDropdownOpenChange}
             options={[
               { label: "Any type", value: "" },
               ...propertyTypeOptions.map((option) => ({
@@ -215,6 +216,7 @@ function HeroSearch() {
           <ListboxSelect
             aria-label="Maximum price"
             onChange={setMaxPrice}
+            onOpenChange={onDropdownOpenChange}
             options={priceOptions}
             value={maxPrice}
           />
@@ -382,6 +384,7 @@ function RoleCard({
 
 export default function HomePage() {
   const heroScope = useRef<HTMLElement>(null);
+  const [isHeroFilterOpen, setIsHeroFilterOpen] = useState(false);
   const featuredQuery = useQuery({
     queryKey: ["homepage-featured-properties"],
     queryFn: () => getPublicProperties({ ordering: "-featured" }),
@@ -471,12 +474,16 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="w-full">
-                <HeroSearch />
+                <HeroSearch onDropdownOpenChange={setIsHeroFilterOpen} />
               </div>
             </div>
             <div
-              className="pointer-events-none absolute bottom-10 left-1/2 grid w-[334px] -translate-x-1/2 grid-cols-3 gap-3 text-left md:bottom-16 md:flex md:w-auto md:gap-8"
+              className="pointer-events-none absolute bottom-10 left-1/2 grid w-[334px] -translate-x-1/2 grid-cols-3 gap-3 text-left transition-[opacity,filter] duration-200 md:bottom-16 md:flex md:w-auto md:gap-8"
               data-hero-reveal
+              style={{
+                filter: isHeroFilterOpen ? "blur(1.5px)" : "blur(0)",
+                opacity: isHeroFilterOpen ? 0.25 : 1,
+              }}
             >
               {trustItems.map((item) => {
                 const Icon = item.icon;
