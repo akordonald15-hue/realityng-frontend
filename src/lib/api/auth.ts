@@ -17,6 +17,10 @@ export type RegisterPayload = {
   first_name?: string;
   last_name?: string;
   phone_number?: string | null;
+  accepts_terms: boolean;
+  accepts_privacy: boolean;
+  terms_version: string;
+  privacy_version: string;
 };
 
 export type LoginPayload = {

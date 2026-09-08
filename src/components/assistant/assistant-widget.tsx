@@ -127,10 +127,13 @@ export function AssistantWidget() {
       <button
         type="button"
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lightGold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background"
+        className="group fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820]"
         aria-label="Open RealityNG assistant"
       >
         <AssistantOrb state="idle" size="md" />
+        <span className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-full border border-cyan-100/20 bg-[#062820]/88 px-3 py-1.5 text-xs font-semibold text-cyan-50 opacity-0 shadow-reality-sm backdrop-blur-md transition group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
+          Ask Reality AI
+        </span>
       </button>
     );
   }
@@ -140,7 +143,7 @@ export function AssistantWidget() {
       <div className="flex items-center justify-between border-b border-brand-secondary/20 bg-white/5 px-4 py-3">
         <div className="flex items-center gap-3">
           <AssistantOrb
-            state={send.isPending ? "speaking" : isInputFocused ? "listening" : "idle"}
+            state={send.isPending ? "thinking" : isInputFocused ? "listening" : "idle"}
             size="sm"
           />
           <div>

@@ -3,8 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { RoleSelectionProvider } from "@/components/auth/role-selection-modal";
-import { BrandSplash } from "@/components/brand/brand-splash";
+import { RealityAuthModalProvider } from "@/components/auth/reality-auth-modal";
 import { CompareTray } from "@/components/properties/compare-tray";
 import { AuthProvider } from "@/providers/auth-provider";
 import { CompareProvider } from "@/providers/compare-provider";
@@ -26,13 +25,12 @@ export function AppProviders({ children }: Readonly<{ children: React.ReactNode 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RoleSelectionProvider>
+        <RealityAuthModalProvider>
           <CompareProvider>
-            <BrandSplash />
             {children}
             <CompareTray />
           </CompareProvider>
-        </RoleSelectionProvider>
+        </RealityAuthModalProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

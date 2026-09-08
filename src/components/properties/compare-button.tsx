@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { useRoleSelection } from "@/components/auth/role-selection-modal";
+import { useRealityAuthModal } from "@/components/auth/reality-auth-modal";
 import { Button } from "@/components/ui/button";
 import type { Property } from "@/lib/api/properties";
 import { getAccessToken } from "@/lib/auth/token-storage";
@@ -13,21 +13,29 @@ type CompareButtonProps = {
   property: Property;
   compact?: boolean;
   className?: string;
+  variant?: "legacy" | "reality";
 };
 
-export function CompareButton({ property, compact = false, className }: CompareButtonProps) {
+export function CompareButton({
+  property,
+  compact = false,
+  className,
+  variant = "legacy",
+}: CompareButtonProps) {
   const auth = useOptionalAuth();
   const { addProperty, isSelected, properties, removeProperty } = useCompare();
-  const { openRoleSelection } = useRoleSelection();
+  const { requireAuth } = useRealityAuthModal();
   const [limitMessage, setLimitMessage] = useState("");
   const selected = isSelected(property.id);
 
   function toggle() {
     setLimitMessage("");
     if (!auth?.isAuthenticated && !getAccessToken()) {
-      openRoleSelection({
+      void requireAuth({
         actionLabel: "Compare property",
         nextPath: `${window.location.pathname}${window.location.search}`,
+        onAuthenticated: () => addProperty(property),
+        role: "buyer",
       });
       return;
     }
@@ -53,7 +61,15 @@ export function CompareButton({ property, compact = false, className }: CompareB
         disabled={!selected && properties.length >= MAX_COMPARE_PROPERTIES}
         onClick={toggle}
         type="button"
-        variant={selected ? "primary" : "secondary"}
+        variant={
+          variant === "reality"
+            ? selected
+              ? "reality"
+              : "realitySecondary"
+            : selected
+              ? "primary"
+              : "secondary"
+        }
       >
         {selected ? "Selected" : "Compare"}
       </Button>

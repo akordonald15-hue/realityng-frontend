@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display, Source_Serif_4 } from "next/font/google";
 
 import { AppProviders } from "@/providers/app-providers";
 import { SITE_URL } from "@/lib/seo";
@@ -14,6 +14,12 @@ const inter = Inter({
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-heading",
+});
+
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -67,7 +73,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html className={`${inter.variable} ${playfair.variable}`} lang="en">
+    <html className={`${inter.variable} ${playfair.variable} ${sourceSerif.variable}`} lang="en">
       <body>
         <AppProviders>{children}</AppProviders>
       </body>

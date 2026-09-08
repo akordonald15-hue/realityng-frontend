@@ -4,11 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import { useEffect, useState } from "react";
 
+import { useRealityAuthModal } from "@/components/auth/reality-auth-modal";
 import { Button } from "@/components/ui/button";
 import { createFavorite, deleteFavorite } from "@/lib/api/properties";
 import { getAccessToken } from "@/lib/auth/token-storage";
 import { useOptionalAuth } from "@/providers/auth-provider";
-import { useRoleSelection } from "@/components/auth/role-selection-modal";
 
 type FavoriteButtonProps = {
   propertyId: string;
@@ -16,6 +16,7 @@ type FavoriteButtonProps = {
   initialFavorited?: boolean;
   className?: string;
   compact?: boolean;
+  variant?: "legacy" | "reality";
 };
 
 function HeartIcon({ filled }: { filled: boolean }) {
@@ -41,9 +42,10 @@ export function FavoriteButton({
   initialFavorited = false,
   className,
   compact = false,
+  variant = "legacy",
 }: FavoriteButtonProps) {
   const auth = useOptionalAuth();
-  const { openRoleSelection } = useRoleSelection();
+  const { requireAuth } = useRealityAuthModal();
   const queryClient = useQueryClient();
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
 
@@ -80,9 +82,11 @@ export function FavoriteButton({
   function toggleFavorite() {
     if (!auth?.isAuthenticated && !getAccessToken()) {
       const nextPath = propertySlug ? `/properties/${propertySlug}` : "/properties";
-      openRoleSelection({
+      void requireAuth({
         actionLabel: "Save property",
         nextPath,
+        onAuthenticated: () => mutation.mutate(true),
+        role: "buyer",
       });
       return;
     }
@@ -90,6 +94,14 @@ export function FavoriteButton({
   }
 
   const label = isFavorited ? "Remove saved property" : "Save property";
+  const buttonVariant =
+    variant === "reality"
+      ? isFavorited
+        ? "reality"
+        : "realitySecondary"
+      : isFavorited
+        ? "primary"
+        : "secondary";
 
   return (
     <Button
@@ -98,13 +110,13 @@ export function FavoriteButton({
       aria-pressed={isFavorited}
       className={clsx(
         compact ? "h-10 w-10 gap-0 p-0" : "gap-2",
-        isFavorited ? "text-brand-background" : "",
+        variant === "legacy" && isFavorited ? "text-brand-background" : "",
         className,
       )}
       disabled={mutation.isPending}
       onClick={toggleFavorite}
       type="button"
-      variant={isFavorited ? "primary" : "secondary"}
+      variant={buttonVariant}
     >
       <HeartIcon filled={isFavorited} />
       {compact ? (

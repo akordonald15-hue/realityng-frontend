@@ -1,3 +1,5 @@
+import { isAxiosError } from "axios";
+
 import { apiClient } from "@/lib/api/client";
 import { USE_MOCKS } from "@/lib/demo-mode";
 import {
@@ -203,8 +205,23 @@ export async function getPublicProperty(propertySlug: string): Promise<Property>
   if (USE_MOCKS) {
     return mockGetPublicProperty(propertySlug);
   }
-  const response = await apiClient.get<Property>(`/public/properties/${propertySlug}/`);
-  return response.data;
+  try {
+    const response = await apiClient.get<Property>(`/public/properties/${propertySlug}/`);
+    return response.data;
+  } catch (error) {
+    if (!isAxiosError(error) || error.response?.status !== 404) {
+      throw error;
+    }
+
+    const listingResponse = await getPublicProperties({ search: propertySlug });
+    const listedProperty = listingResponse.results.find((property) => property.slug === propertySlug);
+    if (!listedProperty) {
+      throw error;
+    }
+
+    const response = await apiClient.get<Property>(`/public/properties/${listedProperty.id}/`);
+    return response.data;
+  }
 }
 
 export async function createProperty(payload: PropertyPayload): Promise<Property> {

@@ -7,7 +7,7 @@ import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   createInquiry: vi.fn(),
-  openRoleSelection: vi.fn(),
+  requireAuth: vi.fn(),
   push: vi.fn(),
   replace: vi.fn(),
   isAuthenticated: true,
@@ -19,8 +19,8 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock("@/components/auth/role-selection-modal", () => ({
-  useRoleSelection: () => ({ openRoleSelection: mocks.openRoleSelection }),
+vi.mock("@/components/auth/reality-auth-modal", () => ({
+  useRealityAuthModal: () => ({ requireAuth: mocks.requireAuth }),
 }));
 
 vi.mock("@/providers/auth-provider", () => ({
@@ -72,9 +72,10 @@ describe("ShowInterestButton", () => {
     ).toBeInTheDocument();
   }, 10000);
 
-  it("opens role selection for anonymous users", async () => {
+  it("opens the Reality auth modal for anonymous users", async () => {
     const user = userEvent.setup();
     mocks.isAuthenticated = false;
+    mocks.requireAuth.mockResolvedValueOnce(false);
 
     renderWithQueryClient(
       <ShowInterestButton
@@ -86,9 +87,11 @@ describe("ShowInterestButton", () => {
 
     await user.click(screen.getByRole("button", { name: "Show interest" }));
 
-    expect(mocks.openRoleSelection).toHaveBeenCalledWith({
+    expect(mocks.requireAuth).toHaveBeenCalledWith({
       actionLabel: "Show interest",
       nextPath: "/properties/banana-island-duplex?action=show-interest",
+      onAuthenticated: expect.any(Function),
+      role: "buyer",
     });
   });
 });

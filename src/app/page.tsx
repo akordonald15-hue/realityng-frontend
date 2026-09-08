@@ -4,628 +4,855 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
-import { useRoleSelection } from "@/components/auth/role-selection-modal";
 import { PublicAssistantWidget } from "@/components/assistant/public-assistant-widget";
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
+import { PublicShell } from "@/components/layout/public-shell";
+import { StaggerReveal } from "@/components/motion/stagger-reveal";
 import { PropertyCard } from "@/components/properties/property-card";
 import { JsonLd } from "@/components/seo/json-ld";
 import { Button, buttonClasses } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { SectionHeader } from "@/components/ui/section-header";
-import { getPublicProperties } from "@/lib/api/properties";
-import type { PropertyFilters } from "@/lib/api/properties";
+import { ListboxSelect } from "@/components/ui/listbox-select";
+import { SegmentedTabs } from "@/components/ui/segmented-tabs";
+import { getPublicProperties, propertyTypeOptions } from "@/lib/api/properties";
+import type { ListingType, Property, PropertyFilters } from "@/lib/api/properties";
+import { gsap, registerGsapPlugins, useGSAP } from "@/lib/motion/gsap";
+import { heroReveal, imageSettle } from "@/lib/motion/presets";
 import { organizationJsonLd, websiteSearchJsonLd } from "@/lib/seo";
 
-const searchGoals: Array<{
-  label: string;
-  filters: PropertyFilters;
-  helper: string;
-}> = [
-  {
-    label: "Buy",
-    filters: { listing_type: "sale" },
-    helper: "Homes, land, hotels, and commercial assets for purchase.",
-  },
-  {
-    label: "Rent",
-    filters: { listing_type: "rent" },
-    helper: "Apartments, homes, offices, and flexible rentals.",
-  },
-  {
-    label: "Shortlets",
-    filters: { property_type: "shortlet" },
-    helper: "Serviced stays and hospitality-ready apartments.",
-  },
-  {
-    label: "Share",
-    filters: { listing_type: "apartment_share" },
-    helper: "Shared apartments and rooms for flexible city living.",
-  },
-  {
-    label: "Land",
-    filters: { property_type: "land" },
-    helper: "Residential and investment land in Nigerian growth markets.",
-  },
-  {
-    label: "Commercial",
-    filters: { property_type: "commercial" },
-    helper: "Offices, shops, warehouses, hotels, and income properties.",
-  },
+const propertyModes: Array<{ label: string; value: ListingType }> = [
+  { label: "For Rent", value: "rent" },
+  { label: "For Sale", value: "sale" },
 ];
 
-const categories = [
-  {
-    label: "Hotels and shortlets",
-    href: "/properties?property_type=shortlet",
-    description: "Fast-moving stays, serviced apartments, and hospitality-ready listings.",
-  },
-  {
-    label: "Apartment sharing",
-    href: "/properties?listing_type=apartment_share",
-    description: "Shared homes and available rooms for flexible city living.",
-  },
-  {
-    label: "Apartments",
-    href: "/properties?property_type=apartment",
-    description: "City apartments for rent, purchase, and long-term relocation.",
-  },
-  {
-    label: "Family homes",
-    href: "/properties?property_type=house",
-    description: "Houses and duplexes suited to families and long-term ownership.",
-  },
-  {
-    label: "Land",
-    href: "/properties?property_type=land",
-    description: "Residential and investment land across established markets.",
-  },
-  {
-    label: "Commercial",
-    href: "/properties?property_type=commercial",
-    description: "Office, retail, hospitality, and income-producing opportunities.",
-  },
+const priceOptions = [
+  { label: "Any price", value: "" },
+  { label: "Up to NGN 1m", value: "1000000" },
+  { label: "Up to NGN 5m", value: "5000000" },
+  { label: "Up to NGN 20m", value: "20000000" },
+  { label: "Up to NGN 100m", value: "100000000" },
 ];
 
-const popularLocations = [
-  { city: "Lagos", description: "Lekki, Ikoyi, Victoria Island, Yaba, Ikeja" },
-  { city: "Abuja", description: "Maitama, Wuse, Jabi, Gwarinpa, Asokoro" },
-  { city: "Port Harcourt", description: "Old GRA, Trans Amadi, Peter Odili Road" },
-  { city: "Uyo", description: "Ewet Housing, Shelter Afrique, Ring Road" },
-  { city: "Enugu", description: "Independence Layout, New Haven, GRA" },
-  { city: "Ibadan", description: "Jericho, Bodija, Akobo, Oluyole" },
-];
-
-const verificationItems = [
-  {
-    title: "Listing review",
-    description:
-      "Approved listings pass through RealityNG review before they are shown in public browsing.",
-  },
-  {
-    title: "Representative accountability",
-    description:
-      "Agent, landlord, and artisan verification workflows help users understand who is behind an opportunity.",
-  },
-  {
-    title: "Document-aware workflows",
-    description:
-      "Private verification documents stay protected while approved trust signals can be shown to users.",
-  },
-  {
-    title: "Clear next steps",
-    description:
-      "Inquiries, viewings, and applications are tracked so each property journey has a visible status.",
-  },
-];
-
-const professionalPaths = [
-  {
-    title: "For buyers and renters",
-    description:
-      "Browse first, save when ready, then move into inquiries, viewings, and applications with your history preserved.",
-  },
-  {
-    title: "For landlords and agents",
-    description:
-      "Create listings, manage leads, respond to viewing requests, and follow rental applications from one dashboard.",
-  },
-  {
-    title: "For verified professionals",
-    description:
-      "Verification workflows prepare RealityNG for more accountable agents, landlords, and property service providers.",
-  },
-];
-
-const guideCards = [
-  {
-    title: "How verification works",
-    description: "Understand what RealityNG checks, what remains limited, and why trust signals matter.",
-    href: "#verification",
-  },
-  {
-    title: "How to request a viewing",
-    description: "Use Show Interest first, then request a physical or virtual viewing when the property fits.",
-    href: "#how-it-works",
-  },
-  {
-    title: "Browse by location",
-    description: "Start with a city now, then refine by property type, listing type, and price range.",
-    href: "#locations",
-  },
+const trustItems = [
+  { label: "Reviewed property listings", icon: ListCheckIcon },
+  { label: "Verified customers, agents & landlords", icon: VerifiedCheckIcon },
+  { label: "Secure & private documents", icon: ShieldUserIcon },
 ];
 
 const steps = [
   {
-    number: "01",
     title: "Search",
-    description: "Browse approved listings by city, property goal, type, and price before signing up.",
+    mobileTitle: "Search",
+    description: "Explore properties by location, type, and price",
+    icon: CompassIcon,
+    href: "/properties",
   },
   {
-    number: "02",
-    title: "Shortlist",
-    description: "Create an account only when you want to save, compare, inquire, or track a property.",
+    title: "Inspection",
+    mobileTitle: "Save",
+    description: "Found the right one? Get in touch and arrange a viewing.",
+    icon: SearchIcon,
+    href: "/properties",
   },
   {
-    number: "03",
-    title: "Engage",
-    description: "Show interest, request a viewing, or begin an application through structured workflows.",
+    title: "Apply",
+    mobileTitle: "Book a viewing",
+    description: "Save the properties you like and come back to them later.",
+    icon: FileCheckIcon,
+    href: "/properties",
   },
   {
-    number: "04",
-    title: "Track",
-    description: "Use your dashboard to follow inquiries, viewings, applications, and verification status.",
+    title: "Payment",
+    mobileTitle: "Keep track",
+    description: "Keep your property activity organized in one place.",
+    icon: ChecklistIcon,
+    href: "/dashboard",
   },
 ];
 
-const artisanSolutions = [
+const cities = [
+  { city: "Lagos", areas: "Lekki, Ikoyi, Victoria Island, Yaba, Ikeja" },
   {
-    title: "Verified service profiles",
-    description:
-      "A clear path for plumbers, electricians, painters, cleaners, and finishing specialists to present trusted property services.",
+    city: "Abuja",
+    areas: "Maitama, Wuse, Jabi, Gwarinpa, Asokoro",
+    imageSrc: "/home/city-abuja.webp",
   },
   {
-    title: "Property-owner matching",
+    city: "Port Harcourt",
+    areas: "Old GRA, Trans Amadi, Peter Odili Road",
+    imageSrc: "/home/city-port-harcourt.webp",
+  },
+  { city: "Uyo", areas: "Ewet Housing, Shelter Afrique, Ring Road" },
+  { city: "Enugu", areas: "Independence Layout, New Haven, GRA" },
+  { city: "Ibadan", areas: "Jericho, Bodija, Akobo, Oluyole" },
+];
+
+const roleCards = [
+  {
+    title: "Property owners",
     description:
-      "Designed to help owners and agents find reliable artisans around active rentals, shortlets, and managed properties.",
+      "No matter what path you take to market your property, we can help you navigate a successful sale or rent.",
+    button: "List your property",
+    tone: "secondary",
+    icon: BuildingsIcon,
+    nextPath: "/properties/new",
+    role: "landlord",
   },
   {
-    title: "Future booking readiness",
+    title: "Agents",
     description:
-      "The experience is prepared for quotes, bookings, reviews, and verified artisan badges in the approved roadmap.",
+      "No matter what path you take to market your property, we can help you navigate a successful sale or rent.",
+    button: "List your property",
+    tone: "primary",
+    icon: UsersIcon,
+    nextPath: "/properties/new",
+    role: "agent",
+  },
+  {
+    title: "For Artisan",
+    description:
+      "No matter what path you take to market your property, we can help you navigate a successful sale or rent.",
+    button: "Get Started",
+    tone: "neutral",
+    icon: ToolsIcon,
+    nextPath: "/services",
+    role: "artisan",
   },
 ];
 
-const heroSlides = [
-  {
-    src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
-    label: "Verified family homes",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=80",
-    label: "Gallery-first apartments",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1400&q=80",
-    label: "Diaspora-ready discovery",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1400&q=80",
-    label: "Approved premium listings",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80",
-    label: "Flexible rentals and sharing",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&w=1400&q=80",
-    label: "Trusted agent inventory",
-  },
-];
+function buildPropertyUrl(filters: PropertyFilters) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      params.set(key, value);
+    }
+  });
+  return `/properties${params.toString() ? `?${params.toString()}` : ""}`;
+}
+
+function SectionHeading({
+  align = "left",
+  eyebrow,
+  subtitle,
+  title,
+}: {
+  align?: "left" | "center";
+  eyebrow?: string;
+  subtitle?: string;
+  title: string;
+}) {
+  return (
+    <div
+      className={
+        align === "center" ? "mx-auto max-w-[870px] text-center" : "max-w-[870px] text-left"
+      }
+    >
+      {eyebrow ? (
+        <p className="mb-4 text-lg font-medium leading-7 text-reality-brand-500">{eyebrow}</p>
+      ) : null}
+      <h2 className="font-display text-[2rem] font-medium leading-none tracking-normal text-black md:text-[3.75rem] md:leading-[1.2]">
+        {title}
+      </h2>
+      {subtitle ? (
+        <p className="mt-4 text-base leading-7 text-reality-text-muted md:text-lg">{subtitle}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function HeroSearch({ onDropdownOpenChange }: { onDropdownOpenChange?: (isOpen: boolean) => void }) {
+  const router = useRouter();
+  const [mode, setMode] = useState<ListingType>("rent");
+  const [city, setCity] = useState("");
+  const [propertyType, setPropertyType] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+
+  function submitSearch() {
+    router.push(
+      buildPropertyUrl({
+        city: city.trim(),
+        listing_type: mode,
+        max_price: maxPrice,
+        property_type: propertyType,
+      }),
+    );
+  }
+
+  return (
+    <div className="flex w-full flex-col items-center gap-6" data-testid="hero-search">
+      <SegmentedTabs
+        className="gap-4 bg-transparent p-0"
+        items={propertyModes}
+        label="Property listing type"
+        onChange={(value) => setMode(value as ListingType)}
+        value={mode}
+      />
+      <div className="relative grid w-full overflow-visible rounded-[1.75rem] bg-[#062820]/95 p-1 shadow-[0_18px_45px_rgba(0,0,0,0.18)] ring-1 ring-white/10 backdrop-blur md:h-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_56px] md:rounded-full">
+        <SearchField icon={MapPinIcon} label="Location">
+          <input
+            aria-label="Search location"
+            className="h-5 w-full min-w-0 border-0 bg-transparent p-0 text-sm font-medium text-white/75 outline-none placeholder:text-white/60 focus-visible:text-white"
+            onChange={(event) => setCity(event.target.value)}
+            placeholder="Where"
+            value={city}
+          />
+        </SearchField>
+        <SearchField icon={BuildingsIcon} label="Type">
+          <ListboxSelect
+            aria-label="Property type"
+            onChange={setPropertyType}
+            onOpenChange={onDropdownOpenChange}
+            options={[
+              { label: "Any type", value: "" },
+              ...propertyTypeOptions.map((option) => ({
+                label: option.label,
+                value: option.value,
+              })),
+            ]}
+            value={propertyType}
+          />
+        </SearchField>
+        <SearchField icon={BanknoteIcon} label="Price range">
+          <ListboxSelect
+            aria-label="Maximum price"
+            onChange={setMaxPrice}
+            onOpenChange={onDropdownOpenChange}
+            options={priceOptions}
+            value={maxPrice}
+          />
+        </SearchField>
+        <Button
+          aria-label="Search properties"
+          className="h-14 w-full rounded-[1.35rem] !border-0 bg-[#0f5d49] px-6 text-white shadow-none ring-0 transition hover:bg-reality-brand-500 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820] active:scale-[0.98] md:h-full md:rounded-full md:px-0"
+          onClick={submitSearch}
+          variant="reality"
+        >
+          <SearchIcon className="size-4" />
+          <span className="ml-2 md:sr-only">Search</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function SearchField({
+  children,
+  icon: Icon,
+  label,
+}: {
+  children: React.ReactNode;
+  icon: IconComponent;
+  label: string;
+}) {
+  return (
+    <div className="flex h-14 min-w-0 items-center gap-3 rounded-[1.35rem] bg-[#0a3b2e] px-4 text-left transition focus-within:bg-[#0d4637] md:rounded-none md:bg-transparent md:px-6 md:focus-within:bg-white/[0.04] md:[&:not(:last-of-type)]:border-r md:[&:not(:last-of-type)]:border-white/10">
+      <Icon className="size-4 shrink-0 text-white" />
+      <span className="grid min-w-0 flex-1 gap-0.5">
+        <span className="text-xs font-medium leading-[18px] text-white">{label}</span>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function PropertyRail({
+  ctaLabel,
+  properties,
+  subtitle,
+  title,
+}: {
+  ctaLabel?: string;
+  properties: Property[];
+  subtitle: string;
+  title: string;
+}) {
+  return (
+    <StaggerReveal as="section" className="block" stagger={0.11} y={36}>
+      <div className="mb-8 flex items-start justify-between gap-5 md:mb-14" data-motion-child>
+        <div>
+          <h2 className="font-display text-[2rem] font-medium leading-none text-black md:text-[3.75rem] md:leading-none">
+            <Link className="group inline-flex items-center gap-3" href="/properties">
+              {title}
+              <span className="hidden size-10 items-center justify-center rounded-full bg-reality-bg-muted text-black transition group-hover:bg-reality-brand-50 md:inline-flex">
+                <ArrowRightIcon className="size-5" />
+              </span>
+            </Link>
+          </h2>
+          <p className="mt-3 text-base leading-7 text-reality-text-muted">{subtitle}</p>
+        </div>
+      </div>
+      {properties.length > 0 ? (
+        <div className="flex snap-x gap-6 overflow-x-auto pb-3 2xl:grid 2xl:grid-cols-4 2xl:overflow-visible 2xl:pb-0">
+          {properties.map((property) => (
+            <div className="snap-start" data-motion-child key={property.id}>
+              <PropertyCard property={property} variant="reality" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-[2rem] bg-reality-bg-muted p-8 text-reality-text-muted" data-motion-child>
+          Approved public listings will appear here when inventory is available.
+        </div>
+      )}
+      {ctaLabel ? (
+        <Link className={buttonClasses("reality", "mt-6 w-full md:hidden")} href="/properties">
+          {ctaLabel}
+        </Link>
+      ) : null}
+    </StaggerReveal>
+  );
+}
+
+function CityCard({
+  areas,
+  city,
+  imageSrc,
+  index,
+}: {
+  areas: string;
+  city: string;
+  imageSrc?: string;
+  index: number;
+}) {
+  return (
+    <Link
+      className="group relative block h-[317px] w-[321px] shrink-0 snap-start overflow-hidden rounded-[2rem] bg-[#0a3b2e] focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 md:w-auto"
+      href={`/properties?city=${encodeURIComponent(city)}`}
+    >
+      {imageSrc ? (
+        <Image
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          fill
+          sizes="(min-width: 768px) 426px, 321px"
+          src={imageSrc}
+        />
+      ) : (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[linear-gradient(135deg,#0a3b2e,#118a64)] opacity-95"
+          style={{ filter: `hue-rotate(${index * 18}deg)` }}
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70" />
+      <span className="absolute right-3 top-3 flex size-11 items-center justify-center rounded-full bg-white/60 text-black backdrop-blur">
+        <ArrowUpRightIcon className="size-6" />
+      </span>
+      <div className="absolute inset-x-6 bottom-6 text-center text-white">
+        <h3 className="text-xl font-semibold leading-7">{city}</h3>
+        <p className="mt-0.5 text-base leading-6 text-white/80">{areas}</p>
+      </div>
+    </Link>
+  );
+}
+
+function RoleCard({
+  card,
+}: {
+  card: (typeof roleCards)[number];
+}) {
+  const Icon = card.icon;
+  const toneClass =
+    card.tone === "secondary"
+      ? "bg-[#f9f6ed]"
+      : card.tone === "primary"
+        ? "bg-[#edfcf5]"
+        : "bg-reality-bg-muted";
+
+  return (
+    <article
+      className={`${toneClass} flex min-h-[298px] flex-col items-center justify-between rounded-[2rem] p-6 text-center md:min-h-[335px]`}
+    >
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex size-14 items-center justify-center rounded-full bg-white md:size-[93px]">
+          <Icon className="size-6 text-black md:size-8" />
+        </div>
+        <div className="max-w-[247px]">
+          <h3 className="text-2xl font-medium leading-8 text-black">{card.title}</h3>
+          <p className="mt-3 text-xs leading-[18px] text-black">{card.description}</p>
+        </div>
+      </div>
+      <Link
+        href={`/auth/sign-up?role=${encodeURIComponent(card.role)}&next=${encodeURIComponent(card.nextPath)}`}
+        className={buttonClasses("reality", "mt-6 h-12 px-[18px]")}
+      >
+        {card.button}
+      </Link>
+    </article>
+  );
+}
 
 export default function HomePage() {
-  const router = useRouter();
-  const { openRoleSelection } = useRoleSelection();
-  const [location, setLocation] = useState("");
-  const [activeGoal, setActiveGoal] = useState(searchGoals[0]);
-  const [activeSlide, setActiveSlide] = useState(0);
+  const heroScope = useRef<HTMLElement>(null);
+  const [isHeroFilterOpen, setIsHeroFilterOpen] = useState(false);
   const featuredQuery = useQuery({
     queryKey: ["homepage-featured-properties"],
     queryFn: () => getPublicProperties({ ordering: "-featured" }),
   });
-  const featured = featuredQuery.data?.results.slice(0, 3) ?? [];
+  const latestQuery = useQuery({
+    queryKey: ["homepage-latest-properties"],
+    queryFn: () => getPublicProperties({ ordering: "-created_at" }),
+  });
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setActiveSlide((current) => (current + 1) % heroSlides.length);
-    }, 5500);
-    return () => window.clearInterval(timer);
-  }, []);
+  const featured = useMemo(
+    () => featuredQuery.data?.results.slice(0, 4) ?? [],
+    [featuredQuery.data],
+  );
+  const latest = useMemo(
+    () => (latestQuery.data?.results ?? featuredQuery.data?.results ?? []).slice(0, 4),
+    [featuredQuery.data, latestQuery.data],
+  );
 
-  function searchProperties(overrides: PropertyFilters = {}) {
-    const params = new URLSearchParams();
-    const filters: PropertyFilters = {
-      ...activeGoal.filters,
-      ...overrides,
-    };
+  useGSAP(
+    () => {
+      registerGsapPlugins();
 
-    if (location.trim()) {
-      params.set("city", location.trim());
-    }
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value);
+      if (process.env.NODE_ENV === "test") {
+        return;
       }
-    });
 
-    router.push(`/properties${params.toString() ? `?${params}` : ""}`);
-  }
+      const hero = heroScope.current;
+      if (!hero) {
+        return;
+      }
+
+      const heroItems = gsap.utils.toArray<HTMLElement>("[data-hero-reveal]", hero);
+      const heroImage = hero.querySelector<HTMLElement>("[data-hero-image]");
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (prefersReducedMotion) {
+        gsap.set([...heroItems, heroImage].filter(Boolean), {
+          autoAlpha: 1,
+          clearProps: "transform",
+        });
+        return;
+      }
+
+      gsap
+        .timeline({ defaults: { ease: heroReveal.to.ease } })
+        .fromTo(heroImage, imageSettle.from, imageSettle.to, 0)
+        .fromTo(
+          heroItems,
+          heroReveal.from,
+          {
+            ...heroReveal.to,
+            stagger: 0.08,
+          },
+          0.08,
+        );
+    },
+    { scope: heroScope },
+  );
 
   return (
-    <div className="min-h-screen bg-brand-background pb-28 text-brand-text lg:pb-0">
+    <div className="min-h-screen bg-white font-body text-reality-text-primary">
       <JsonLd data={organizationJsonLd()} id="realityng-organization-jsonld" />
       <JsonLd data={websiteSearchJsonLd()} id="realityng-website-jsonld" />
-      <Navbar />
-      <main>
-        <section className="relative isolate overflow-hidden bg-brand-background">
-          <div aria-hidden="true" className="absolute inset-0">
+      <PublicShell transparentHeader variant="reality">
+        <main>
+          <section
+            className="relative isolate flex min-h-[860px] items-start justify-center overflow-hidden bg-reality-brand-900 px-6 pb-12 pt-[132px] md:min-h-[820px] md:px-6 md:pt-[190px] xl:min-h-[900px] xl:px-0 xl:pt-[220px]"
+            ref={heroScope}
+          >
             <Image
               alt=""
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 z-0 h-full w-full object-cover"
+              data-hero-image
               fill
-              key={heroSlides[activeSlide].src}
-              priority={activeSlide === 0}
+              priority
               sizes="100vw"
-              src={heroSlides[activeSlide].src}
+              src="/home/hero-house.webp"
             />
-            <div className="absolute inset-0 bg-black/36" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,39,31,0.12)_0%,rgba(6,39,31,0.25)_48%,rgba(6,39,31,0.5)_100%)]" />
-          </div>
-
-          <div className="relative mx-auto flex min-h-[31rem] max-w-7xl flex-col justify-center px-5 py-12 sm:min-h-[34rem] sm:px-6 lg:min-h-[35rem]">
-            <div className="max-w-3xl">
-              <h1
-                className="max-w-2xl font-heading text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-[3.4rem]"
-                style={{ textShadow: "0 4px 28px rgba(0,0,0,0.55)" }}
-              >
-                Find property in Nigeria with confidence.
-              </h1>
-              <p className="mt-4 max-w-xl text-base leading-7 text-white/90">
-                Search verified homes, shortlets, land, and commercial spaces.
-              </p>
+            <div className="absolute inset-0 z-0 bg-[#0a3b2e]/60" />
+            <div className="relative z-10 flex w-full max-w-[1066px] flex-col items-center gap-10 text-center text-white md:gap-[35px]">
+              <div className="max-w-[725px]" data-hero-reveal>
+                <h1 className="font-display text-[3.75rem] font-semibold leading-none tracking-normal md:text-[4.5rem] md:leading-[90px]">
+                  Find property in Nigeria with confidence.
+                </h1>
+                <p className="mt-3 text-base leading-6">
+                  Search verified homes, shortlets, land, and commercial spaces.
+                </p>
+              </div>
+              <div className="w-full">
+                <HeroSearch onDropdownOpenChange={setIsHeroFilterOpen} />
+              </div>
             </div>
-
             <div
-              aria-labelledby="property-search-title"
-              className="mt-7 w-full max-w-[42rem] text-brand-main"
-              id="overview"
+              className="pointer-events-none absolute bottom-10 left-1/2 grid w-[334px] -translate-x-1/2 grid-cols-3 gap-3 text-left transition-[opacity,filter] duration-200 md:bottom-16 md:flex md:w-auto md:gap-8"
+              data-hero-reveal
+              style={{
+                filter: isHeroFilterOpen ? "blur(1.5px)" : "blur(0)",
+                opacity: isHeroFilterOpen ? 0.25 : 1,
+              }}
             >
-              <div
-                className="flex flex-wrap items-end gap-0"
-                role="tablist"
-                aria-label="Property goals"
-              >
-                {searchGoals.map((goal) => (
-                  <button
-                    aria-selected={activeGoal.label === goal.label}
-                    className={
-                      activeGoal.label === goal.label
-                        ? "min-h-11 rounded-t-md bg-white px-4 py-2.5 text-sm font-extrabold text-brand-main shadow-[0_-5px_18px_rgba(0,0,0,0.12)]"
-                        : "min-h-11 rounded-t-md border border-white/65 bg-white/82 px-4 py-2.5 text-sm font-bold text-brand-main backdrop-blur transition hover:bg-white hover:text-brand-primary"
-                    }
-                    key={goal.label}
-                    onClick={() => setActiveGoal(goal)}
-                    role="tab"
-                    type="button"
-                  >
-                    {goal.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex rounded-b-md rounded-tr-md bg-white/96 p-2 shadow-[0_18px_60px_rgba(0,0,0,0.36)] backdrop-blur">
-                <Input
-                  aria-label="Search city or area"
-                  className="h-14 flex-1 border-0 bg-white/95 px-4 text-base font-semibold text-brand-main placeholder:font-semibold placeholder:text-[#52675f] focus:ring-0"
-                  onChange={(event) => setLocation(event.target.value)}
-                  placeholder="City, area, estate, or landmark"
-                  value={location}
-                />
-                <Button
-                  aria-label="Search properties"
-                  className="h-14 w-14 shrink-0 rounded-md px-0 text-xl sm:w-16"
-                  onClick={() => searchProperties()}
-                >
-                  <svg
-                    aria-hidden="true"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2.4"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m16.5 16.5 4 4" />
-                  </svg>
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/82">
-                {heroSlides[activeSlide].label}
-              </p>
-              <div className="flex gap-2" role="tablist" aria-label="Featured property slideshow">
-                {heroSlides.map((slide, index) => (
-                  <button
-                    aria-label={`Show ${slide.label}`}
-                    aria-selected={activeSlide === index}
-                    className={`h-2.5 rounded-full transition-all ${
-                      activeSlide === index
-                        ? "w-9 bg-brand-secondary"
-                        : "w-2.5 bg-white/45 hover:bg-white/75"
-                    }`}
-                    key={slide.src}
-                    onClick={() => setActiveSlide(index)}
-                    role="tab"
-                    type="button"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-white/10 bg-brand-surface/55">
-          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <SectionHeader
-                description="Live approved listings from RealityNG, shown before account creation so users can evaluate real marketplace value."
-                eyebrow="Featured verified properties"
-                title="Start with listings worth a closer look"
-              />
-              <Link className="text-sm font-semibold text-brand-secondary" href="/properties">
-                View all properties
-              </Link>
-            </div>
-            {featuredQuery.isLoading ? (
-              <div className="mt-8 grid gap-5 md:grid-cols-3">
-                {[1, 2, 3].map((item) => (
-                  <div className="h-96 animate-pulse rounded-md bg-white/10" key={item} />
-                ))}
-              </div>
-            ) : null}
-            {featured.length > 0 ? (
-              <div className="mt-8 grid gap-5 md:grid-cols-3">
-                {featured.map((property) => (
-                  <PropertyCard key={property.id} property={property} />
-                ))}
-              </div>
-            ) : null}
-            {!featuredQuery.isLoading && featured.length === 0 ? (
-              <Card className="mt-8 p-8 text-brand-muted">
-                Approved featured listings will appear here when inventory is available.
-              </Card>
-            ) : null}
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6" id="products">
-          <SectionHeader
-            description="Move directly into the property goal that fits your plans."
-            eyebrow="Browse by property goal"
-            title="Choose the way you want to search"
-          />
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((category) => (
-              <Link className="group" href={category.href} key={category.label}>
-                <Card className="h-full p-5 transition group-hover:border-brand-secondary/60 group-focus-visible:ring-2 group-focus-visible:ring-brand-secondary">
-                  <h3 className="font-heading text-xl font-semibold text-brand-text">
-                    {category.label}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-brand-muted">{category.description}</p>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="border-y border-white/10 bg-white" id="locations">
-          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
-            <SectionHeader
-              description="Start with major Nigerian cities today. Area, LGA, estate, and landmark search can deepen as location data matures."
-              eyebrow="Browse by city"
-              title="Explore Nigerian property markets"
-            />
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {popularLocations.map((locationOption) => (
-                <Link
-                  className="group rounded-md border border-black/10 bg-brand-warm p-5 text-brand-main transition hover:border-brand-secondary"
-                  href={`/properties?city=${encodeURIComponent(locationOption.city)}`}
-                  key={locationOption.city}
-                >
-                  <h3 className="font-heading text-2xl font-semibold">{locationOption.city}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#52675f]">
-                    {locationOption.description}
-                  </p>
-                  <p className="mt-4 text-sm font-semibold text-brand-primary group-hover:text-brand-secondary">
-                    View listings
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6" id="verification">
-          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-            <SectionHeader
-              description="RealityNG should not simply say a listing is trusted. It should show which checks are available, what was reviewed, and where limitations remain."
-              eyebrow="Trust layer"
-              title="Verification should be visible, specific, and honest"
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
-              {verificationItems.map((item) => (
-                <Card className="h-full p-5" key={item.title}>
-                  <h3 className="font-heading text-xl font-semibold text-brand-text">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-brand-muted">{item.description}</p>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-white/10 bg-brand-surface/55" id="who-we-are">
-          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
-            <SectionHeader
-              description="The platform supports the people who create the marketplace, without hiding core property discovery behind an account wall."
-              eyebrow="Role-based marketplace"
-              title="Different users, one transaction path"
-            />
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {professionalPaths.map((path) => (
-                <Card className="h-full p-6" key={path.title}>
-                  <h3 className="font-heading text-2xl font-semibold text-brand-text">
-                    {path.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-brand-muted">{path.description}</p>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6" id="diaspora">
-          <div className="grid gap-8 rounded-md border border-white/10 bg-brand-primary p-6 sm:p-8 lg:grid-cols-[1fr_1fr] lg:items-center">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-secondary">
-                Diaspora support
-              </p>
-              <h2 className="mt-3 font-heading text-3xl font-semibold text-white sm:text-4xl">
-                Browse from anywhere, then move carefully when a property is worth action.
-              </h2>
-            </div>
-            <p className="text-base leading-8 text-brand-muted">
-              RealityNG is designed for people who need clearer property information before they
-              travel, call an agent, or ask family to inspect a place. Public discovery stays open;
-              account creation begins when a user wants to save, inquire, view, apply, or list.
-            </p>
-          </div>
-        </section>
-
-        <section className="border-y border-white/10 bg-brand-surface/55" id="how-it-works">
-          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
-            <SectionHeader
-              description="A clear transaction path from discovery to the next approved step."
-              eyebrow="How it works"
-              title="Search, shortlist, engage, track"
-            />
-            <div className="mt-8 grid gap-8 md:grid-cols-4">
-              {steps.map((step) => (
-                <div className="border-t border-brand-secondary/50 pt-5" key={step.number}>
-                  <p className="text-sm font-semibold text-brand-secondary">{step.number}</p>
-                  <h3 className="mt-4 font-heading text-2xl font-semibold text-brand-text">
-                    {step.title}
-                  </h3>
-                  <p className="mt-3 leading-7 text-brand-muted">{step.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6" id="guides">
-          <SectionHeader
-            description="Educational entry points help users understand the marketplace before they create an account."
-            eyebrow="Guides and local intelligence"
-            title="Make better property decisions"
-          />
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {guideCards.map((guide) => (
-              <Link className="group" href={guide.href} key={guide.title}>
-                <Card className="h-full p-6 transition group-hover:border-brand-secondary/60">
-                  <h3 className="font-heading text-2xl font-semibold text-brand-text">
-                    {guide.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-brand-muted">{guide.description}</p>
-                  <p className="mt-5 text-sm font-semibold text-brand-secondary">Read more</p>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="border-y border-white/10 bg-brand-surface/55" id="artisans">
-          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
-            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-              <SectionHeader
-                description="Artisans remain part of the approved roadmap, but the public homepage keeps them as a support layer behind core property discovery."
-                eyebrow="Solutions for artisans"
-                title="A future-ready service layer for property care"
-              />
-              <div className="grid gap-4 md:grid-cols-3">
-                {artisanSolutions.map((solution) => (
-                  <Card className="h-full p-5" key={solution.title}>
-                    <h3 className="font-heading text-xl font-semibold text-brand-text">
-                      {solution.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-6 text-brand-muted">
-                      {solution.description}
+              {trustItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div className="flex flex-col gap-2.5 text-white" key={item.label}>
+                    <Icon className="size-5 md:size-6" />
+                    <p className="text-xs font-medium leading-[18px] md:w-[146px] md:text-base md:leading-6">
+                      {item.label}
                     </p>
-                  </Card>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <div className="reality-reveal mx-auto flex max-w-reality flex-col gap-12 px-6 py-12 md:gap-16 md:py-16 xl:gap-20 xl:px-0">
+            <StaggerReveal as="section" stagger={0.1} y={34}>
+              <div data-motion-child>
+                <SectionHeading
+                  align="center"
+                  eyebrow="How it works"
+                  subtitle="Browse, save, book a viewing, and keep track of everything in one place."
+                  title="Find a property and take the next step"
+                />
+              </div>
+              <div className="mt-8 grid grid-cols-2 gap-4 md:mt-12 md:grid-cols-4 md:gap-6">
+                {steps.map((step) => {
+                  const Icon = step.icon;
+                  return (
+                    <Link
+                      className="group rounded-[2rem] bg-reality-bg-muted p-4 transition hover:bg-reality-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 md:p-8"
+                      data-motion-child
+                      href={step.href}
+                      key={step.title}
+                    >
+                      <div className="flex items-center justify-between">
+                        <Icon className="size-6 text-black" />
+                        <ArrowUpRightIcon className="hidden size-5 text-black transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 md:block" />
+                      </div>
+                      <h3 className="mt-4 text-base font-medium leading-6 text-black md:text-xl md:leading-7">
+                        <span className="md:hidden">{step.mobileTitle}</span>
+                        <span className="hidden md:inline">{step.title}</span>
+                      </h3>
+                      <p className="mt-1 text-xs leading-[18px] text-black md:mt-2 md:text-sm md:leading-5">
+                        {step.description}
+                      </p>
+                    </Link>
+                  );
+                })}
+              </div>
+            </StaggerReveal>
+
+            {featuredQuery.isLoading ? (
+              <RailSkeleton title="Featured properties" />
+            ) : (
+              <PropertyRail
+                ctaLabel="View all properties"
+                properties={featured}
+                subtitle="Explore reviewed homes, land, and commercial spaces."
+                title="Featured properties"
+              />
+            )}
+
+            {latestQuery.isLoading ? (
+              <RailSkeleton title="Newly added properties" />
+            ) : (
+              <PropertyRail
+                properties={latest}
+                subtitle="Fresh listings from the public RealityNG marketplace."
+                title="Newly added properties"
+              />
+            )}
+
+            <StaggerReveal as="section" stagger={0.11} y={36}>
+              <div data-motion-child>
+                <SectionHeading
+                  align="center"
+                  subtitle="Explore popular locations across Nigeria and refine your search from there."
+                  title="Browse by city"
+                />
+              </div>
+              <div className="-mx-6 mt-8 flex snap-x gap-6 overflow-x-auto px-6 pb-3 md:mx-0 md:grid md:grid-cols-3 md:px-0">
+                {cities.map((city, index) => (
+                  <div data-motion-child key={city.city}>
+                    <CityCard
+                      areas={city.areas}
+                      city={city.city}
+                      imageSrc={city.imageSrc}
+                      index={index}
+                    />
+                  </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </section>
+            </StaggerReveal>
 
-        <section className="border-t border-white/10 bg-white" id="support">
-          <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-14 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-primary">
-                Create value when you are ready
-              </p>
-              <h2 className="mt-3 max-w-3xl font-heading text-3xl font-semibold text-brand-main sm:text-4xl">
-                Save your shortlist, request viewings, submit applications, and track everything
-                from one account.
-              </h2>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                className={buttonClasses("primary", "w-full sm:w-auto")}
-                onClick={() =>
-                  openRoleSelection({
-                    actionLabel: "Create account",
-                    nextPath: "/onboarding/role-setup",
-                  })
-                }
-                type="button"
+            <StaggerReveal as="section" stagger={0.11} y={36}>
+              <div data-motion-child>
+                <SectionHeading
+                  align="center"
+                  subtitle="Whether you own properties, help people find them, or provide essential services, RealityNG gives you the tools to get things done with confidence."
+                  title="Everything you need to make property easier"
+                />
+              </div>
+              <div className="mt-8 grid gap-5 md:mt-14 md:grid-cols-3">
+                {roleCards.map((card) => (
+                  <div data-motion-child key={card.title}>
+                    <RoleCard card={card} />
+                  </div>
+                ))}
+              </div>
+            </StaggerReveal>
+
+            <StaggerReveal
+              className="relative min-h-[520px] overflow-hidden rounded-[2rem] bg-reality-brand-600 px-8 py-12 md:min-h-[717px] md:rounded-[3.5rem] md:px-[130px]"
+              stagger={0.11}
+              y={34}
+            >
+              <Image
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                fill
+                sizes="(min-width: 768px) 1328px, 100vw"
+                src="/home/cta-businessman.webp"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-reality-brand-600 via-reality-brand-600/70 to-transparent mix-blend-multiply" />
+              <div
+                className="relative flex min-h-[420px] max-w-[374px] flex-col justify-center text-white md:min-h-[620px]"
+                data-motion-child
               >
-                Create account
-              </button>
-              <Link
-                className={buttonClasses(
-                  "secondary",
-                  "w-full border-brand-primary text-brand-primary hover:bg-brand-primary/10 sm:w-auto",
-                )}
-                href="/properties"
-              >
-                Keep browsing
-              </Link>
-            </div>
+                <h2 className="font-display text-[3.5rem] font-medium leading-[1.05] tracking-normal md:text-[4.5rem] md:leading-[79px]">
+                  Found somewhere you like?
+                </h2>
+                <p className="mt-4 text-lg font-medium leading-7">
+                  Create an account to save properties, book viewings, and keep track of the ones
+                  you are interested in.
+                </p>
+                <Link
+                  className={buttonClasses("realitySecondary", "mt-6 h-12 w-fit px-[18px]")}
+                  href="/auth/sign-up?next=%2Fonboarding%2Frole-setup"
+                >
+                  Get Started
+                </Link>
+              </div>
+            </StaggerReveal>
           </div>
-        </section>
-      </main>
+        </main>
+      </PublicShell>
       <PublicAssistantWidget />
-      <Footer />
     </div>
+  );
+}
+
+function RailSkeleton({ title }: { title: string }) {
+  return (
+    <section aria-label={`${title} loading`}>
+      <div className="h-20 max-w-lg animate-pulse rounded-[1rem] bg-reality-bg-muted" />
+      <div className="mt-8 flex snap-x gap-6 overflow-x-auto pb-3 md:mt-12 2xl:grid 2xl:grid-cols-4 2xl:overflow-hidden 2xl:pb-0">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            className="h-[392px] w-[314px] shrink-0 snap-start animate-pulse rounded-[2rem] bg-reality-bg-muted xl:w-auto"
+            key={item}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type IconComponent = (props: { className?: string }) => React.ReactElement;
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 20 20">
+      <path
+        d="M4.167 10h11.666m0 0-5-5m5 5-5 5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function ArrowUpRightIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M7 17 17 7m0 0H9m8 0v8"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function MapPinIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 16 16">
+      <path
+        d="M8 14s4.5-3.8 4.5-7.5a4.5 4.5 0 1 0-9 0C3.5 10.2 8 14 8 14Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <path
+        d="M8 8.2a1.7 1.7 0 1 0 0-3.4 1.7 1.7 0 0 0 0 3.4Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+    </svg>
+  );
+}
+
+function BuildingsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M4 21V7l8-4 8 4v14M8 21v-6h8v6M8 9h.01M12 9h.01M16 9h.01M8 12h.01M12 12h.01M16 12h.01"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function BanknoteIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 16 16">
+      <path
+        d="M2.5 4.5h11v7h-11v-7Z"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="1.3"
+      />
+      <path
+        d="M8 9.8a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+    </svg>
+  );
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 20 20">
+      <path
+        d="m14.5 14.5 3 3M16 9a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function CompassIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
+function FileCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M14 3v5h5M8.5 14l2 2 4-4M6 21h12a1 1 0 0 0 1-1V8l-5-5H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function ChecklistIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="m5 7 1.5 1.5L9 6M11 7h8M5 12l1.5 1.5L9 11M11 12h8M5 17l1.5 1.5L9 16M11 17h8"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function ListCheckIcon({ className }: { className?: string }) {
+  return <ChecklistIcon className={className} />;
+}
+
+function VerifiedCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="m9.2 12.3 1.9 1.9 3.8-4.4M12 22s7-3.4 7-10V5.5L12 3 5 5.5V12c0 6.6 7 10 7 10Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function ShieldUserIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M12 22s7-3.4 7-10V5.5L12 3 5 5.5V12c0 6.6 7 10 7 10Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M9 15c.7-1.2 1.7-1.8 3-1.8s2.3.6 3 1.8M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 18c0-1.8-1.1-3.2-2.7-3.8M16.5 5.2a3 3 0 0 1 0 5.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.7"
+      />
+    </svg>
+  );
+}
+
+function ToolsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24">
+      <path
+        d="m14.5 5 4.5 4.5M4 20l6.8-6.8M13.5 4 20 10.5l-2.5 2.5L11 6.5 13.5 4Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <path
+        d="m5 19 4-1 8.5-8.5-3-3L6 15l-1 4Z"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </svg>
   );
 }

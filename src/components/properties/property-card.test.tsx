@@ -1,15 +1,25 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PropertyCard } from "@/components/properties/property-card";
 import type { Property } from "@/lib/api/properties";
-import { setTokens } from "@/lib/auth/token-storage";
+import { clearTokens, setTokens } from "@/lib/auth/token-storage";
 import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   createFavorite: vi.fn(),
   deleteFavorite: vi.fn(),
+  isAuthenticated: false,
+  requireAuth: vi.fn(),
+}));
+
+vi.mock("@/providers/auth-provider", () => ({
+  useOptionalAuth: () => ({ isAuthenticated: mocks.isAuthenticated }),
+}));
+
+vi.mock("@/components/auth/reality-auth-modal", () => ({
+  useRealityAuthModal: () => ({ requireAuth: mocks.requireAuth }),
 }));
 
 vi.mock("@/lib/api/properties", async () => {
@@ -46,8 +56,17 @@ const property: Property = {
 };
 
 describe("PropertyCard favorites", () => {
+  beforeEach(() => {
+    clearTokens();
+    mocks.createFavorite.mockReset();
+    mocks.deleteFavorite.mockReset();
+    mocks.requireAuth.mockReset();
+    mocks.isAuthenticated = false;
+  });
+
   it("saves and removes a property with optimistic button state", async () => {
     const user = userEvent.setup();
+    mocks.isAuthenticated = true;
     setTokens("access-token", "refresh-token");
     mocks.createFavorite.mockResolvedValueOnce({
       id: "favorite-1",
@@ -65,5 +84,23 @@ describe("PropertyCard favorites", () => {
     await user.click(screen.getByRole("button", { name: "Remove saved property" }));
     expect(screen.getByRole("button", { name: "Save property" })).toBeInTheDocument();
     await waitFor(() => expect(mocks.deleteFavorite).toHaveBeenCalledWith("property-1"));
+  });
+
+  it("opens the Reality auth modal before saving for anonymous users", async () => {
+    const user = userEvent.setup();
+    mocks.requireAuth.mockResolvedValueOnce(false);
+
+    renderWithQueryClient(<PropertyCard property={property} variant="reality" />);
+
+    await user.click(screen.getByRole("button", { name: "Save property" }));
+
+    expect(mocks.requireAuth).toHaveBeenCalledWith({
+      actionLabel: "Save property",
+      nextPath: "/properties/approved-lekki-apartment",
+      onAuthenticated: expect.any(Function),
+      role: "buyer",
+    });
+    expect(screen.queryByText("CREATE AN ACCOUNT TO CONTINUE")).not.toBeInTheDocument();
+    expect(mocks.createFavorite).not.toHaveBeenCalled();
   });
 });

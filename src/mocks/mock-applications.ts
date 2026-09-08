@@ -108,6 +108,25 @@ function findApplication(applicationId: string) {
   return { application, applications };
 }
 
+export async function mockGetApplication(applicationId: string): Promise<RentalApplication> {
+  const user = getMockSessionUser();
+  if (!user) {
+    throw new Error("Application not found.");
+  }
+
+  const application = readApplications().find(
+    (item) =>
+      item.id === applicationId &&
+      (item.applicant.id === user.id || item.property_owner.id === user.id),
+  );
+
+  if (!application) {
+    throw new Error("Application not found.");
+  }
+
+  return application;
+}
+
 function transitionApplication(
   applicationId: string,
   status: RentalApplicationStatus,

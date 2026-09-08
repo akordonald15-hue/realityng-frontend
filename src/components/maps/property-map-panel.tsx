@@ -13,6 +13,7 @@ type PropertyMapPanelProps = {
   properties: Property[];
   selectedPropertyId?: string | null;
   onSelectProperty?: (propertyId: string) => void;
+  variant?: "legacy" | "reality";
 };
 
 type MapReadyProperty = Property & {
@@ -106,18 +107,40 @@ function buildInfoWindowContent(property: Property) {
 function FallbackMapState({
   mapProperties,
   onSelectProperty,
+  variant = "legacy",
 }: {
   mapProperties: MapReadyProperty[];
   onSelectProperty?: (propertyId: string) => void;
+  variant?: "legacy" | "reality";
 }) {
+  const isReality = variant === "reality";
+
   return (
-    <Card className="flex min-h-[420px] flex-col justify-between p-5">
+    <Card
+      className={
+        isReality
+          ? "flex min-h-[420px] flex-col justify-between rounded-[2rem] border-reality-border-secondary bg-reality-bg-muted p-5 text-reality-text-primary md:min-h-[620px]"
+          : "flex min-h-[420px] flex-col justify-between p-5"
+      }
+    >
       <div>
-        <Badge>Location intelligence</Badge>
-        <h2 className="mt-4 font-heading text-2xl font-semibold text-brand-text">
+        <Badge variant={isReality ? "reality" : "gold"}>Location intelligence</Badge>
+        <h2
+          className={
+            isReality
+              ? "mt-4 font-display text-2xl font-medium text-black"
+              : "mt-4 font-heading text-2xl font-semibold text-brand-text"
+          }
+        >
           Map preview is ready.
         </h2>
-        <p className="mt-3 text-sm leading-6 text-brand-muted">
+        <p
+          className={
+            isReality
+              ? "mt-3 text-sm leading-6 text-reality-text-muted"
+              : "mt-3 text-sm leading-6 text-brand-muted"
+          }
+        >
           Google Maps needs a restricted browser key before the interactive map can load. The list
           remains fully usable while maps are unavailable.
         </p>
@@ -125,7 +148,11 @@ function FallbackMapState({
       <div className="mt-6 space-y-2">
         {mapProperties.slice(0, 5).map((property) => (
           <button
-            className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-brand-text transition hover:border-brand-secondary/50"
+            className={
+              isReality
+                ? "w-full rounded-[12px] border border-reality-border-secondary bg-white px-3 py-2 text-left text-sm text-reality-text-primary transition hover:border-reality-brand-500"
+                : "w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-brand-text transition hover:border-brand-secondary/50"
+            }
             key={property.id}
             onClick={() => onSelectProperty?.(property.id)}
             type="button"
@@ -145,7 +172,9 @@ export function PropertyMapPanel({
   properties,
   selectedPropertyId,
   onSelectProperty,
+  variant = "legacy",
 }: PropertyMapPanelProps) {
+  const isReality = variant === "reality";
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -261,13 +290,31 @@ export function PropertyMapPanel({
 
   if (mapProperties.length === 0) {
     return (
-      <Card className="flex min-h-[420px] items-center justify-center p-6 text-center">
+      <Card
+        className={
+          isReality
+            ? "flex min-h-[420px] items-center justify-center rounded-[2rem] border-reality-border-secondary bg-reality-bg-muted p-6 text-center md:min-h-[620px]"
+            : "flex min-h-[420px] items-center justify-center p-6 text-center"
+        }
+      >
         <div>
-          <Badge>Map unavailable</Badge>
-          <h2 className="mt-4 font-heading text-2xl font-semibold text-brand-text">
+          <Badge variant={isReality ? "reality" : "gold"}>Map unavailable</Badge>
+          <h2
+            className={
+              isReality
+                ? "mt-4 font-display text-2xl font-medium text-black"
+                : "mt-4 font-heading text-2xl font-semibold text-brand-text"
+            }
+          >
             No map-ready listings yet.
           </h2>
-          <p className="mt-3 max-w-md text-sm leading-6 text-brand-muted">
+          <p
+            className={
+              isReality
+                ? "mt-3 max-w-md text-sm leading-6 text-reality-text-muted"
+                : "mt-3 max-w-md text-sm leading-6 text-brand-muted"
+            }
+          >
             Listings need approved public location metadata before they appear on the map.
           </p>
         </div>
@@ -276,28 +323,54 @@ export function PropertyMapPanel({
   }
 
   if (status === "error") {
-    return <FallbackMapState mapProperties={mapProperties} onSelectProperty={onSelectProperty} />;
+    return (
+      <FallbackMapState
+        mapProperties={mapProperties}
+        onSelectProperty={onSelectProperty}
+        variant={variant}
+      />
+    );
   }
 
   return (
-    <Card className="overflow-hidden p-0">
-      <div className="flex flex-col gap-3 border-b border-white/10 p-4 md:flex-row md:items-center md:justify-between">
+    <Card
+      className={
+        isReality
+          ? "overflow-hidden rounded-[2rem] border-reality-border-secondary bg-white p-0 shadow-reality-sm"
+          : "overflow-hidden p-0"
+      }
+    >
+      <div
+        className={
+          isReality
+            ? "flex flex-col gap-3 border-b border-reality-border-secondary p-4 md:flex-row md:items-center md:justify-between"
+            : "flex flex-col gap-3 border-b border-white/10 p-4 md:flex-row md:items-center md:justify-between"
+        }
+      >
         <div>
-          <p className="text-sm font-semibold text-brand-text">Map view</p>
-          <p className="text-xs text-brand-muted">
+          <p className={isReality ? "text-sm font-semibold text-black" : "text-sm font-semibold text-brand-text"}>
+            Map view
+          </p>
+          <p className={isReality ? "text-xs text-reality-text-muted" : "text-xs text-brand-muted"}>
             {mapProperties.length} listing{mapProperties.length === 1 ? "" : "s"} with public map
             metadata. Approximate pins protect seller privacy.
           </p>
         </div>
         {selectedPropertyId && onSelectProperty ? (
-          <Button onClick={() => onSelectProperty?.("")} variant="secondary">
+          <Button onClick={() => onSelectProperty?.("")} variant={isReality ? "realitySecondary" : "secondary"}>
             Clear selection
           </Button>
         ) : null}
       </div>
       <div className="relative min-h-[420px]">
         {status === "loading" || status === "idle" ? (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-brand-background/80 text-sm font-semibold text-brand-muted">
+          <div
+            className={
+              isReality
+                ? "absolute inset-0 z-10 flex items-center justify-center bg-white/80 text-sm font-semibold text-reality-text-muted"
+                : "absolute inset-0 z-10 flex items-center justify-center bg-brand-background/80 text-sm font-semibold text-brand-muted"
+            }
+          >
             Loading map...
           </div>
         ) : null}
@@ -306,7 +379,7 @@ export function PropertyMapPanel({
         ) : null}
         <div
           aria-label="Property map"
-          className="h-[420px] w-full md:h-[620px]"
+          className={isReality ? "h-[420px] w-full md:h-[620px]" : "h-[420px] w-full md:h-[620px]"}
           ref={mapElementRef}
           role="region"
         />
