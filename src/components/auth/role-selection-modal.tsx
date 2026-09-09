@@ -109,7 +109,7 @@ export function RoleSelectionProvider({ children }: Readonly<{ children: React.R
           <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-md border border-brand-secondary/30 bg-brand-background p-5 text-brand-text shadow-2xl sm:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <BrandLogo className="h-14 w-auto object-contain" />
+                <BrandLogo className="h-14 w-auto object-contain" tone="light" />
                 <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-brand-secondary">
                   Create an account to continue.
                 </p>

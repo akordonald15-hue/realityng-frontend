@@ -34,7 +34,7 @@ export function organizationJsonLd() {
     name: "RealityNG",
     url: absoluteUrl("/"),
     slogan: "Where Dreams Find an Address",
-    logo: absoluteUrl("/brand/realityng-logo-header.png"),
+    logo: absoluteUrl("/brand/realityng-logo-black.svg"),
     contactPoint: [
       {
         "@type": "ContactPoint",

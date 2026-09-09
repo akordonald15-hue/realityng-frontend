@@ -109,6 +109,7 @@ export function Footer({ variant = "legacy" }: FooterProps = {}) {
             className="h-16 w-auto object-contain"
             showTagline
             taglineClassName="mt-0.5 text-[0.58rem]"
+            tone="light"
           />
           <p className="mt-3 max-w-md leading-6">
             Trusted Nigerian property discovery for buyers, renters, landlords, and diaspora

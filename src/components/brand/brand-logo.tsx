@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 
 type BrandLogoProps = {
   variant?: "full" | "icon";
+  tone?: "dark" | "light";
   className?: string;
   showTagline?: boolean;
   taglineClassName?: string;
@@ -12,6 +13,7 @@ type BrandLogoProps = {
 
 export function BrandLogo({
   variant = "full",
+  tone = "dark",
   className,
   showTagline = false,
   taglineClassName,
@@ -19,15 +21,21 @@ export function BrandLogo({
   priority = false,
 }: BrandLogoProps) {
   const isFull = variant === "full";
+  const logoSrc = isFull
+    ? tone === "light"
+      ? "/brand/realityng-logo-white.svg"
+      : "/brand/realityng-logo-black.svg"
+    : "/icons/realityng-icon.svg";
 
   const logo = (
     <Image
       alt="RealityNG"
       className={className}
-      height={isFull ? 274 : 512}
+      height={isFull ? 33 : 32}
       priority={priority}
-      src={isFull ? "/brand/realityng-logo-header.png" : "/icons/realityng-icon-512.png"}
-      width={isFull ? 1200 : 512}
+      src={logoSrc}
+      unoptimized
+      width={isFull ? 139 : 39}
     />
   );
 

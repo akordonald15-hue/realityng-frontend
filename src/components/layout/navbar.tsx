@@ -198,7 +198,12 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
       >
         <nav className="mx-auto flex min-h-[72px] w-full max-w-reality items-center justify-between gap-5 px-5 sm:px-6 lg:min-h-[88px] lg:px-6 2xl:px-0">
           <Link aria-label="RealityNG home" className="shrink-0" href="/">
-            <BrandLogo className="h-8 w-auto object-contain" priority showTagline={false} />
+            <BrandLogo
+              className="h-8 w-auto object-contain"
+              priority
+              showTagline={false}
+              tone={transparent ? "light" : "dark"}
+            />
           </Link>
           <div
             className="hidden flex-1 items-center justify-center gap-[39px] text-sm font-normal lg:flex"
@@ -458,10 +463,16 @@ export function Navbar({ transparent = false, variant = "legacy" }: NavbarProps 
             priority
             showTagline
             taglineClassName="text-[0.48rem] xl:text-[0.54rem]"
+            tone="light"
           />
         </Link>
         <Link aria-label="RealityNG home" className="flex shrink-0 items-center lg:hidden" href="/">
-          <BrandLogo className="h-11 w-auto object-contain sm:h-12" priority showTagline={false} />
+          <BrandLogo
+            className="h-11 w-auto object-contain sm:h-12"
+            priority
+            showTagline={false}
+            tone="light"
+          />
         </Link>
         <div className="hidden flex-1 items-center justify-center gap-5 text-sm font-semibold text-brand-muted lg:flex xl:gap-7">
           {marketplaceLinks.map((link) => (
