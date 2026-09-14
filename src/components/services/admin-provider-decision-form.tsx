@@ -57,8 +57,8 @@ export function AdminProviderDecisionForm({ provider }: { provider: OwnerService
             <button
               className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${
                 activeAction === action
-                  ? "border-brand-secondary bg-brand-secondary text-brand-background"
-                  : "border-white/10 bg-white/5 text-brand-muted hover:border-brand-secondary"
+                  ? "border-brand-secondary bg-brand-secondary text-reality-text-primary"
+                  : "border-reality-border-secondary bg-reality-bg-subtle text-reality-text-secondary hover:border-brand-secondary"
               }`}
               key={action}
               onClick={() => setActiveAction(action)}
@@ -69,18 +69,18 @@ export function AdminProviderDecisionForm({ provider }: { provider: OwnerService
           ),
         )}
       </div>
-      <label className="grid gap-2 text-sm font-semibold text-brand-text">
+      <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
         Reason or message
         <textarea
-          className="min-h-24 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+          className="min-h-24 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-sm text-reality-text-primary outline-none focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
           name="reason"
           placeholder="Required for reject, request info, and suspend."
         />
       </label>
-      <label className="grid gap-2 text-sm font-semibold text-brand-text">
+      <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
         Private review notes
         <textarea
-          className="min-h-20 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+          className="min-h-20 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-sm text-reality-text-primary outline-none focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
           name="review_notes"
         />
       </label>
@@ -91,3 +91,4 @@ export function AdminProviderDecisionForm({ provider }: { provider: OwnerService
     </form>
   );
 }
+

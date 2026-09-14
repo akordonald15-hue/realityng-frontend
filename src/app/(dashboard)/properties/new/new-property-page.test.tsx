@@ -44,6 +44,12 @@ describe("NewPropertyPage", () => {
 
     renderWithQueryClient(<NewPropertyPage />);
 
+    expect(screen.getByRole("button", { name: "1. Details" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "2. Location" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "3. Features" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "4. Media" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "5. Review" })).toBeDisabled();
+
     fireEvent.change(screen.getByLabelText("Title"), {
       target: { value: "Modern Lekki Apartment" },
     });
@@ -51,13 +57,17 @@ describe("NewPropertyPage", () => {
       target: { value: "A clean three-bedroom apartment near key roads." },
     });
     fireEvent.change(screen.getByLabelText("Price"), { target: { value: "2500000" } });
-    fireEvent.click(screen.getByRole("button", { name: "Continue to location" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(await screen.findByRole("button", { name: "2. Location" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "3. Features" })).toBeDisabled();
 
     fireEvent.change(await screen.findByLabelText("State"), { target: { value: "Lagos" } });
     fireEvent.change(screen.getByLabelText("City"), { target: { value: "Lagos" } });
     fireEvent.change(screen.getByLabelText("Address"), { target: { value: "Admiralty Way" } });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     fireEvent.change(screen.getByLabelText("Floor area sqm"), { target: { value: "180" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save draft and add media" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save draft" }));
 
     await waitFor(() =>
       expect(mocks.createProperty).toHaveBeenCalledWith(
@@ -83,11 +93,12 @@ describe("NewPropertyPage", () => {
     });
     fireEvent.change(screen.getByLabelText("Price"), { target: { value: "6000000" } });
     await user.selectOptions(screen.getByLabelText("Property type"), "land");
-    await user.click(screen.getByRole("button", { name: "Continue to location" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
     fireEvent.change(await screen.findByLabelText("State"), { target: { value: "Lagos" } });
     fireEvent.change(screen.getByLabelText("City"), { target: { value: "Ibeju Lekki" } });
     fireEvent.change(screen.getByLabelText("Address"), { target: { value: "Eleko Road" } });
-    await user.click(screen.getByRole("button", { name: "Save draft and add media" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("button", { name: "Save draft" }));
 
     expect(await screen.findByText("Land listings require land size.")).toBeInTheDocument();
     expect(mocks.createProperty).not.toHaveBeenCalled();
@@ -106,7 +117,7 @@ describe("NewPropertyPage", () => {
     fireEvent.change(screen.getByLabelText("Price"), { target: { value: "1500000" } });
     await user.selectOptions(screen.getByLabelText("Property type"), "house");
     await user.selectOptions(screen.getByLabelText("Listing type"), "apartment_share");
-    await user.click(screen.getByRole("button", { name: "Continue to location" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
 
     expect(
       await screen.findByText("Apartment share listings must use the apartment property type."),
@@ -114,3 +125,4 @@ describe("NewPropertyPage", () => {
     expect(mocks.createProperty).not.toHaveBeenCalled();
   });
 });
+

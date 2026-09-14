@@ -123,9 +123,7 @@ describe("ServicesPage", () => {
   it("renders service categories and approved providers", async () => {
     renderWithQueryClient(<ServicesPage />);
 
-    expect(
-      screen.getByRole("heading", { name: "Find trusted property services in Nigeria." }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Discover Artisans" })).toBeInTheDocument();
     expect(await screen.findByText("Repairs")).toBeInTheDocument();
     expect(await screen.findByText("Bright Spark Electrical")).toBeInTheDocument();
     expect(screen.getByText("Identity Verified")).toBeInTheDocument();
@@ -138,9 +136,9 @@ describe("ServicesPage", () => {
       target: { value: "electrician" },
     });
     expect(await screen.findByRole("option", { name: "Electrical" })).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Category"), { target: { value: "electrical" } });
-    fireEvent.change(screen.getByLabelText("State"), { target: { value: "Lagos" } });
-    fireEvent.click(screen.getByRole("button", { name: "Search services" }));
+    fireEvent.change(screen.getByLabelText("Services"), { target: { value: "electrical" } });
+    fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Lagos" } });
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
 
     await waitFor(() =>
       expect(mocks.getServiceProviders).toHaveBeenLastCalledWith(
@@ -177,3 +175,4 @@ describe("ServicesPage", () => {
     expect(await screen.findByText("No service providers found")).toBeInTheDocument();
   });
 });
+

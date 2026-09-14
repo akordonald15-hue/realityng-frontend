@@ -1,16 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
+import { ProtectedActionLink } from "@/components/auth/protected-action-link";
+import { PageContainer } from "@/components/layout/page-container";
+import { PublicShell } from "@/components/layout/public-shell";
 import { EmptyMarketplaceState, MarketplaceSkeleton } from "@/components/services/marketplace-states";
 import { ProviderCard } from "@/components/services/provider-card";
 import { ServiceSearchBar } from "@/components/services/service-search-bar";
 import { TradeCategoryGrid } from "@/components/services/trade-category-grid";
-import { Card } from "@/components/ui/card";
+import { buttonClasses } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
 import {
   getServiceProviders,
@@ -73,50 +75,31 @@ function ServicesContent() {
   const providers = providersQuery.data?.results ?? [];
 
   return (
-    <main className="min-h-screen bg-brand-background text-brand-text">
-      <Navbar />
-      <section className="border-b border-white/10 px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_34rem] lg:items-center">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.34em] text-brand-secondary">
-              Verified services marketplace
-            </p>
-            <h1 className="mt-5 font-heading text-4xl font-semibold sm:text-5xl">
-              Find trusted property services in Nigeria.
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-brand-muted">
-              Browse approved artisans and service companies for property maintenance,
-              relocation, utilities, cleaning, and construction support.
-            </p>
+    <PublicShell variant="reality">
+      <main className="bg-white text-reality-text-primary">
+      <section className="pt-14 sm:pt-20">
+        <PageContainer>
+          <p className="text-sm text-reality-text-secondary">Find professional artisans around you</p>
+          <h1 className="mt-5 max-w-3xl font-display text-5xl font-semibold tracking-normal text-reality-text-primary sm:text-6xl">
+            Discover Artisans
+          </h1>
+          <div className="mt-12 max-w-3xl">
+            <ServiceSearchBar
+              categories={categories}
+              initialFilters={filters}
+              onSearch={applyFilters}
+            />
           </div>
-          <Card className="p-5">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-secondary">
-              Foundation release
-            </p>
-            <p className="mt-3 text-sm leading-7 text-brand-muted">
-              Quote requests, bookings, portfolio uploads, and verified reviews are intentionally
-              staged for later Sprint 9 phases. Public discovery starts here.
-            </p>
-          </Card>
-        </div>
+        </PageContainer>
       </section>
 
-      <section className="px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <ServiceSearchBar
-            categories={categories}
-            initialFilters={filters}
-            onSearch={applyFilters}
-          />
-        </div>
-      </section>
-
-      <section className="px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+      <section className="py-12">
+        <PageContainer>
           <SectionHeader
             eyebrow="Browse by trade"
             title="Start with the service category you need."
             description="Categories are loaded from the backend so RealityNG can expand the marketplace without hardcoded frontend lists."
+            variant="reality"
           />
           <div className="mt-8">
             {categoriesQuery.isLoading ? (
@@ -130,15 +113,16 @@ function ServicesContent() {
               />
             )}
           </div>
-        </div>
+        </PageContainer>
       </section>
 
-      <section className="px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+      <section className="py-12">
+        <PageContainer>
           <SectionHeader
             eyebrow="Approved providers"
             title="Public profiles built around verification and location."
             description="Only approved, active, public providers appear in this marketplace foundation."
+            variant="reality"
           />
           <div className="mt-8">
             {providersQuery.isLoading ? (
@@ -153,10 +137,42 @@ function ServicesContent() {
               <EmptyMarketplaceState />
             )}
           </div>
-        </div>
+        </PageContainer>
       </section>
-      <Footer />
-    </main>
+
+      <section className="py-14">
+        <PageContainer>
+          <div className="relative overflow-hidden rounded-[32px] bg-reality-brand-700 px-8 py-12 text-white sm:px-14 lg:min-h-[360px]">
+            <Image
+              alt=""
+              className="object-cover opacity-55"
+              fill
+              sizes="(min-width: 1024px) 1328px, 100vw"
+              src="/home/cta-businessman.webp"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-reality-brand-700 via-reality-brand-600/85 to-reality-brand-500/20" />
+            <div className="relative max-w-md">
+              <h2 className="font-display text-4xl font-semibold leading-tight sm:text-5xl">
+                Ready to get started as a Professional
+              </h2>
+              <p className="mt-5 text-sm leading-7 text-white/85">
+                Create an account to save properties, book viewings, and keep track of the ones
+                you&apos;re interested in.
+              </p>
+              <ProtectedActionLink
+                actionLabel="Become an artisan"
+                className={buttonClasses("realitySecondary", "mt-7 h-10 px-5")}
+                href="/dashboard/artisan/profile"
+                role="artisan"
+              >
+                Get Started
+              </ProtectedActionLink>
+            </div>
+          </div>
+        </PageContainer>
+      </section>
+      </main>
+    </PublicShell>
   );
 }
 
@@ -167,3 +183,4 @@ export default function ServicesPage() {
     </Suspense>
   );
 }
+

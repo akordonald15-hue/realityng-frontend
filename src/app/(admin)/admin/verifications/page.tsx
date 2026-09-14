@@ -150,21 +150,21 @@ export default function AdminVerificationsPage() {
         {actionError ? <FormMessage tone="error">{actionError}</FormMessage> : null}
 
         <section className="mt-6">
-          <h2 className="mb-2 text-lg font-semibold text-brand-text">
+          <h2 className="mb-2 text-lg font-semibold text-reality-text-primary">
             Business &amp; Artisan Verifications
           </h2>
 
           {isLoading ? (
-            <p className="text-sm text-brand-muted">Loading...</p>
+            <p className="text-sm text-reality-text-secondary">Loading...</p>
           ) : businessQuery.data && businessQuery.data.results.length > 0 ? (
             <div className="grid gap-3">
               {businessQuery.data.results.map((request) => (
                 <Card key={request.id} className="flex flex-col gap-3 p-3">
                   <div className="flex items-center justify-between">
-                    <p className="font-medium text-brand-text">{request.business_name}</p>
+                    <p className="font-medium text-reality-text-primary">{request.business_name}</p>
                     <VerificationStatusBadge status={request.status} />
                   </div>
-                  <p className="text-xs text-brand-muted">
+                  <p className="text-xs text-reality-text-secondary">
                     {request.trade_category} &middot; {request.city}
                   </p>
                   <ActionButtons
@@ -179,21 +179,21 @@ export default function AdminVerificationsPage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-brand-muted">No business or artisan verification requests yet.</p>
+            <p className="text-sm text-reality-text-secondary">No business or artisan verification requests yet.</p>
           )}
         </section>
 
         <section className="mt-8">
-          <h2 className="mb-2 text-lg font-semibold text-brand-text">Property Verifications</h2>
+          <h2 className="mb-2 text-lg font-semibold text-reality-text-primary">Property Verifications</h2>
 
           {isLoading ? (
-            <p className="text-sm text-brand-muted">Loading...</p>
+            <p className="text-sm text-reality-text-secondary">Loading...</p>
           ) : propertyQuery.data && propertyQuery.data.results.length > 0 ? (
             <div className="grid gap-3">
               {propertyQuery.data.results.map((verification) => (
                 <Card key={verification.id} className="flex flex-col gap-3 p-3">
                   <div className="flex items-center justify-between">
-                    <p className="font-medium text-brand-text">Property {verification.property}</p>
+                    <p className="font-medium text-reality-text-primary">Property {verification.property}</p>
                     <VerificationStatusBadge status={verification.status} />
                   </div>
                   <ActionButtons
@@ -208,10 +208,11 @@ export default function AdminVerificationsPage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-brand-muted">No property verification requests yet.</p>
+            <p className="text-sm text-reality-text-secondary">No property verification requests yet.</p>
           )}
         </section>
       </main>
     </ProtectedRoute>
   );
 }
+

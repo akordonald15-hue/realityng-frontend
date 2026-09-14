@@ -32,10 +32,10 @@ export function ProjectProgressBar({ value }: { value: string }) {
   return (
     <div>
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-brand-text">Overall progress</span>
-        <span className="font-semibold text-brand-secondary">{numeric.toFixed(1)}%</span>
+        <span className="font-medium text-reality-text-primary">Overall progress</span>
+        <span className="font-semibold text-reality-brand-600">{numeric.toFixed(1)}%</span>
       </div>
-      <div className="mt-2 h-3 rounded-full bg-white/10">
+      <div className="mt-2 h-3 rounded-full bg-reality-bg-muted">
         <div className="h-3 rounded-full bg-brand-secondary" style={{ width: `${numeric}%` }} />
       </div>
     </div>
@@ -54,19 +54,19 @@ export function ConstructionProjectCard({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <ConstructionStatusBadge status={project.status} />
-          <h2 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="mt-3 font-display text-2xl font-semibold text-reality-text-primary">
             {project.name}
           </h2>
-          <p className="mt-2 text-sm text-brand-muted">
+          <p className="mt-2 text-sm text-reality-text-secondary">
             {project.property.title} · {project.property.city ?? project.property.location}
           </p>
         </div>
-        {href ? <span className={buttonClasses("secondary")}>Open</span> : null}
+        {href ? <span className={buttonClasses("realitySecondary")}>Open</span> : null}
       </div>
       <div className="mt-5">
         <ProjectProgressBar value={project.overall_progress} />
       </div>
-      <div className="mt-4 grid gap-3 text-sm text-brand-muted sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 text-sm text-reality-text-secondary sm:grid-cols-2">
         <span>Start: {formatDate(project.planned_start_date)}</span>
         <span>Target: {formatDate(project.planned_end_date)}</span>
       </div>
@@ -92,14 +92,14 @@ export function MilestoneList({ milestones }: { milestones: ConstructionMileston
         .slice()
         .sort((a, b) => a.sequence - b.sequence)
         .map((milestone) => (
-          <div className="rounded-md border border-white/10 bg-white/5 p-4" key={milestone.id}>
+          <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4" key={milestone.id}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="font-semibold text-brand-text">
+                <p className="font-semibold text-reality-text-primary">
                   {milestone.sequence}. {milestone.name}
                 </p>
                 {milestone.description ? (
-                  <p className="mt-1 text-sm text-brand-muted">{milestone.description}</p>
+                  <p className="mt-1 text-sm text-reality-text-secondary">{milestone.description}</p>
                 ) : null}
               </div>
               <ConstructionStatusBadge status={milestone.status} />
@@ -108,7 +108,7 @@ export function MilestoneList({ milestones }: { milestones: ConstructionMileston
               <ProjectProgressBar value={milestone.progress_percent} />
             </div>
             {milestone.requires_inspection ? (
-              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-brand-secondary">
+              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-reality-brand-600">
                 Inspection gate required
               </p>
             ) : null}
@@ -160,11 +160,11 @@ export function ConstructionDashboardBody({
         <DashboardSection title="Pending progress updates">
           <div className="space-y-3">
             {dashboard.pending_updates.map((update) => (
-              <div className="rounded-md border border-white/10 bg-white/5 p-4" key={update.id}>
+              <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4" key={update.id}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-brand-text">{update.title}</p>
-                    <p className="mt-1 text-sm text-brand-muted">{update.summary}</p>
+                    <p className="font-semibold text-reality-text-primary">{update.title}</p>
+                    <p className="mt-1 text-sm text-reality-text-secondary">{update.summary}</p>
                   </div>
                   <ConstructionStatusBadge status={update.status} />
                 </div>
@@ -182,3 +182,4 @@ export function ConstructionDashboardBody({
     </div>
   );
 }
+

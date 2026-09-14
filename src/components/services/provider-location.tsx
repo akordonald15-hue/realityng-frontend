@@ -3,19 +3,39 @@ import type { ServiceArea } from "@/lib/api/services";
 type ProviderLocationProps = {
   displayLocation: string;
   serviceAreas: ServiceArea[];
+  variant?: "legacy" | "reality";
 };
 
-export function ProviderLocation({ displayLocation, serviceAreas }: ProviderLocationProps) {
+export function ProviderLocation({
+  displayLocation,
+  serviceAreas,
+  variant = "reality",
+}: ProviderLocationProps) {
   const areas = serviceAreas.slice(0, 3);
+  const isReality = variant === "reality";
 
   return (
-    <div className="space-y-2 text-sm text-brand-muted">
-      <p className="font-semibold text-brand-text">{displayLocation}</p>
+    <div
+      className={
+        isReality ? "space-y-2 text-sm text-reality-text-secondary" : "space-y-2 text-sm text-reality-text-secondary"
+      }
+    >
+      <p
+        className={
+          isReality ? "font-semibold text-reality-text-primary" : "font-semibold text-reality-text-primary"
+        }
+      >
+        {displayLocation}
+      </p>
       {areas.length > 0 ? (
         <ul className="flex flex-wrap gap-2" aria-label="Service areas">
           {areas.map((area) => (
             <li
-              className="rounded-sm border border-white/10 bg-white/5 px-2.5 py-1"
+              className={
+                isReality
+                  ? "rounded-full border border-reality-border-secondary bg-reality-bg-subtle px-2.5 py-1"
+                  : "rounded-sm border border-reality-border-secondary bg-reality-bg-subtle px-2.5 py-1"
+              }
               key={area.id}
             >
               {[area.neighborhood, area.lga, area.city].filter(Boolean).join(", ")}
@@ -28,3 +48,5 @@ export function ProviderLocation({ displayLocation, serviceAreas }: ProviderLoca
     </div>
   );
 }
+
+

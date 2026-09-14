@@ -120,4 +120,12 @@ describe("ArtisanProfileForm", () => {
     expect(await screen.findByRole("option", { name: /Electrical/ })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Trade category" })).toBeInTheDocument();
   });
+
+  it("does not render a fake artisan fee payment action", async () => {
+    renderWithQueryClient(<ArtisanProfileForm initialProfile={profile} />);
+
+    expect(await screen.findByText(/Fee payment is not available yet/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /pay/i })).not.toBeInTheDocument();
+  });
 });
+

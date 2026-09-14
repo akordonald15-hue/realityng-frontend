@@ -57,7 +57,7 @@ export default function CustomerServicesDashboardPage() {
       />
 
       {dashboardQuery.isLoading ? (
-        <Card className="mt-8 p-5 text-brand-muted">Loading your services dashboard...</Card>
+        <Card className="mt-8 p-5 text-reality-text-secondary">Loading your services dashboard...</Card>
       ) : null}
       {dashboardQuery.isError ? (
         <Card className="mt-8 p-5 text-red-200">Services dashboard could not be loaded.</Card>
@@ -75,11 +75,11 @@ export default function CustomerServicesDashboardPage() {
             >
               <div className="space-y-3">
                 {dashboard.recent_quote_requests.map((quote) => (
-                  <div className="rounded-md border border-white/10 bg-white/5 p-4" key={quote.id}>
+                  <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4" key={quote.id}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-brand-text">{quote.project_title}</p>
-                        <p className="mt-1 text-sm text-brand-muted">
+                        <p className="font-semibold text-reality-text-primary">{quote.project_title}</p>
+                        <p className="mt-1 text-sm text-reality-text-secondary">
                           {quote.provider.business_name}
                         </p>
                       </div>
@@ -117,13 +117,13 @@ export default function CustomerServicesDashboardPage() {
             <DashboardSection title="Eligible reviews waiting">
               <div className="space-y-3">
                 {dashboard.eligible_reviews.map((booking) => (
-                  <div className="rounded-md border border-white/10 bg-white/5 p-4" key={booking.id}>
-                    <p className="font-semibold text-brand-text">{booking.title}</p>
-                    <p className="mt-1 text-sm text-brand-muted">
+                  <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4" key={booking.id}>
+                    <p className="font-semibold text-reality-text-primary">{booking.title}</p>
+                    <p className="mt-1 text-sm text-reality-text-secondary">
                       {booking.provider?.business_name ?? "Service provider"}
                     </p>
                     <Link
-                      className={buttonClasses("secondary", "mt-3")}
+                      className={buttonClasses("realitySecondary", "mt-3")}
                       href={`/dashboard/services/bookings/${booking.id}/review`}
                     >
                       Leave review
@@ -156,3 +156,4 @@ export default function CustomerServicesDashboardPage() {
     </main>
   );
 }
+

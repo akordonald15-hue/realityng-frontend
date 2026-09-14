@@ -39,3 +39,4 @@ describe("BrandLogo", () => {
     expect(screen.getByText("Where Dreams Find an Address")).toHaveClass("font-body");
   });
 });
+

@@ -50,24 +50,24 @@ export default function AdminInspectionsDashboardPage() {
         />
         <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {adminActions.map((action) => (
-            <Link className="rounded-md border border-white/10 bg-white/5 p-4" href={action.href} key={action.href}>
-              <p className="font-semibold text-brand-text">{action.label}</p>
-              <p className="mt-1 text-sm leading-5 text-brand-muted">{action.description}</p>
+            <Link className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4" href={action.href} key={action.href}>
+              <p className="font-semibold text-reality-text-primary">{action.label}</p>
+              <p className="mt-1 text-sm leading-5 text-reality-text-secondary">{action.description}</p>
             </Link>
           ))}
         </div>
 
         {dashboardQuery.isLoading ? (
-          <Card className="mt-8 p-5 text-brand-muted">Loading inspection operations...</Card>
+          <Card className="mt-8 p-5 text-reality-text-secondary">Loading inspection operations...</Card>
         ) : null}
         {dashboard ? (
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <Card className="p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                   Recent requests
                 </h2>
-                <Link className={buttonClasses("secondary")} href="/admin/inspections/requests">
+                <Link className={buttonClasses("realitySecondary")} href="/admin/inspections/requests">
                   Open queue
                 </Link>
               </div>
@@ -83,10 +83,10 @@ export default function AdminInspectionsDashboardPage() {
             </Card>
             <Card className="p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                   Pending walkthroughs
                 </h2>
-                <Link className={buttonClasses("secondary")} href="/admin/inspections/walkthroughs">
+                <Link className={buttonClasses("realitySecondary")} href="/admin/inspections/walkthroughs">
                   Moderate
                 </Link>
               </div>
@@ -95,7 +95,7 @@ export default function AdminInspectionsDashboardPage() {
                   <WalkthroughModerationCard key={walkthrough.id} walkthrough={walkthrough} />
                 ))}
                 {(dashboard.pending_walkthroughs ?? []).length === 0 ? (
-                  <p className="text-sm text-brand-muted">No walkthrough videos need review.</p>
+                  <p className="text-sm text-reality-text-secondary">No walkthrough videos need review.</p>
                 ) : null}
               </div>
             </Card>
@@ -105,3 +105,4 @@ export default function AdminInspectionsDashboardPage() {
     </ProtectedRoute>
   );
 }
+

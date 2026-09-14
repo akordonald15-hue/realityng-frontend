@@ -14,3 +14,4 @@ export function TradeCategoryGrid({ categories }: TradeCategoryGridProps) {
     </div>
   );
 }
+

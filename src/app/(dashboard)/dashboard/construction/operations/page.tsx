@@ -23,7 +23,7 @@ export default function ConstructionOperationsDashboardPage() {
           description="Track operational projects, submitted updates, inspection gates, and pending evidence for managed construction work."
         />
         {dashboardQuery.isLoading ? (
-          <Card className="mt-8 p-5 text-brand-muted">Loading project operations...</Card>
+          <Card className="mt-8 p-5 text-reality-text-secondary">Loading project operations...</Card>
         ) : null}
         {dashboardQuery.isError ? (
           <Card className="mt-8 p-5 text-red-200">Project operations could not load.</Card>
@@ -38,3 +38,4 @@ export default function ConstructionOperationsDashboardPage() {
     </ProtectedRoute>
   );
 }
+

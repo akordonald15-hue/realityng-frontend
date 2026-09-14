@@ -38,3 +38,4 @@ describe("PortfolioManager", () => {
     expect(await screen.findByText("Choose an image before uploading.")).toBeInTheDocument();
   });
 });
+

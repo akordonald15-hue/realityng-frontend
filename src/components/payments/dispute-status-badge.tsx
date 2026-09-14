@@ -35,3 +35,4 @@ export function DisputeStatusBadge({
 
   return <Badge variant={variant}>{children ? labelFor(status) : null}</Badge>;
 }
+

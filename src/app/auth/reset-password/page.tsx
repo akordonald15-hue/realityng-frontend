@@ -53,12 +53,12 @@ function ResetPasswordForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-white px-5 py-10">
       <Card className="w-full max-w-md p-6 text-center sm:p-8">
         <Link aria-label="RealityNG home" className="mx-auto inline-flex" href="/">
           <BrandLogo className="h-16 w-auto object-contain" priority />
         </Link>
-        <h1 className="mt-8 font-heading text-3xl font-semibold text-brand-text">
+        <h1 className="mt-8 font-display text-3xl font-semibold text-reality-text-primary">
           Choose a new password
         </h1>
         <form className="mt-8 space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
@@ -72,7 +72,7 @@ function ResetPasswordForm() {
               {...register("password")}
             />
             <Button
-              className="mx-auto h-8 px-2 text-brand-secondary"
+              className="mx-auto h-8 px-2 text-reality-brand-600"
               onClick={() => setShowPassword((value) => !value)}
               type="button"
               variant="ghost"
@@ -87,7 +87,7 @@ function ResetPasswordForm() {
           </Button>
         </form>
         <Link
-          className="mt-6 inline-flex text-sm font-semibold text-brand-secondary"
+          className="mt-6 inline-flex text-sm font-semibold text-reality-brand-600"
           href="/auth/sign-in"
         >
           Back to sign in
@@ -100,9 +100,10 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense
-      fallback={<main className="bg-brand-background px-6 py-10 text-brand-muted">Loading...</main>}
+      fallback={<main className="bg-white px-6 py-10 text-reality-text-secondary">Loading...</main>}
     >
       <ResetPasswordForm />
     </Suspense>
   );
 }
+

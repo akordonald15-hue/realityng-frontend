@@ -37,6 +37,7 @@ export type RentalApplication = {
   message: string;
   status: RentalApplicationStatus;
   owner_notes: string;
+  can_manage_application: boolean;
   created_at: string;
   updated_at: string;
 };

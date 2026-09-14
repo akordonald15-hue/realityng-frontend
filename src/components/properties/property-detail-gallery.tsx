@@ -129,3 +129,4 @@ export function PropertyDetailGallery({ property }: PropertyDetailGalleryProps) 
     </section>
   );
 }
+

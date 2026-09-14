@@ -16,9 +16,9 @@ type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
 };
 
 const badgeClasses: Record<BadgeVariant, string> = {
-  gold: "border-brand-secondary/40 bg-brand-secondary/15 text-brand-secondary",
+  gold: "border-brand-secondary/40 bg-brand-secondary/15 text-reality-brand-600",
   green: "border-emerald-300/30 bg-emerald-300/10 text-emerald-100",
-  muted: "border-white/10 bg-white/5 text-brand-muted",
+  muted: "border-reality-border-secondary bg-reality-bg-subtle text-reality-text-secondary",
   reality: "border-transparent bg-reality-alpha-white text-reality-alpha-black70",
   approved: "border-reality-brand-500/20 bg-reality-brand-50 text-reality-brand-700",
   pending: "border-amber-300/40 bg-amber-50 text-amber-700",
@@ -38,3 +38,4 @@ export function Badge({ className, variant = "gold", ...props }: BadgeProps) {
     />
   );
 }
+

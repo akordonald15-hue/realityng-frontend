@@ -20,7 +20,7 @@ export function CompareButton({
   property,
   compact = false,
   className,
-  variant = "legacy",
+  variant = "reality",
 }: CompareButtonProps) {
   const auth = useOptionalAuth();
   const { addProperty, isSelected, properties, removeProperty } = useCompare();
@@ -74,10 +74,12 @@ export function CompareButton({
         {selected ? "Selected" : "Compare"}
       </Button>
       {limitMessage ? (
-        <p className="mt-2 text-xs text-brand-secondary" role="status">
+        <p className="mt-2 text-xs text-reality-brand-600" role="status">
           {limitMessage}
         </p>
       ) : null}
     </div>
   );
 }
+
+

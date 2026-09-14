@@ -22,13 +22,13 @@ export default function CustomerServiceReviewsPage() {
       />
       <div className="mt-6 grid gap-4">
         {reviewsQuery.isLoading ? (
-          <Card className="p-5 text-brand-muted">Loading reviews...</Card>
+          <Card className="p-5 text-reality-text-secondary">Loading reviews...</Card>
         ) : reviewsQuery.data?.results.length ? (
           reviewsQuery.data.results.map((review) => (
             <ReviewCard key={review.id} mode="customer" review={review} />
           ))
         ) : (
-          <Card className="p-5 text-sm text-brand-muted">
+          <Card className="p-5 text-sm text-reality-text-secondary">
             Completed service reviews will appear here after submission.
           </Card>
         )}
@@ -36,3 +36,4 @@ export default function CustomerServiceReviewsPage() {
     </main>
   );
 }
+

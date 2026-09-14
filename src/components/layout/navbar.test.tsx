@@ -26,26 +26,16 @@ describe("Navbar", () => {
   it("shows task-based marketplace navigation on desktop", () => {
     render(<Navbar />);
 
-    expect(screen.getAllByRole("link", { name: "RealityNG home" })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: "Buy" })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "RealityNG home" })).toHaveLength(1);
+    expect(screen.getAllByText("For Rent").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("For Sale").length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "For Professionals" })[0]).toHaveAttribute(
       "href",
-      "/properties?listing_type=sale",
+      "/for-professionals",
     );
-    expect(screen.getAllByRole("link", { name: "Rent" })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Services" })[0]).toHaveAttribute(
       "href",
-      "/properties?listing_type=rent",
-    );
-    expect(screen.getAllByRole("link", { name: "Shortlets" })[0]).toHaveAttribute(
-      "href",
-      "/properties?property_type=shortlet",
-    );
-    expect(screen.getAllByRole("link", { name: "Land" })[0]).toHaveAttribute(
-      "href",
-      "/properties?property_type=land",
-    );
-    expect(screen.getAllByRole("link", { name: "Commercial" })[0]).toHaveAttribute(
-      "href",
-      "/properties?property_type=commercial",
+      "/services",
     );
     expect(screen.getAllByText("Verification standards").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Safety").length).toBeGreaterThan(0);
@@ -58,7 +48,7 @@ describe("Navbar", () => {
     await user.click(screen.getByRole("button", { name: "Toggle navigation" }));
 
     expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
-    expect(screen.getAllByText("Where Dreams Find an Address")).toHaveLength(1);
+    expect(screen.queryByText("Where Dreams Find an Address")).not.toBeInTheDocument();
   });
 
   it("can render the opt-in Reality navigation without changing the default shell", async () => {
@@ -67,11 +57,15 @@ describe("Navbar", () => {
 
     expect(screen.getAllByRole("link", { name: "For Professionals" })[0]).toHaveAttribute(
       "href",
+      "/for-professionals",
+    );
+    expect(screen.getAllByRole("link", { name: "Services" })[0]).toHaveAttribute(
+      "href",
       "/services",
     );
     expect(screen.getAllByRole("link", { name: "Get Started" })[0]).toHaveAttribute(
       "href",
-      "/auth/sign-up",
+      "/dashboard",
     );
     expect(screen.getAllByText("For Rent").length).toBeGreaterThan(0);
 
@@ -145,3 +139,4 @@ describe("Navbar", () => {
     expect(authMocks.signOut).toHaveBeenCalledTimes(1);
   });
 });
+

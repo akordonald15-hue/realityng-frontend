@@ -3,7 +3,7 @@ import { Navbar } from "@/components/layout/navbar";
 
 type PublicShellProps = {
   children: React.ReactNode;
-  variant?: "legacy" | "reality";
+  variant?: "reality";
   withFooter?: boolean;
   transparentHeader?: boolean;
 };
@@ -11,24 +11,15 @@ type PublicShellProps = {
 export function PublicShell({
   children,
   transparentHeader = false,
-  variant = "legacy",
+  variant = "reality",
   withFooter = true,
 }: PublicShellProps) {
-  if (variant === "reality") {
-    return (
-      <div className="[color-scheme:light]">
-        <Navbar transparent={transparentHeader} variant={variant} />
-        {children}
-        {withFooter ? <Footer variant={variant} /> : null}
-      </div>
-    );
-  }
-
   return (
-    <>
+    <div className="[color-scheme:light]">
       <Navbar transparent={transparentHeader} variant={variant} />
       {children}
       {withFooter ? <Footer variant={variant} /> : null}
-    </>
+    </div>
   );
 }
+

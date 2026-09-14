@@ -44,3 +44,4 @@ describe("construction dashboard widgets", () => {
     expect(screen.getByText("Progress update submitted.")).toBeInTheDocument();
   });
 });
+

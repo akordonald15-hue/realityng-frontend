@@ -50,3 +50,4 @@ describe("CompareButton", () => {
     expect(screen.getByRole("button", { name: /Add to comparison: Property 5/ })).toBeEnabled();
   });
 });
+

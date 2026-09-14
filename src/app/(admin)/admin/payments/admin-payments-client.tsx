@@ -17,9 +17,9 @@ export function AdminPaymentsClient() {
         />
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <Link href="/admin/payments/escrow">
-            <Card className="p-5 transition hover:bg-white/[0.06]">
-              <h2 className="font-semibold text-brand-text">Escrow operations</h2>
-              <p className="mt-2 text-sm text-brand-muted">
+            <Card className="p-5 transition hover:bg-reality-bg-subtle">
+              <h2 className="font-semibold text-reality-text-primary">Escrow operations</h2>
+              <p className="mt-2 text-sm text-reality-text-secondary">
                 Review funding, release, refund and reconciliation status.
               </p>
             </Card>
@@ -29,3 +29,4 @@ export function AdminPaymentsClient() {
     </ProtectedRoute>
   );
 }
+

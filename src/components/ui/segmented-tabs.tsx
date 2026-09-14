@@ -56,3 +56,4 @@ export function SegmentedTabs({
     </div>
   );
 }
+

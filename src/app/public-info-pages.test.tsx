@@ -34,3 +34,4 @@ describe("public information pages", () => {
     expect(screen.getByText(/Keep private verification evidence separate/i)).toBeInTheDocument();
   });
 });
+

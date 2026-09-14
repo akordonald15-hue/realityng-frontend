@@ -20,3 +20,4 @@ export function ProviderStatusBadge({ status }: { status?: ProviderStatus }) {
   const variant = status === "active" ? "green" : status === "draft" ? "muted" : "gold";
   return <Badge variant={variant}>{formatProviderStatus(status)}</Badge>;
 }
+

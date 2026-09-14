@@ -11,8 +11,11 @@ import {
   mockGetPublicProperties,
   mockGetPublicProperty,
   mockListFavorites,
+  mockListManagedProperties,
   mockListPropertyImages,
+  mockSubmitPropertyForReview,
   mockSetPropertyCoverImage,
+  mockUpdateProperty,
   mockUpdatePropertyImage,
   mockUploadPropertyImage,
 } from "@/mocks/mock-properties";
@@ -79,7 +82,11 @@ export type Property = {
   agent_avatar_url?: string | null;
   views_count?: number;
   inquiry_count?: number;
+  owner_id?: string;
+  owner_email?: string;
+  can_manage_listing?: boolean;
   created_at: string;
+  updated_at?: string;
 };
 
 export type PropertyImage = {
@@ -134,6 +141,8 @@ export type PropertyFilters = {
   max_lng?: string;
   has_map_location?: string;
   ordering?: string;
+  page?: string;
+  status?: PropertyStatus;
 };
 
 export type PaginatedProperties = {
@@ -229,6 +238,50 @@ export async function createProperty(payload: PropertyPayload): Promise<Property
     return mockCreateProperty(payload);
   }
   const response = await apiClient.post<Property>("/properties/", payload);
+  return response.data;
+}
+
+export async function getProperty(propertySlug: string): Promise<Property> {
+  if (USE_MOCKS) {
+    return mockGetPublicProperty(propertySlug);
+  }
+  const response = await apiClient.get<Property>(`/properties/${propertySlug}/`);
+  return response.data;
+}
+
+export async function updateProperty(
+  propertySlug: string,
+  payload: PropertyPayload,
+): Promise<Property> {
+  if (USE_MOCKS) {
+    return mockUpdateProperty(propertySlug, payload);
+  }
+  const response = await apiClient.patch<Property>(`/properties/${propertySlug}/`, payload);
+  return response.data;
+}
+
+export async function listManagedProperties(
+  filters: PropertyFilters = {},
+): Promise<PaginatedProperties> {
+  if (USE_MOCKS) {
+    return mockListManagedProperties(filters);
+  }
+  const response = await apiClient.get<PaginatedProperties>("/properties/mine/", {
+    params: Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value !== undefined && value !== ""),
+    ),
+  });
+  return response.data;
+}
+
+export async function submitPropertyForReview(propertySlug: string): Promise<Property> {
+  if (USE_MOCKS) {
+    return mockSubmitPropertyForReview(propertySlug);
+  }
+  const response = await apiClient.post<Property>(
+    `/properties/${propertySlug}/submit-for-review/`,
+    {},
+  );
   return response.data;
 }
 

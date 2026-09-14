@@ -60,8 +60,8 @@ export default function RequestInspectionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-background text-brand-text">
-      <Navbar />
+    <div className="min-h-screen bg-white text-reality-text-primary [color-scheme:light]">
+      <Navbar variant="reality" />
       <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow="Inspection request"
@@ -72,11 +72,11 @@ export default function RequestInspectionPage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_22rem]">
           <Card className="p-5">
             {propertyQuery.isLoading ? (
-              <p className="text-brand-muted">Loading property...</p>
+              <p className="text-reality-text-secondary">Loading property...</p>
             ) : property ? (
-              <div className="mb-6 rounded-md border border-white/10 bg-white/5 p-4">
-                <p className="font-semibold text-brand-text">{property.title}</p>
-                <p className="mt-1 text-sm text-brand-muted">
+              <div className="mb-6 rounded-[18px] border border-reality-border-secondary bg-reality-bg-subtle p-4">
+                <p className="font-semibold text-reality-text-primary">{property.title}</p>
+                <p className="mt-1 text-sm text-reality-text-secondary">
                   {property.display_location || `${property.city}, ${property.state}`}
                 </p>
               </div>
@@ -91,7 +91,7 @@ export default function RequestInspectionPage() {
                 mutation.mutate(formValue);
               }}
             >
-              <label className="block text-sm font-semibold text-brand-text">
+              <label className="block text-sm font-semibold text-reality-text-primary">
                 Inspection type
                 <Select
                   className="mt-2"
@@ -109,7 +109,7 @@ export default function RequestInspectionPage() {
                   <option value="land_verification">Land verification</option>
                 </Select>
               </label>
-              <label className="block text-sm font-semibold text-brand-text">
+              <label className="block text-sm font-semibold text-reality-text-primary">
                 Purpose
                 <Input
                   className="mt-2"
@@ -119,10 +119,10 @@ export default function RequestInspectionPage() {
                   value={form.purpose}
                 />
               </label>
-              <label className="block text-sm font-semibold text-brand-text">
+              <label className="block text-sm font-semibold text-reality-text-primary">
                 Project details
                 <textarea
-                  className="mt-2 min-h-32 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  className="mt-2 min-h-32 w-full rounded-[12px] border border-reality-border-secondary bg-white px-3 py-2 text-sm text-reality-text-primary outline-none focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                   onChange={(event) => update("description", event.target.value)}
                   placeholder="Share what the inspector should pay attention to."
                   required
@@ -130,7 +130,7 @@ export default function RequestInspectionPage() {
                 />
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-semibold text-brand-text">
+                <label className="block text-sm font-semibold text-reality-text-primary">
                   Preferred date
                   <Input
                     className="mt-2"
@@ -140,7 +140,7 @@ export default function RequestInspectionPage() {
                     value={form.preferred_date}
                   />
                 </label>
-                <label className="block text-sm font-semibold text-brand-text">
+                <label className="block text-sm font-semibold text-reality-text-primary">
                   Alternative date
                   <Input
                     className="mt-2"
@@ -151,7 +151,7 @@ export default function RequestInspectionPage() {
                 </label>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-semibold text-brand-text">
+                <label className="block text-sm font-semibold text-reality-text-primary">
                   Contact phone
                   <Input
                     className="mt-2"
@@ -160,7 +160,7 @@ export default function RequestInspectionPage() {
                     value={form.contact_phone}
                   />
                 </label>
-                <label className="block text-sm font-semibold text-brand-text">
+                <label className="block text-sm font-semibold text-reality-text-primary">
                   Contact email
                   <Input
                     className="mt-2"
@@ -171,10 +171,10 @@ export default function RequestInspectionPage() {
                   />
                 </label>
               </div>
-              <label className="block text-sm font-semibold text-brand-text">
+              <label className="block text-sm font-semibold text-reality-text-primary">
                 Access notes
                 <textarea
-                  className="mt-2 min-h-24 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  className="mt-2 min-h-24 w-full rounded-[12px] border border-reality-border-secondary bg-white px-3 py-2 text-sm text-reality-text-primary outline-none focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                   onChange={(event) => update("access_notes", event.target.value)}
                   placeholder="Share any useful availability, landmark, or access context."
                   value={form.access_notes}
@@ -190,22 +190,22 @@ export default function RequestInspectionPage() {
           </Card>
 
           <Card className="h-fit p-5">
-            <h2 className="font-heading text-2xl font-semibold text-brand-text">
+            <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
               What happens next
             </h2>
-            <ol className="mt-4 space-y-3 text-sm leading-6 text-brand-muted">
+            <ol className="mt-4 space-y-3 text-sm leading-6 text-reality-text-secondary">
               <li>1. RealityNG reviews the request and access context.</li>
               <li>2. An eligible inspector may be assigned after approval.</li>
               <li>3. Reports and evidence stay private behind signed access.</li>
               <li>4. Public claims are limited to moderated walkthroughs and approved signals.</li>
             </ol>
-            <Link className={buttonClasses("secondary", "mt-5 w-fit")} href={`/properties/${params.slug}`}>
+            <Link className={buttonClasses("realitySecondary", "mt-5 w-fit")} href={`/properties/${params.slug}`}>
               Back to property
             </Link>
           </Card>
         </div>
       </main>
-      <Footer />
+      <Footer variant="reality" />
     </div>
   );
 }

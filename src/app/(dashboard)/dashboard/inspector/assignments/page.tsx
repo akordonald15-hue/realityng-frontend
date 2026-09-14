@@ -36,7 +36,7 @@ export default function InspectorAssignmentsPage() {
       />
       <div className="mt-8 grid gap-4">
         {assignmentsQuery.isLoading ? (
-          <Card className="p-5 text-brand-muted">Loading assignments...</Card>
+          <Card className="p-5 text-reality-text-secondary">Loading assignments...</Card>
         ) : null}
         {assignmentsQuery.data?.map((assignment) => (
           <AssignmentCard
@@ -48,9 +48,10 @@ export default function InspectorAssignmentsPage() {
           />
         ))}
         {assignmentsQuery.data?.length === 0 ? (
-          <Card className="p-5 text-sm text-brand-muted">No assignments are currently open.</Card>
+          <Card className="p-5 text-sm text-reality-text-secondary">No assignments are currently open.</Card>
         ) : null}
       </div>
     </main>
   );
 }
+

@@ -10,10 +10,22 @@ const mocks = vi.hoisted(() => ({
   listLeads: vi.fn(),
   getLead: vi.fn(),
   listLeadActivities: vi.fn(),
+  assignLead: vi.fn(),
+  transitionLeadStage: vi.fn(),
+  logLeadActivity: vi.fn(),
 }));
 
 vi.mock("@/components/auth/protected-route", () => ({
   ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock("@/providers/auth-provider", () => ({
+  useAuth: () => ({
+    isLoading: false,
+    user: {
+      roles: [{ role: { name: "landlord" }, status: "approved" }],
+    },
+  }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -28,6 +40,9 @@ vi.mock("@/lib/api/leads", async () => {
     listLeads: (filters: unknown) => mocks.listLeads(filters),
     getLead: (id: string) => mocks.getLead(id),
     listLeadActivities: (id: string) => mocks.listLeadActivities(id),
+    assignLead: (payload: unknown) => mocks.assignLead(payload),
+    transitionLeadStage: (payload: unknown) => mocks.transitionLeadStage(payload),
+    logLeadActivity: (payload: unknown) => mocks.logLeadActivity(payload),
   };
 });
 
@@ -96,11 +111,11 @@ describe("lead management pages", () => {
 
     renderWithQueryClient(<LeadInboxPage />);
 
-    expect(await screen.findByText("Lead Inbox")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Leads" })).toBeInTheDocument();
     expect(await screen.findByText("Ikoyi Maisonette")).toBeInTheDocument();
-    expect(screen.getByText("Ada Buyer")).toBeInTheDocument();
-    expect(screen.getAllByText("High").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Contacted").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Ada Buyer asked about/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Priority: High/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Stage: Contacted/).length).toBeGreaterThan(0);
   });
 
   it("renders lead detail with pipeline and activity controls", async () => {
@@ -128,3 +143,4 @@ describe("lead management pages", () => {
     expect(await screen.findByText("Initial call completed.")).toBeInTheDocument();
   });
 });
+

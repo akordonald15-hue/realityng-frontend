@@ -7,6 +7,7 @@ import { useState } from "react";
 import { ApplicationRequestCard } from "@/components/dashboard/application-request-card";
 import { FormMessage } from "@/components/forms/form-message";
 import { PageContainer } from "@/components/layout/page-container";
+import { ManagedPropertyCard } from "@/components/properties/managed-property-card";
 import { PropertyCard } from "@/components/properties/property-card";
 import { ViewingRequestButton } from "@/components/properties/viewing-request-button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,8 @@ import {
   type Inquiry,
   type InquiryStatus,
 } from "@/lib/api/inquiries";
+import { listThreads, type ConversationThread } from "@/lib/api/messages";
+import { listManagedProperties, type PaginatedProperties } from "@/lib/api/properties";
 import {
   cancelViewing,
   completeViewing,
@@ -47,7 +50,7 @@ import {
   type ViewingDecisionPayload,
 } from "@/lib/api/viewings";
 import type { ActivityItem, TransactionItem } from "@/lib/api/workflow";
-import { isAdmin, isApprovedProfessional } from "@/lib/auth/permissions";
+import { isAdmin, isApprovedSupplyUser } from "@/lib/auth/permissions";
 import { formatPrice } from "@/lib/properties/format";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -217,7 +220,7 @@ function buildViewingDecision(form: HTMLFormElement, viewingId: string): Viewing
 function MyInterestsList({ inquiries }: { inquiries: Inquiry[] }) {
   if (inquiries.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Your shown interests will appear here after you submit an inquiry from a property page.
       </Card>
     );
@@ -226,11 +229,11 @@ function MyInterestsList({ inquiries }: { inquiries: Inquiry[] }) {
   return (
     <div className="space-y-4">
       {inquiries.slice(0, 5).map((inquiry) => (
-        <div className="rounded-md border border-white/10 p-4" key={inquiry.id}>
+        <div className="rounded-md border border-reality-border-secondary p-4" key={inquiry.id}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="font-semibold text-brand-text">{inquiry.property.title}</p>
-              <p className="mt-1 text-xs text-brand-muted">
+              <p className="font-semibold text-reality-text-primary">{inquiry.property.title}</p>
+              <p className="mt-1 text-xs text-reality-text-secondary">
                 <InquiryDate value={inquiry.created_at} /> · {inquiry.property.city},{" "}
                 {inquiry.property.state}
               </p>
@@ -240,7 +243,7 @@ function MyInterestsList({ inquiries }: { inquiries: Inquiry[] }) {
             </WorkflowStatusBadge>
           </div>
           {inquiry.message ? (
-            <p className="mt-3 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
+            <p className="mt-3 text-sm leading-6 text-reality-text-secondary">{inquiry.message}</p>
           ) : null}
           <ViewingRequestButton
             disabled={inquiry.status === "closed" || inquiry.status === "converted"}
@@ -261,7 +264,7 @@ function MyViewingsList({ viewings }: { viewings: Viewing[] }) {
 
   if (viewings.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Requested and confirmed property viewings will appear here.
       </Card>
     );
@@ -270,15 +273,15 @@ function MyViewingsList({ viewings }: { viewings: Viewing[] }) {
   return (
     <div className="space-y-4">
       {viewings.slice(0, 5).map((viewing) => (
-        <div className="rounded-md border border-white/10 p-4" key={viewing.id}>
+        <div className="rounded-md border border-reality-border-secondary p-4" key={viewing.id}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-brand-text">{viewing.property.title}</p>
-              <p className="mt-1 text-sm text-brand-muted">
+              <p className="font-semibold text-reality-text-primary">{viewing.property.title}</p>
+              <p className="mt-1 text-sm text-reality-text-secondary">
                 <ViewingDate viewing={viewing} /> - {formatViewingType(viewing.viewing_type)}
               </p>
               {viewing.confirmed_datetime ? (
-                <p className="mt-1 text-xs text-brand-muted">
+                <p className="mt-1 text-xs text-reality-text-secondary">
                   Confirmed:{" "}
                   {new Intl.DateTimeFormat("en-NG", {
                     dateStyle: "medium",
@@ -292,7 +295,7 @@ function MyViewingsList({ viewings }: { viewings: Viewing[] }) {
             </WorkflowStatusBadge>
           </div>
           {viewing.notes ? (
-            <p className="mt-3 text-sm leading-6 text-brand-muted">{viewing.notes}</p>
+            <p className="mt-3 text-sm leading-6 text-reality-text-secondary">{viewing.notes}</p>
           ) : null}
           {viewing.status !== "completed" && viewing.status !== "cancelled" ? (
             <Button
@@ -307,7 +310,7 @@ function MyViewingsList({ viewings }: { viewings: Viewing[] }) {
           ) : null}
           {viewing.status === "completed" ? (
             <Link
-              className={buttonClasses("primary", "mt-3 h-9")}
+              className={buttonClasses("reality", "mt-3 h-9")}
               href={`/apply/${viewing.property.id}?viewing=${viewing.id}&slug=${viewing.property.slug}`}
             >
               Apply now
@@ -341,7 +344,7 @@ function TimelineStep({ label, active }: { label: string; active: boolean }) {
             : "h-2.5 w-2.5 shrink-0 rounded-full bg-white/20"
         }
       />
-      <span className={active ? "text-xs text-brand-text" : "text-xs text-brand-muted"}>
+      <span className={active ? "text-xs text-reality-text-primary" : "text-xs text-reality-text-secondary"}>
         {label}
       </span>
     </div>
@@ -376,7 +379,7 @@ function WorkflowTimeline({ stage }: { stage: string }) {
 function TransactionCenter({ transactions }: { transactions: TransactionItem[] }) {
   if (transactions.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Active property transactions will appear here as users move from interest to viewing and
         application.
       </Card>
@@ -386,11 +389,11 @@ function TransactionCenter({ transactions }: { transactions: TransactionItem[] }
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {transactions.slice(0, 6).map((transaction) => (
-        <div className="rounded-md border border-white/10 p-4" key={transaction.inquiry_id}>
+        <div className="rounded-md border border-reality-border-secondary p-4" key={transaction.inquiry_id}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-brand-text">{transaction.property.title}</p>
-              <p className="mt-1 text-sm text-brand-muted">
+              <p className="font-semibold text-reality-text-primary">{transaction.property.title}</p>
+              <p className="mt-1 text-sm text-reality-text-secondary">
                 {transaction.property.city}, {transaction.property.state}
               </p>
             </div>
@@ -399,15 +402,15 @@ function TransactionCenter({ transactions }: { transactions: TransactionItem[] }
             </WorkflowStatusBadge>
           </div>
           <WorkflowTimeline stage={transaction.stage} />
-          <div className="mt-4 rounded-md bg-white/5 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+          <div className="mt-4 rounded-md bg-reality-bg-subtle p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-reality-text-secondary">
               Next action
             </p>
-            <p className="mt-1 text-sm text-brand-text">{transaction.next_action}</p>
+            <p className="mt-1 text-sm text-reality-text-primary">{transaction.next_action}</p>
           </div>
           {transaction.stage === "completed" ? (
             <Link
-              className={buttonClasses("primary", "mt-3 h-9")}
+              className={buttonClasses("reality", "mt-3 h-9")}
               href={`/apply/${transaction.property.id}?inquiry=${transaction.inquiry_id ?? ""}&viewing=${transaction.viewing_id ?? ""}&slug=${transaction.property.slug}`}
             >
               Apply for property
@@ -422,7 +425,7 @@ function TransactionCenter({ transactions }: { transactions: TransactionItem[] }
 function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
   if (activity.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Activity will appear here as saves, inquiries, viewings, and applications happen.
       </Card>
     );
@@ -431,14 +434,14 @@ function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
   return (
     <div className="space-y-3">
       {activity.slice(0, 8).map((item) => (
-        <div className="rounded-md border border-white/10 p-4" key={item.id}>
+        <div className="rounded-md border border-reality-border-secondary p-4" key={item.id}>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="font-semibold text-brand-text">{item.label}</p>
-            <span className="text-xs text-brand-muted">
+            <p className="font-semibold text-reality-text-primary">{item.label}</p>
+            <span className="text-xs text-reality-text-secondary">
               <ApplicationDate value={item.occurred_at} />
             </span>
           </div>
-          <p className="mt-1 text-sm text-brand-muted">{item.entity_type}</p>
+          <p className="mt-1 text-sm text-reality-text-secondary">{item.entity_type}</p>
         </div>
       ))}
     </div>
@@ -457,7 +460,7 @@ function NotificationCenterPlaceholder() {
 
   return (
     <Card className="p-5">
-      <h2 className="font-heading text-2xl font-semibold text-brand-text">Notification center</h2>
+      <h2 className="font-display text-2xl font-semibold text-reality-text-primary">Notification center</h2>
       <div className="mt-4 flex flex-wrap gap-2">
         {events.map((event) => (
           <Badge key={event} variant="muted">
@@ -478,7 +481,7 @@ function MyApplicationsList({ applications }: { applications: RentalApplication[
 
   if (applications.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Rental applications you submit will appear here.
       </Card>
     );
@@ -487,11 +490,11 @@ function MyApplicationsList({ applications }: { applications: RentalApplication[
   return (
     <div className="space-y-4">
       {applications.slice(0, 5).map((application) => (
-        <div className="rounded-md border border-white/10 p-4" key={application.id}>
+        <div className="rounded-md border border-reality-border-secondary p-4" key={application.id}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-brand-text">{application.property.title}</p>
-              <p className="mt-1 text-sm text-brand-muted">
+              <p className="font-semibold text-reality-text-primary">{application.property.title}</p>
+              <p className="mt-1 text-sm text-reality-text-secondary">
                 Submitted <ApplicationDate value={application.created_at} /> - Move-in{" "}
                 <ApplicationDate value={application.move_in_date} />
               </p>
@@ -501,7 +504,7 @@ function MyApplicationsList({ applications }: { applications: RentalApplication[
             </WorkflowStatusBadge>
           </div>
           {application.message ? (
-            <p className="mt-3 text-sm leading-6 text-brand-muted">{application.message}</p>
+            <p className="mt-3 text-sm leading-6 text-reality-text-secondary">{application.message}</p>
           ) : null}
           {application.status === "submitted" || application.status === "under_review" ? (
             <Button
@@ -533,7 +536,7 @@ function PropertyInquiryManager({ inquiries }: { inquiries: Inquiry[] }) {
 
   if (inquiries.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Buyer and tenant inquiries for your properties will appear here.
       </Card>
     );
@@ -542,23 +545,23 @@ function PropertyInquiryManager({ inquiries }: { inquiries: Inquiry[] }) {
   return (
     <div className="space-y-4">
       {inquiries.slice(0, 5).map((inquiry) => (
-        <div className="rounded-md border border-white/10 p-4" key={inquiry.id}>
+        <div className="rounded-md border border-reality-border-secondary p-4" key={inquiry.id}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-brand-text">{inquiry.interested_user.full_name}</p>
-              <p className="mt-1 text-sm text-brand-muted">{inquiry.interested_user.email}</p>
-              <p className="mt-2 text-sm text-brand-muted">{inquiry.property.title}</p>
+              <p className="font-semibold text-reality-text-primary">{inquiry.interested_user.full_name}</p>
+              <p className="mt-1 text-sm text-reality-text-secondary">{inquiry.interested_user.email}</p>
+              <p className="mt-2 text-sm text-reality-text-secondary">{inquiry.property.title}</p>
             </div>
             <WorkflowStatusBadge status={inquiry.status}>
               {formatInquiryStatus(inquiry.status)}
             </WorkflowStatusBadge>
           </div>
           {inquiry.message ? (
-            <p className="mt-3 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
+            <p className="mt-3 text-sm leading-6 text-reality-text-secondary">{inquiry.message}</p>
           ) : null}
           <div className="mt-4 grid gap-3 md:grid-cols-[220px_1fr]">
             <label>
-              <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+              <span className="text-xs font-semibold uppercase tracking-wide text-reality-text-secondary">
                 Status
               </span>
               <Select
@@ -591,11 +594,11 @@ function PropertyInquiryManager({ inquiries }: { inquiries: Inquiry[] }) {
               }}
             >
               <label>
-                <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                <span className="text-xs font-semibold uppercase tracking-wide text-reality-text-secondary">
                   Internal notes
                 </span>
                 <textarea
-                  className="mt-2 min-h-20 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  className="mt-2 min-h-20 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-secondary/60 focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                   defaultValue={inquiry.internal_notes}
                   name="internal_notes"
                   placeholder="Add private owner notes"
@@ -639,155 +642,190 @@ function ViewingRequestsManager({ viewings }: { viewings: Viewing[] }) {
 
   if (viewings.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
-        Viewing requests for your properties will appear here.
+      <Card className="border border-reality-border bg-white p-5 text-sm text-reality-text-muted shadow-sm">
+        <p className="font-medium text-reality-text-primary">No viewing requests yet.</p>
+        <p className="mt-1">
+          Viewing requests for properties you own or manage will appear here.
+        </p>
       </Card>
     );
   }
 
   return (
     <div className="space-y-4">
-      {viewings.slice(0, 5).map((viewing) => (
-        <div className="rounded-md border border-white/10 p-4" key={viewing.id}>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="font-semibold text-brand-text">{viewing.requester.full_name}</p>
-              <p className="mt-1 text-sm text-brand-muted">{viewing.property.title}</p>
-              <p className="mt-1 text-xs text-brand-muted">
-                Requested <ViewingDate viewing={viewing} /> -{" "}
-                {formatViewingType(viewing.viewing_type)}
-              </p>
+      {viewings.slice(0, 5).map((viewing) => {
+        const canManage = viewing.can_manage_viewing;
+        const isTerminal = viewing.status === "completed" || viewing.status === "cancelled";
+        const canSchedule = canManage && ["requested", "rescheduled"].includes(viewing.status);
+        const canComplete = canManage && viewing.status === "confirmed";
+        const canCancel = canManage && !isTerminal;
+
+        return (
+          <Card
+            className="border border-reality-border bg-white p-4 shadow-sm transition hover:border-reality-primary/30 hover:shadow-md"
+            key={viewing.id}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold text-reality-text-primary">
+                  {viewing.requester.full_name}
+                </p>
+                <p className="mt-1 text-sm text-reality-text-secondary">
+                  {viewing.property.title}
+                </p>
+                <p className="mt-1 text-xs text-reality-text-muted">
+                  Requested <ViewingDate viewing={viewing} /> -{" "}
+                  {formatViewingType(viewing.viewing_type)}
+                </p>
+              </div>
+              <WorkflowStatusBadge status={viewing.status}>
+                {formatViewingStatus(viewing.status)}
+              </WorkflowStatusBadge>
             </div>
-            <WorkflowStatusBadge status={viewing.status}>
-              {formatViewingStatus(viewing.status)}
-            </WorkflowStatusBadge>
-          </div>
-          <form className="mt-4 grid gap-3">
-            <div className="grid gap-3 md:grid-cols-2">
+
+            <form className="mt-4 grid gap-3">
+              <div className="grid gap-3 md:grid-cols-2">
+                <label>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-reality-text-muted">
+                    Confirmed date and time
+                  </span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-reality-border bg-white px-3 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-muted/70 focus:border-reality-primary focus:ring-2 focus:ring-reality-primary/20 disabled:bg-reality-surface-subtle disabled:text-reality-text-muted"
+                    defaultValue={defaultDecisionDateTime(viewing)}
+                    disabled={!canSchedule}
+                    name="confirmed_datetime"
+                    type="datetime-local"
+                  />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-reality-text-muted">
+                    Meeting location
+                  </span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-reality-border bg-white px-3 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-muted/70 focus:border-reality-primary focus:ring-2 focus:ring-reality-primary/20 disabled:bg-reality-surface-subtle disabled:text-reality-text-muted"
+                    defaultValue={viewing.meeting_location}
+                    disabled={!canSchedule}
+                    name="meeting_location"
+                    placeholder="Estate gate, sales office, or reception"
+                  />
+                </label>
+              </div>
               <label>
-                <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
-                  Confirmed date and time
+                <span className="text-xs font-semibold uppercase tracking-wide text-reality-text-muted">
+                  Meeting link
                 </span>
                 <input
-                  className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text outline-none transition focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
-                  defaultValue={defaultDecisionDateTime(viewing)}
-                  name="confirmed_datetime"
-                  type="datetime-local"
+                  className="mt-2 h-11 w-full rounded-md border border-reality-border bg-white px-3 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-muted/70 focus:border-reality-primary focus:ring-2 focus:ring-reality-primary/20 disabled:bg-reality-surface-subtle disabled:text-reality-text-muted"
+                  defaultValue={viewing.meeting_link}
+                  disabled={!canSchedule}
+                  name="meeting_link"
+                  placeholder="Optional virtual viewing link"
+                  type="url"
                 />
               </label>
               <label>
-                <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
-                  Meeting location
+                <span className="text-xs font-semibold uppercase tracking-wide text-reality-text-muted">
+                  Shared notes
                 </span>
-                <input
-                  className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
-                  defaultValue={viewing.meeting_location}
-                  name="meeting_location"
-                  placeholder="Estate gate, sales office, or reception"
+                <textarea
+                  className="mt-2 min-h-20 w-full rounded-md border border-reality-border bg-white px-3 py-2 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-muted/70 focus:border-reality-primary focus:ring-2 focus:ring-reality-primary/20 disabled:bg-reality-surface-subtle disabled:text-reality-text-muted"
+                  defaultValue={viewing.notes}
+                  disabled={!canManage}
+                  name="notes"
+                  placeholder="Participant-visible access instructions or reschedule notes"
                 />
               </label>
-            </div>
-            <label>
-              <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
-                Meeting link
-              </span>
-              <input
-                className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
-                defaultValue={viewing.meeting_link}
-                name="meeting_link"
-                placeholder="Optional virtual viewing link"
-                type="url"
-              />
-            </label>
-            <label>
-              <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
-                Notes
-              </span>
-              <textarea
-                className="mt-2 min-h-20 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
-                defaultValue={viewing.notes}
-                name="notes"
-                placeholder="Access instructions, reschedule reason, or private notes"
-              />
-            </label>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                className="h-9"
-                disabled={decisionMutation.isPending}
-                onClick={(event) => {
-                  const form = event.currentTarget.closest("form");
-                  if (form) {
-                    decisionMutation.mutate({
-                      action: "confirm",
-                      payload: buildViewingDecision(form, viewing.id),
-                    });
-                  }
-                }}
-                type="button"
-              >
-                Confirm
-              </Button>
-              <Button
-                className="h-9"
-                disabled={decisionMutation.isPending}
-                onClick={(event) => {
-                  const form = event.currentTarget.closest("form");
-                  if (form) {
-                    decisionMutation.mutate({
-                      action: "reschedule",
-                      payload: buildViewingDecision(form, viewing.id),
-                    });
-                  }
-                }}
-                type="button"
-                variant="secondary"
-              >
-                Reschedule
-              </Button>
-              <Button
-                className="h-9"
-                disabled={notesMutation.isPending}
-                onClick={(event) => {
-                  const form = event.currentTarget.closest("form");
-                  if (form) {
-                    const formData = new FormData(form);
-                    notesMutation.mutate({
-                      viewingId: viewing.id,
-                      notes: String(formData.get("notes") ?? ""),
-                    });
-                  }
-                }}
-                type="button"
-                variant="ghost"
-              >
-                Save notes
-              </Button>
-              {viewing.status === "confirmed" ? (
-                <Button
-                  className="h-9"
-                  disabled={completeMutation.isPending}
-                  onClick={() => completeMutation.mutate(viewing.id)}
-                  type="button"
-                  variant="secondary"
-                >
-                  Complete
-                </Button>
+              {!canManage ? (
+                <p className="rounded-md bg-reality-surface-subtle px-3 py-2 text-sm text-reality-text-muted">
+                  You can view this request, but management actions are unavailable for your
+                  current permissions.
+                </p>
               ) : null}
-              {viewing.status !== "completed" && viewing.status !== "cancelled" ? (
-                <Button
-                  className="h-9"
-                  disabled={cancelMutation.isPending}
-                  onClick={() => cancelMutation.mutate({ viewingId: viewing.id })}
-                  type="button"
-                  variant="ghost"
-                >
-                  Cancel
-                </Button>
-              ) : null}
-            </div>
-          </form>
-        </div>
-      ))}
+              <div className="flex flex-wrap gap-2">
+                {canSchedule ? (
+                  <>
+                    <Button
+                      className="h-9"
+                      disabled={decisionMutation.isPending}
+                      onClick={(event) => {
+                        const form = event.currentTarget.closest("form");
+                        if (form) {
+                          decisionMutation.mutate({
+                            action: "confirm",
+                            payload: buildViewingDecision(form, viewing.id),
+                          });
+                        }
+                      }}
+                      type="button"
+                    >
+                      Confirm
+                    </Button>
+                    <Button
+                      className="h-9"
+                      disabled={decisionMutation.isPending}
+                      onClick={(event) => {
+                        const form = event.currentTarget.closest("form");
+                        if (form) {
+                          decisionMutation.mutate({
+                            action: "reschedule",
+                            payload: buildViewingDecision(form, viewing.id),
+                          });
+                        }
+                      }}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Reschedule
+                    </Button>
+                  </>
+                ) : null}
+                {canManage ? (
+                  <Button
+                    className="h-9"
+                    disabled={notesMutation.isPending}
+                    onClick={(event) => {
+                      const form = event.currentTarget.closest("form");
+                      if (form) {
+                        const formData = new FormData(form);
+                        notesMutation.mutate({
+                          viewingId: viewing.id,
+                          notes: String(formData.get("notes") ?? ""),
+                        });
+                      }
+                    }}
+                    type="button"
+                    variant="ghost"
+                  >
+                    Save notes
+                  </Button>
+                ) : null}
+                {canComplete ? (
+                  <Button
+                    className="h-9"
+                    disabled={completeMutation.isPending}
+                    onClick={() => completeMutation.mutate(viewing.id)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Complete
+                  </Button>
+                ) : null}
+                {canCancel ? (
+                  <Button
+                    className="h-9"
+                    disabled={cancelMutation.isPending}
+                    onClick={() => cancelMutation.mutate({ viewingId: viewing.id })}
+                    type="button"
+                    variant="ghost"
+                  >
+                    Cancel
+                  </Button>
+                ) : null}
+              </div>
+            </form>
+          </Card>
+        );
+      })}
     </div>
   );
 }
@@ -819,7 +857,7 @@ function ReceivedApplicationsManager({ applications }: { applications: RentalApp
 
   if (applications.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Rental applications for your properties will appear here.
       </Card>
     );
@@ -828,13 +866,13 @@ function ReceivedApplicationsManager({ applications }: { applications: RentalApp
   return (
     <div className="space-y-4">
       {applications.slice(0, 5).map((application) => (
-        <div className="rounded-md border border-white/10 p-4" key={application.id}>
+        <div className="rounded-md border border-reality-border-secondary p-4" key={application.id}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-brand-text">{application.full_name}</p>
-              <p className="mt-1 text-sm text-brand-muted">{application.email}</p>
-              <p className="mt-2 text-sm text-brand-muted">{application.property.title}</p>
-              <p className="mt-1 text-xs text-brand-muted">
+              <p className="font-semibold text-reality-text-primary">{application.full_name}</p>
+              <p className="mt-1 text-sm text-reality-text-secondary">{application.email}</p>
+              <p className="mt-2 text-sm text-reality-text-secondary">{application.property.title}</p>
+              <p className="mt-1 text-xs text-reality-text-secondary">
                 {application.employment_status} - Move-in{" "}
                 <ApplicationDate value={application.move_in_date} />
               </p>
@@ -855,11 +893,11 @@ function ReceivedApplicationsManager({ applications }: { applications: RentalApp
               }}
             >
               <label>
-                <span className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                <span className="text-xs font-semibold uppercase tracking-wide text-reality-text-secondary">
                   Owner notes
                 </span>
                 <textarea
-                  className="mt-2 min-h-20 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  className="mt-2 min-h-20 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-secondary/60 focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                   defaultValue={application.owner_notes}
                   name="owner_notes"
                   placeholder="Add private application review notes"
@@ -870,6 +908,12 @@ function ReceivedApplicationsManager({ applications }: { applications: RentalApp
               </Button>
             </form>
             <div className="flex flex-col gap-2">
+              <Link
+                className={buttonClasses("realitySecondary", "h-9 w-full")}
+                href={`/dashboard/applications/${application.id}`}
+              >
+                Open detail
+              </Link>
               {application.status === "submitted" ? (
                 <Button
                   className="h-9"
@@ -947,12 +991,12 @@ function SectionHeader({
   return (
     <div className="max-w-3xl">
       {eyebrow ? (
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-secondary">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-reality-brand-600">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="mt-2 font-heading text-2xl font-semibold text-brand-text">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-brand-muted">{description}</p>
+      <h2 className="mt-2 font-display text-2xl font-semibold text-reality-text-primary">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-reality-text-secondary">{description}</p>
     </div>
   );
 }
@@ -968,11 +1012,11 @@ function MetricGrid({
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {metrics.map((item) => (
         <Card className="p-5" key={item.label}>
-          <p className="text-sm text-brand-muted">{item.label}</p>
-          <p className="mt-3 font-heading text-4xl font-semibold text-brand-secondary">
+          <p className="text-sm text-reality-text-secondary">{item.label}</p>
+          <p className="mt-3 font-display text-4xl font-semibold text-reality-brand-600">
             {isLoading ? "-" : item.value}
           </p>
-          <p className="mt-2 text-xs leading-5 text-brand-muted">{item.detail}</p>
+          <p className="mt-2 text-xs leading-5 text-reality-text-secondary">{item.detail}</p>
         </Card>
       ))}
     </div>
@@ -988,9 +1032,9 @@ function ActionGrid({
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {actions.map((item) => (
         <Link className="group block focus:outline-none" href={item.href} key={item.href}>
-          <Card className="h-full p-5 transition group-hover:border-brand-secondary/60 group-focus-visible:ring-2 group-focus-visible:ring-brand-secondary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-brand-background">
-            <h3 className="text-base font-semibold text-brand-text">{item.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-brand-muted">{item.description}</p>
+          <Card className="h-full p-5 transition group-hover:border-brand-secondary/60 group-focus-visible:ring-2 group-focus-visible:ring-reality-brand-500 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-white">
+            <h3 className="text-base font-semibold text-reality-text-primary">{item.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-reality-text-secondary">{item.description}</p>
           </Card>
         </Link>
       ))}
@@ -1056,16 +1100,16 @@ function BuyerJourneySummary({
     <div className="grid gap-3 md:grid-cols-4">
       {stages.map((stage, index) => (
         <Card className="relative p-4" key={stage.label}>
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-text-secondary">
             Step {index + 1}
           </span>
           <div className="mt-3 flex items-end justify-between gap-3">
-            <p className="font-heading text-xl font-semibold text-brand-text">{stage.label}</p>
-            <p className="font-heading text-3xl font-semibold text-brand-secondary">
+            <p className="font-display text-xl font-semibold text-reality-text-primary">{stage.label}</p>
+            <p className="font-display text-3xl font-semibold text-reality-brand-600">
               {stage.value}
             </p>
           </div>
-          <p className="mt-2 text-xs leading-5 text-brand-muted">{stage.description}</p>
+          <p className="mt-2 text-xs leading-5 text-reality-text-secondary">{stage.description}</p>
         </Card>
       ))}
     </div>
@@ -1225,6 +1269,50 @@ function DashboardPropertyRail({
           </div>
         ))}
         {cta ? <div className="flex w-[220px] shrink-0 items-center">{cta}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+function SupplyManagedPropertyRail({
+  empty,
+  isError,
+  isLoading,
+  properties,
+}: {
+  empty: string;
+  isError?: boolean;
+  isLoading?: boolean;
+  properties: PaginatedProperties["results"];
+}) {
+  if (isLoading) {
+    return (
+      <div className="overflow-x-auto pb-2">
+        <div className="flex gap-6">
+          {[0, 1].map((item) => (
+            <Card
+              className="h-[252px] w-[420px] shrink-0 animate-pulse rounded-[28px] border-reality-border-secondary bg-reality-bg-subtle"
+              key={item}
+              variant="realityElevated"
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || properties.length === 0) {
+    return <EmptyDashboardState>{empty}</EmptyDashboardState>;
+  }
+
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="flex gap-6">
+        {properties.slice(0, 4).map((property) => (
+          <div className="w-[420px] shrink-0" key={property.id}>
+            <ManagedPropertyCard property={property} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -1433,16 +1521,504 @@ function BuyerDashboard({
   );
 }
 
+const supplyDashboardTabs = [
+  { label: "Overview", value: "overview" },
+  { label: "Applications", value: "applications" },
+  { label: "My Property", value: "properties" },
+  { label: "Messages", value: "messages" },
+  { label: "Profile", value: "profile" },
+];
+
+const supplyNavigationLinks = [
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    description: "Supply-side overview for approved agents and landlords.",
+  },
+  {
+    href: "/properties/new",
+    label: "Add Property",
+    description: "Create a draft listing using the existing property flow.",
+  },
+  {
+    href: "/dashboard/leads",
+    label: "Leads",
+    description: "Review inquiries and pipeline stages.",
+  },
+  {
+    href: "/dashboard/messages",
+    label: "Messages",
+    description: "Continue conversations with buyers and tenants.",
+  },
+  {
+    href: "/dashboard/transactions",
+    label: "Transactions",
+    description: "Open supported transaction and escrow workflows.",
+  },
+  {
+    href: "/settings/profile",
+    label: "Profile",
+    description: "Keep account and contact details current.",
+  },
+];
+
+type SupplyRequestPreviewItem =
+  | { type: "application"; item: RentalApplication }
+  | { type: "inquiry"; item: Inquiry }
+  | { type: "viewing"; item: Viewing };
+
+function supplyRequestHref(request: SupplyRequestPreviewItem) {
+  if (request.type === "inquiry") {
+    return `/dashboard/leads/${request.item.id}`;
+  }
+  if (request.type === "viewing") {
+    return `/dashboard/messages?viewing=${request.item.id}`;
+  }
+  return undefined;
+}
+
+function buildSupplyRequests(overview?: DashboardOverview): SupplyRequestPreviewItem[] {
+  return [
+    ...(overview?.receivedApplications ?? []).map((item) => ({
+      type: "application" as const,
+      item,
+    })),
+    ...(overview?.leads ?? []).map((item) => ({ type: "inquiry" as const, item })),
+    ...(overview?.receivedViewings ?? []).map((item) => ({ type: "viewing" as const, item })),
+  ].sort((a, b) => {
+    return new Date(b.item.created_at).getTime() - new Date(a.item.created_at).getTime();
+  });
+}
+
+function SupplyMetricGrid({
+  isLoading,
+  overview,
+}: {
+  isLoading: boolean;
+  overview?: DashboardOverview;
+}) {
+  const metricCards = [
+    {
+      icon: "file" as const,
+      label: "Active listing",
+      value: metricValue(overview?.metrics, "Active listings"),
+      detail: "Approved listings visible to buyers and tenants.",
+    },
+    {
+      icon: "check" as const,
+      label: "Received applications",
+      value: metricValue(overview?.metrics, "Received applications"),
+      detail: "Applications submitted on your properties.",
+    },
+    {
+      icon: "headset" as const,
+      label: "Property inquiries",
+      value: metricValue(overview?.metrics, "Property inquiries"),
+      detail: "Buyer or tenant inquiries awaiting follow-up.",
+    },
+    {
+      icon: "heart" as const,
+      label: "Viewing requests",
+      value: metricValue(overview?.metrics, "Viewing requests"),
+      detail: "Requested or scheduled property viewings.",
+    },
+  ];
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {metricCards.map((metric) => (
+        <MetricCard
+          className="rounded-[24px] border-[#f0f0f0] p-6 shadow-[0_4px_15px_rgba(0,0,0,0.04)]"
+          detail={metric.detail}
+          icon={<DashboardIcon type={metric.icon} />}
+          key={metric.label}
+          label={metric.label}
+          loading={isLoading}
+          value={metric.value}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SupplyApplicationsAndRequests({ overview }: { overview?: DashboardOverview }) {
+  const requests = buildSupplyRequests(overview).slice(0, 4);
+  const receivedViewings = overview?.receivedViewings ?? [];
+
+  if (requests.length === 0) {
+    return (
+      <EmptyDashboardState>
+        No applications, inquiries, or viewing requests yet. New buyer activity will appear here.
+      </EmptyDashboardState>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="overflow-x-auto pb-2">
+        <div className="flex gap-6">
+          {requests.map((request) => (
+            <ApplicationRequestCard
+              href={supplyRequestHref(request)}
+              item={request.item}
+              key={`${request.type}-${request.item.id}`}
+              type={request.type}
+            />
+          ))}
+        </div>
+      </div>
+      {receivedViewings.length > 0 ? (
+        <section aria-label="Viewing request management">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-reality-text-primary">Viewing management</h3>
+            <p className="mt-1 text-sm text-reality-text-secondary">
+              Confirm, reschedule, complete, or cancel viewing requests when your property
+              permissions allow it.
+            </p>
+          </div>
+          <ViewingRequestsManager viewings={receivedViewings} />
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function SupplyMessagePreview({
+  isLoading,
+  threads,
+}: {
+  isLoading: boolean;
+  threads?: ConversationThread[];
+}) {
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[0, 1, 2].map((item) => (
+          <Card
+            className="h-[88px] animate-pulse rounded-[24px] border-reality-border-secondary bg-reality-bg-subtle"
+            key={item}
+            variant="realityElevated"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  const visibleThreads = (threads ?? []).slice(0, 4);
+  if (visibleThreads.length === 0) {
+    return <EmptyDashboardState>No messages yet. Buyer conversations will appear here.</EmptyDashboardState>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {visibleThreads.map((thread) => (
+        <Link
+          className="flex items-center justify-between gap-4 rounded-[24px] border border-reality-border-secondary bg-white p-4 shadow-[0_20px_17px_rgba(0,0,0,0.04)] transition hover:border-reality-brand-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+          href={`/dashboard/messages/${thread.id}`}
+          key={thread.id}
+        >
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-reality-bg-muted text-sm font-semibold text-reality-text-secondary">
+              {(thread.last_message?.sender ?? thread.created_by ?? "R").slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-lg font-medium leading-7 text-reality-text-primary">
+                Conversation
+              </p>
+              <p className="truncate text-sm leading-5 text-reality-text-secondary">
+                {thread.last_message?.body ?? "No messages yet"}
+              </p>
+            </div>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-sm text-reality-text-secondary">
+              <ApplicationDate value={thread.last_message?.created_at ?? thread.updated_at} />
+            </p>
+            {thread.unread_count > 0 ? (
+              <span className="mt-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#bc8936] px-2 text-xs font-semibold text-white">
+                {thread.unread_count}
+              </span>
+            ) : null}
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function SupplyDashboardBody({
+  dashboardQuery,
+  managedPropertiesQuery,
+  messageQuery,
+  overview,
+}: {
+  dashboardQuery: ReturnType<typeof useQuery<DashboardOverview>>;
+  managedPropertiesQuery: ReturnType<typeof useQuery<PaginatedProperties>>;
+  messageQuery: ReturnType<typeof useQuery<ConversationThread[]>>;
+  overview?: DashboardOverview;
+}) {
+  return (
+    <div>
+      {dashboardQuery.isError ? (
+        <FormMessage className="mt-6" tone="error" variant="reality">
+          Dashboard stats could not be loaded. Some sections may be unavailable.
+        </FormMessage>
+      ) : null}
+
+      <section className="mt-8">
+        <BuyerSectionHeader description="Your dashboard Summary" title="Overview" />
+        <div className="mt-6">
+          <SupplyMetricGrid isLoading={dashboardQuery.isLoading} overview={overview} />
+        </div>
+      </section>
+
+      <section className="mt-16">
+        <BuyerSectionHeader title="Applications & Requests" />
+        <div className="mt-8">
+          <SupplyApplicationsAndRequests overview={overview} />
+        </div>
+      </section>
+
+      <section className="mt-16">
+        <BuyerSectionHeader
+          action={
+            <Link className={buttonClasses("reality", "h-10 px-5")} href="/dashboard/properties">
+              View all
+            </Link>
+          }
+          description="Manage properties you own or represent"
+          title="My Property"
+        />
+        <div className="mt-8">
+          <SupplyManagedPropertyRail
+            empty={
+              managedPropertiesQuery.isError
+                ? "Managed properties could not be loaded."
+                : "You haven't added or been assigned any properties yet."
+            }
+            isError={managedPropertiesQuery.isError}
+            isLoading={managedPropertiesQuery.isLoading}
+            properties={managedPropertiesQuery.data?.results.slice(0, 4) ?? []}
+          />
+        </div>
+      </section>
+
+      <section className="mt-16">
+        <BuyerSectionHeader
+          action={
+            <Link className={buttonClasses("realitySecondary", "h-10 px-5")} href="/dashboard/messages">
+              View all
+            </Link>
+          }
+          description="Recent conversations with buyers and tenants"
+          title="Message"
+        />
+        <div className="mt-8">
+          <SupplyMessagePreview isLoading={messageQuery.isLoading} threads={messageQuery.data} />
+        </div>
+        {messageQuery.isError ? (
+          <FormMessage className="mt-4" tone="error" variant="reality">
+            Messages could not be loaded.
+          </FormMessage>
+        ) : null}
+      </section>
+
+      <section className="mt-16">
+        <BuyerSectionHeader
+          action={
+            <Link className={buttonClasses("realitySecondary", "h-10 px-5")} href="/saved-properties">
+              View all
+            </Link>
+          }
+          description="Properties you saved"
+          title="Saved Property"
+        />
+        <div className="mt-8">
+          <DashboardPropertyRail
+            empty="Saved properties will appear here if this supply account saves marketplace listings."
+            properties={overview?.savedProperties ?? []}
+          />
+        </div>
+      </section>
+
+      <section className="mt-16">
+        <BuyerSectionHeader
+          description="Property you view recently"
+          title="Recently viewed property"
+        />
+        <div className="mt-8">
+          <DashboardPropertyRail
+            empty="Recently viewed properties will appear as this account browses the marketplace."
+            properties={overview?.recentlyViewed ?? []}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SupplyDashboardShell({
+  dashboardQuery,
+  firstName,
+  managedPropertiesQuery,
+  messageQuery,
+  overview,
+}: {
+  dashboardQuery: ReturnType<typeof useQuery<DashboardOverview>>;
+  firstName?: string;
+  managedPropertiesQuery: ReturnType<typeof useQuery<PaginatedProperties>>;
+  messageQuery: ReturnType<typeof useQuery<ConversationThread[]>>;
+  overview?: DashboardOverview;
+}) {
+  const [activeTab, setActiveTab] = useState("overview");
+  const showOverview = activeTab === "overview";
+  const showApplications = activeTab === "overview" || activeTab === "applications";
+  const showProperties = activeTab === "overview" || activeTab === "properties";
+  const showMessages = activeTab === "overview" || activeTab === "messages";
+  const showProfile = activeTab === "overview" || activeTab === "profile";
+
+  return (
+    <main className="min-h-screen bg-white pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
+      <PageContainer>
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            className="text-sm font-medium text-reality-text-tertiary transition hover:text-reality-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+            href="/dashboard"
+          >
+            Dashboard
+          </Link>
+          <Link className={buttonClasses("reality", "h-10 px-5")} href="/properties/new">
+            Add Property
+          </Link>
+        </div>
+
+        <section className="mt-8">
+          <h1 className="text-4xl font-medium leading-[44px] text-reality-text-primary">
+            Hi, {firstName || "there"}
+          </h1>
+          <p className="mt-2 text-xl leading-7 text-reality-text-secondary">
+            Manage properties you own or represent.
+          </p>
+        </section>
+
+        <div className="mt-10 overflow-x-auto pb-1">
+          <SegmentedTabs
+            className="min-w-max border border-reality-border-secondary bg-reality-bg-muted p-1.5 shadow-reality-xs"
+            items={supplyDashboardTabs}
+            label="Agent and landlord dashboard sections"
+            onChange={setActiveTab}
+            value={activeTab}
+          />
+        </div>
+
+        {showOverview ? (
+          <SupplyDashboardBody
+            dashboardQuery={dashboardQuery}
+            managedPropertiesQuery={managedPropertiesQuery}
+            messageQuery={messageQuery}
+            overview={overview}
+          />
+        ) : null}
+
+        {!showOverview && showApplications ? (
+          <section className="mt-8">
+            <BuyerSectionHeader title="Applications & Requests" />
+            <div className="mt-8">
+              <SupplyApplicationsAndRequests overview={overview} />
+            </div>
+          </section>
+        ) : null}
+
+        {!showOverview && showProperties ? (
+          <section className="mt-8">
+            <BuyerSectionHeader
+              action={
+                <Link className={buttonClasses("reality", "h-10 px-5")} href="/properties/new">
+                  Add Property
+                </Link>
+              }
+              description="Manage properties you own or represent"
+              title="My Property"
+            />
+            <div className="mt-8">
+              <SupplyManagedPropertyRail
+                empty={
+                  managedPropertiesQuery.isError
+                    ? "Managed properties could not be loaded."
+                    : "You haven't added or been assigned any properties yet."
+                }
+                isError={managedPropertiesQuery.isError}
+                isLoading={managedPropertiesQuery.isLoading}
+                properties={managedPropertiesQuery.data?.results.slice(0, 4) ?? []}
+              />
+            </div>
+          </section>
+        ) : null}
+
+        {!showOverview && showMessages ? (
+          <section className="mt-8">
+            <BuyerSectionHeader
+              action={
+                <Link
+                  className={buttonClasses("realitySecondary", "h-10 px-5")}
+                  href="/dashboard/messages"
+                >
+                  View all
+                </Link>
+              }
+              description="Recent conversations with buyers and tenants"
+              title="Message"
+            />
+            <div className="mt-8">
+              <SupplyMessagePreview isLoading={messageQuery.isLoading} threads={messageQuery.data} />
+            </div>
+          </section>
+        ) : null}
+
+        {!showOverview && showProfile ? (
+          <section className="mt-8">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {supplyNavigationLinks.map((link) => (
+                <Link
+                  className="group rounded-reality border border-reality-border-secondary bg-white p-5 shadow-reality-xs transition hover:-translate-y-0.5 hover:border-reality-brand-300 hover:shadow-reality-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+                  href={link.href}
+                  key={link.href}
+                >
+                  <p className="text-base font-semibold text-reality-text-primary transition group-hover:text-reality-brand-700">
+                    {link.label}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
+                    {link.description}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </PageContainer>
+    </main>
+  );
+}
+
 function DashboardContent() {
   const { user } = useAuth();
   const dashboardQuery = useQuery({
     queryKey: ["dashboard-overview", user?.id],
     queryFn: () => getDashboardOverview(user),
   });
+  const messageQuery = useQuery({
+    enabled: isApprovedSupplyUser(user),
+    queryKey: ["message-threads", "supply-dashboard", user?.id],
+    queryFn: listThreads,
+  });
+  const managedPropertiesQuery = useQuery({
+    enabled: isApprovedSupplyUser(user),
+    queryKey: ["managed-properties", "supply-dashboard", user?.id],
+    queryFn: () => listManagedProperties({ ordering: "-created_at" }),
+  });
   const overview = dashboardQuery.data;
-  const isAgent = isApprovedProfessional(user);
+  const isSupplyUser = isApprovedSupplyUser(user);
   const isAdminUser = isAdmin(user) || overview?.role === "admin";
-  const isSupplyUser = isAgent || overview?.role === "agent";
   const dashboardLabel = isAdminUser
     ? "Admin operations"
     : isSupplyUser
@@ -1463,27 +2039,39 @@ function DashboardContent() {
     return <BuyerDashboard dashboardQuery={dashboardQuery} overview={overview} />;
   }
 
+  if (isSupplyUser && !isAdminUser) {
+    return (
+      <SupplyDashboardShell
+        dashboardQuery={dashboardQuery}
+        firstName={user?.first_name}
+        managedPropertiesQuery={managedPropertiesQuery}
+        messageQuery={messageQuery}
+        overview={overview}
+      />
+    );
+  }
+
   return (
     <main className="mx-auto max-w-7xl px-5 py-8 sm:px-6 lg:py-10">
-      <section className="rounded-md border border-white/10 bg-brand-surface/70 p-5 shadow-glow sm:p-7">
+      <section className="rounded-md border border-reality-border-secondary bg-white/70 p-5 shadow-reality-sm sm:p-7">
         <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-end">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-secondary">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-reality-brand-600">
               {dashboardLabel}
             </p>
-            <h1 className="mt-3 font-heading text-3xl font-semibold text-brand-text md:text-4xl">
+            <h1 className="mt-3 font-display text-3xl font-semibold text-reality-text-primary md:text-4xl">
               Welcome back{user?.first_name ? `, ${user.first_name}` : ""}.
             </h1>
-            <p className="mt-3 max-w-2xl leading-7 text-brand-muted">{dashboardDescription}</p>
+            <p className="mt-3 max-w-2xl leading-7 text-reality-text-secondary">{dashboardDescription}</p>
           </div>
-          <div className="rounded-md border border-brand-secondary/25 bg-brand-background/70 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-secondary">
+          <div className="rounded-md border border-brand-secondary/25 bg-white/70 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-reality-brand-600">
               Next best actions
             </p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {primaryActions.slice(0, 3).map((action) => (
                 <Link
-                  className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-brand-text transition hover:border-brand-secondary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
+                  className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-sm font-semibold text-reality-text-primary transition hover:border-brand-secondary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
                   href={action.href}
                   key={action.href}
                 >
@@ -1532,10 +2120,10 @@ function DashboardContent() {
       <section className="mt-10">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-heading text-2xl font-semibold text-brand-text">
+            <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
               Current transaction status
             </h2>
-            <p className="mt-1 text-sm text-brand-muted">
+            <p className="mt-1 text-sm text-reality-text-secondary">
               Follow each property from inquiry through viewing, application, and decision.
             </p>
           </div>
@@ -1549,45 +2137,45 @@ function DashboardContent() {
         <>
           <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Admin review queues
               </h2>
-              <p className="mt-2 text-sm leading-6 text-brand-muted">
+              <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
                 Verification, listing moderation, and platform activity stay separated from normal
                 user dashboards.
               </p>
               <div className="mt-5 grid gap-3">
                 {overview?.pendingApprovals.slice(0, 4).map((property) => (
                   <Link
-                    className="rounded-md border border-white/10 p-4 transition hover:border-brand-secondary/60"
+                    className="rounded-md border border-reality-border-secondary p-4 transition hover:border-brand-secondary/60"
                     href={`/properties/${property.slug}`}
                     key={property.id}
                   >
-                    <p className="font-semibold text-brand-text">{property.title}</p>
-                    <p className="mt-1 text-sm text-brand-muted">
+                    <p className="font-semibold text-reality-text-primary">{property.title}</p>
+                    <p className="mt-1 text-sm text-reality-text-secondary">
                       {property.city}, {property.state}
                     </p>
                   </Link>
                 ))}
                 {(overview?.pendingApprovals.length ?? 0) === 0 ? (
-                  <p className="rounded-md border border-white/10 p-4 text-sm text-brand-muted">
+                  <p className="rounded-md border border-reality-border-secondary p-4 text-sm text-reality-text-secondary">
                     No listing approvals are waiting in this dashboard summary.
                   </p>
                 ) : null}
               </div>
             </Card>
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 User statistics
               </h2>
               <div className="mt-5 grid gap-4">
                 {(overview?.userStats ?? []).map((metric) => (
-                  <div className="rounded-md bg-white/5 p-4" key={metric.label}>
-                    <p className="text-sm text-brand-muted">{metric.label}</p>
-                    <p className="mt-2 text-3xl font-semibold text-brand-secondary">
+                  <div className="rounded-md bg-reality-bg-subtle p-4" key={metric.label}>
+                    <p className="text-sm text-reality-text-secondary">{metric.label}</p>
+                    <p className="mt-2 text-3xl font-semibold text-reality-brand-600">
                       {metric.value}
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-brand-muted">{metric.detail}</p>
+                    <p className="mt-1 text-xs leading-5 text-reality-text-secondary">{metric.detail}</p>
                   </div>
                 ))}
               </div>
@@ -1595,7 +2183,7 @@ function DashboardContent() {
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Recent activity
               </h2>
               <div className="mt-5">
@@ -1618,7 +2206,7 @@ function DashboardContent() {
               ))}
             </div>
             {(overview?.activeListings.length ?? 0) === 0 ? (
-              <Card className="mt-5 p-5 text-sm text-brand-muted">
+              <Card className="mt-5 p-5 text-sm text-reality-text-secondary">
                 Your active listings will appear here after approval. Create a draft listing to get
                 started.
               </Card>
@@ -1626,7 +2214,7 @@ function DashboardContent() {
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Property inquiries
               </h2>
               <div className="mt-5">
@@ -1634,25 +2222,25 @@ function DashboardContent() {
               </div>
             </Card>
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Conversion metrics
               </h2>
               <div className="mt-5 grid gap-4">
-                <div className="rounded-md bg-white/5 p-4">
-                  <p className="text-sm text-brand-muted">Active leads</p>
-                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">
+                <div className="rounded-md bg-reality-bg-subtle p-4">
+                  <p className="text-sm text-reality-text-secondary">Active leads</p>
+                  <p className="mt-2 text-3xl font-semibold text-reality-brand-600">
                     {overview?.leads.length ?? 0}
                   </p>
                 </div>
-                <div className="rounded-md bg-white/5 p-4">
-                  <p className="text-sm text-brand-muted">Viewing requests</p>
-                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">
+                <div className="rounded-md bg-reality-bg-subtle p-4">
+                  <p className="text-sm text-reality-text-secondary">Viewing requests</p>
+                  <p className="mt-2 text-3xl font-semibold text-reality-brand-600">
                     {overview?.receivedViewings.length ?? 0}
                   </p>
                 </div>
-                <div className="rounded-md bg-white/5 p-4">
-                  <p className="text-sm text-brand-muted">Pending applications</p>
-                  <p className="mt-2 text-3xl font-semibold text-brand-secondary">
+                <div className="rounded-md bg-reality-bg-subtle p-4">
+                  <p className="text-sm text-reality-text-secondary">Pending applications</p>
+                  <p className="mt-2 text-3xl font-semibold text-reality-brand-600">
                     {
                       (overview?.receivedApplications ?? []).filter((item) =>
                         ["submitted", "under_review"].includes(item.status),
@@ -1665,7 +2253,7 @@ function DashboardContent() {
           </section>
           <section className="mt-10">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Viewing requests
               </h2>
               <div className="mt-5">
@@ -1675,7 +2263,7 @@ function DashboardContent() {
           </section>
           <section className="mt-10">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Received applications
               </h2>
               <div className="mt-5">
@@ -1685,7 +2273,7 @@ function DashboardContent() {
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Recent activity
               </h2>
               <div className="mt-5">
@@ -1708,20 +2296,20 @@ function DashboardContent() {
               ))}
             </div>
             {(overview?.recommendedProperties.length ?? 0) === 0 ? (
-              <Card className="mt-5 p-5 text-sm text-brand-muted">
+              <Card className="mt-5 p-5 text-sm text-reality-text-secondary">
                 Recommendations will appear as you browse and save properties.
               </Card>
             ) : null}
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-2">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">My interests</h2>
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">My interests</h2>
               <div className="mt-5">
                 <MyInterestsList inquiries={overview?.inquiries ?? []} />
               </div>
             </Card>
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">My viewings</h2>
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">My viewings</h2>
               <div className="mt-5">
                 <MyViewingsList viewings={overview?.viewings ?? []} />
               </div>
@@ -1729,18 +2317,18 @@ function DashboardContent() {
           </section>
           <section className="mt-10">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Recently viewed
               </h2>
               <div className="mt-5 space-y-3">
                 {overview?.recentlyViewed.slice(0, 5).map((property) => (
                   <Link
-                    className="block rounded-md border border-white/10 p-4 transition hover:border-brand-secondary/60"
+                    className="block rounded-md border border-reality-border-secondary p-4 transition hover:border-brand-secondary/60"
                     href={`/properties/${property.slug}`}
                     key={property.id}
                   >
-                    <p className="font-semibold text-brand-text">{property.title}</p>
-                    <p className="mt-1 text-sm text-brand-muted">
+                    <p className="font-semibold text-reality-text-primary">{property.title}</p>
+                    <p className="mt-1 text-sm text-reality-text-secondary">
                       {property.city}, {property.state}
                     </p>
                   </Link>
@@ -1750,7 +2338,7 @@ function DashboardContent() {
           </section>
           <section className="mt-10">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 My applications
               </h2>
               <div className="mt-5">
@@ -1760,7 +2348,7 @@ function DashboardContent() {
           </section>
           <section className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Recent activity
               </h2>
               <div className="mt-5">
@@ -1778,3 +2366,4 @@ function DashboardContent() {
 export default function DashboardPage() {
   return <DashboardContent />;
 }
+

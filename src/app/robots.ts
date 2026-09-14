@@ -38,3 +38,4 @@ export default function robots(): MetadataRoute.Robots {
     host: SITE_URL,
   };
 }
+

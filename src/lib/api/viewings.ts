@@ -29,6 +29,7 @@ export type Viewing = {
   meeting_link: string;
   notes: string;
   status: ViewingStatus;
+  can_manage_viewing: boolean;
   created_at: string;
   updated_at: string;
 };

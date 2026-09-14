@@ -108,7 +108,7 @@ export default function NewVerificationRequestPage() {
       <main className="mx-auto max-w-2xl p-4">
         <form onSubmit={onSubmit}>
           <Card className="p-4">
-            <h1 className="mb-4 text-xl font-semibold text-brand-text">
+            <h1 className="mb-4 text-xl font-semibold text-reality-text-primary">
               Submit Verification Request
             </h1>
 
@@ -117,7 +117,7 @@ export default function NewVerificationRequestPage() {
             </FormMessage>
 
             <div className="grid gap-4">
-              <label className="block text-sm font-medium text-brand-text">
+              <label className="block text-sm font-medium text-reality-text-primary">
                 Verification type
                 <Select className="mt-2" {...register("verification_type")}>
                   {verificationTypes.map((type) => (
@@ -195,3 +195,4 @@ export default function NewVerificationRequestPage() {
     </ProtectedRoute>
   );
 }
+

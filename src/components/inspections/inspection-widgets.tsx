@@ -36,17 +36,17 @@ export function InspectionRequestCard({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <InspectionStatusBadge status={request.status} />
-          <h2 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="mt-3 font-display text-2xl font-semibold text-reality-text-primary">
             {request.property.title}
           </h2>
-          <p className="mt-2 text-sm text-brand-muted">
+          <p className="mt-2 text-sm text-reality-text-secondary">
             {request.inspection_type.replaceAll("_", " ")} · Preferred {formatDate(request.preferred_date)}
           </p>
-          <p className="mt-3 line-clamp-2 text-sm leading-6 text-brand-muted">
+          <p className="mt-3 line-clamp-2 text-sm leading-6 text-reality-text-secondary">
             {request.purpose}
           </p>
         </div>
-        {href ? <span className={buttonClasses("secondary")}>Open</span> : null}
+        {href ? <span className={buttonClasses("realitySecondary")}>Open</span> : null}
       </div>
     </Card>
   );
@@ -68,10 +68,10 @@ export function WalkthroughVideoPlayer({
   if (walkthroughs.length === 0) {
     return (
       <Card className="p-5">
-        <h2 className="font-heading text-2xl font-semibold text-brand-text">
+        <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
           Virtual walkthroughs
         </h2>
-        <p className="mt-3 text-sm leading-6 text-brand-muted">
+        <p className="mt-3 text-sm leading-6 text-reality-text-secondary">
           No moderated walkthrough video is available for this property yet. Request a viewing or
           inspection for stronger evidence before making a decision.
         </p>
@@ -85,14 +85,14 @@ export function WalkthroughVideoPlayer({
     <section>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-secondary">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-reality-brand-600">
             Moderated media
           </p>
-          <h2 className="mt-3 font-heading text-3xl font-semibold text-brand-text">
+          <h2 className="mt-3 font-display text-3xl font-semibold text-reality-text-primary">
             Virtual walkthrough
           </h2>
         </div>
-        <span className="text-sm font-semibold text-brand-muted">
+        <span className="text-sm font-semibold text-reality-text-secondary">
           {walkthroughs.length} approved video{walkthroughs.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -105,13 +105,13 @@ export function WalkthroughVideoPlayer({
           src={featured.video_url}
         />
         <div className="p-5">
-          <h3 className="font-heading text-2xl font-semibold text-brand-text">
+          <h3 className="font-display text-2xl font-semibold text-reality-text-primary">
             {featured.title}
           </h3>
           {featured.description ? (
-            <p className="mt-2 text-sm leading-6 text-brand-muted">{featured.description}</p>
+            <p className="mt-2 text-sm leading-6 text-reality-text-secondary">{featured.description}</p>
           ) : null}
-          <p className="mt-3 text-xs uppercase tracking-wide text-brand-muted">
+          <p className="mt-3 text-xs uppercase tracking-wide text-reality-text-secondary">
             Public only after RealityNG moderation
           </p>
         </div>
@@ -122,14 +122,14 @@ export function WalkthroughVideoPlayer({
 
 export function InspectionTimeline({ events }: { events: TimelineEvent[] }) {
   if (events.length === 0) {
-    return <Card className="p-5 text-sm text-brand-muted">No timeline events yet.</Card>;
+    return <Card className="p-5 text-sm text-reality-text-secondary">No timeline events yet.</Card>;
   }
   return (
     <div className="space-y-3">
       {events.map((event) => (
-        <div className="rounded-md border border-white/10 bg-white/5 p-4" key={event.id}>
-          <p className="font-semibold text-brand-text">{event.description || event.event_type}</p>
-          <p className="mt-1 text-sm text-brand-muted">
+        <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4" key={event.id}>
+          <p className="font-semibold text-reality-text-primary">{event.description || event.event_type}</p>
+          <p className="mt-1 text-sm text-reality-text-secondary">
             {event.actor_label} · {formatDate(event.created_at)}
           </p>
         </div>
@@ -141,7 +141,7 @@ export function InspectionTimeline({ events }: { events: TimelineEvent[] }) {
 export function EvidenceList({ evidence }: { evidence: InspectionEvidence[] }) {
   if (evidence.length === 0) {
     return (
-      <div className="rounded-md border border-dashed border-white/15 bg-white/5 p-4 text-sm text-brand-muted">
+      <div className="rounded-md border border-dashed border-reality-border-secondary bg-reality-bg-subtle p-4 text-sm text-reality-text-secondary">
         No private evidence has been attached yet.
       </div>
     );
@@ -151,15 +151,15 @@ export function EvidenceList({ evidence }: { evidence: InspectionEvidence[] }) {
       {evidence.map((item) => (
         <Card className="p-4" key={item.id}>
           <InspectionStatusBadge status="approved" />
-          <p className="mt-3 font-semibold text-brand-text">
+          <p className="mt-3 font-semibold text-reality-text-primary">
             {item.caption || item.category.replaceAll("_", " ")}
           </p>
-          <p className="mt-1 text-sm text-brand-muted">
+          <p className="mt-1 text-sm text-reality-text-secondary">
             {item.evidence_type} · {(item.file_size / 1024).toFixed(1)} KB
           </p>
           {item.signed_url ? (
             <a
-              className={buttonClasses("secondary", "mt-4 w-fit")}
+              className={buttonClasses("realitySecondary", "mt-4 w-fit")}
               href={item.signed_url}
               rel="noreferrer"
               target="_blank"
@@ -179,14 +179,14 @@ export function InspectionReportCard({ report }: { report: InspectionReport }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <InspectionStatusBadge status={report.status} />
-          <h2 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="mt-3 font-display text-2xl font-semibold text-reality-text-primary">
             Inspection report
           </h2>
-          <p className="mt-2 text-sm leading-6 text-brand-muted">{report.summary}</p>
+          <p className="mt-2 text-sm leading-6 text-reality-text-secondary">{report.summary}</p>
         </div>
         {report.report_document_signed_url ? (
           <a
-            className={buttonClasses("secondary")}
+            className={buttonClasses("realitySecondary")}
             href={report.report_document_signed_url}
             rel="noreferrer"
             target="_blank"
@@ -197,20 +197,20 @@ export function InspectionReportCard({ report }: { report: InspectionReport }) {
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div>
-          <p className="text-xs uppercase tracking-wide text-brand-muted">Condition</p>
-          <p className="mt-1 font-semibold text-brand-text">
+          <p className="text-xs uppercase tracking-wide text-reality-text-secondary">Condition</p>
+          <p className="mt-1 font-semibold text-reality-text-primary">
             {report.overall_condition.replaceAll("_", " ")}
           </p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wide text-brand-muted">Risk</p>
-          <p className="mt-1 font-semibold text-brand-text">
+          <p className="text-xs uppercase tracking-wide text-reality-text-secondary">Risk</p>
+          <p className="mt-1 font-semibold text-reality-text-primary">
             {report.risk_level.replaceAll("_", " ")}
           </p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wide text-brand-muted">Evidence</p>
-          <p className="mt-1 font-semibold text-brand-text">{report.evidence.length}</p>
+          <p className="text-xs uppercase tracking-wide text-reality-text-secondary">Evidence</p>
+          <p className="mt-1 font-semibold text-reality-text-primary">{report.evidence.length}</p>
         </div>
       </div>
     </Card>
@@ -234,15 +234,15 @@ export function AssignmentCard({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <InspectionStatusBadge status={assignment.inspection_request.status} />
-          <h2 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="mt-3 font-display text-2xl font-semibold text-reality-text-primary">
             {assignment.inspection_request.property.title}
           </h2>
-          <p className="mt-2 text-sm text-brand-muted">
+          <p className="mt-2 text-sm text-reality-text-secondary">
             Assignment status: {assignment.status.replaceAll("_", " ")}
           </p>
         </div>
         <Link
-          className={buttonClasses("secondary")}
+          className={buttonClasses("realitySecondary")}
           href={`/dashboard/inspector/assignments/${assignment.inspection_request.id}`}
         >
           Open
@@ -258,7 +258,7 @@ export function AssignmentCard({
           {onDecline ? (
             <>
               <input
-                className="h-11 flex-1 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text"
+                className="h-11 flex-1 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 text-sm text-reality-text-primary"
                 onChange={(event) => setReason(event.target.value)}
                 placeholder="Decline reason"
                 value={reason}
@@ -291,15 +291,15 @@ export function WalkthroughModerationCard({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           {walkthrough.status ? <InspectionStatusBadge status={walkthrough.status} /> : null}
-          <h2 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="mt-3 font-display text-2xl font-semibold text-reality-text-primary">
             {walkthrough.title}
           </h2>
-          <p className="mt-2 text-sm text-brand-muted">
+          <p className="mt-2 text-sm text-reality-text-secondary">
             {walkthrough.property?.title ?? "Property walkthrough"}
           </p>
         </div>
         {walkthrough.video_url ? (
-          <a className={buttonClasses("secondary")} href={walkthrough.video_url} rel="noreferrer" target="_blank">
+          <a className={buttonClasses("realitySecondary")} href={walkthrough.video_url} rel="noreferrer" target="_blank">
             Preview video
           </a>
         ) : null}
@@ -312,7 +312,7 @@ export function WalkthroughModerationCard({
             </Button>
           ) : null}
           <input
-            className="h-11 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text"
+            className="h-11 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 text-sm text-reality-text-primary"
             onChange={(event) => setReason(event.target.value)}
             placeholder="Rejection reason"
             value={reason}
@@ -327,3 +327,4 @@ export function WalkthroughModerationCard({
     </Card>
   );
 }
+

@@ -20,7 +20,7 @@ const complaintTone: Record<ServiceComplaintStatus, string> = {
   resolved: "bg-emerald-500/15 text-emerald-200",
   rejected: "bg-red-500/15 text-red-200",
   escalated: "bg-orange-500/15 text-orange-200",
-  closed: "bg-white/10 text-brand-muted",
+  closed: "bg-reality-bg-muted text-reality-text-secondary",
 };
 
 export function ComplaintStatusBadge({ status }: { status: ServiceComplaintStatus }) {
@@ -45,17 +45,17 @@ export function ComplaintCard({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <ComplaintStatusBadge status={complaint.status} />
-          <h2 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="mt-3 font-display text-2xl font-semibold text-reality-text-primary">
             {complaint.subject}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-brand-muted">{complaint.description}</p>
+          <p className="mt-2 text-sm leading-6 text-reality-text-secondary">{complaint.description}</p>
         </div>
-        <div className="text-right text-sm text-brand-muted">
+        <div className="text-right text-sm text-reality-text-secondary">
           <p>{new Date(complaint.created_at).toLocaleDateString("en-NG")}</p>
           <p>{complaint.category.replaceAll("_", " ")}</p>
         </div>
       </div>
-      <div className="mt-4 rounded-md border border-white/10 bg-white/5 p-4 text-sm text-brand-muted">
+      <div className="mt-4 rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4 text-sm text-reality-text-secondary">
         Provider: {complaint.provider.business_name}
       </div>
     </Card>
@@ -84,10 +84,10 @@ export function SuspensionBanner({
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-red-200">
         Provider governance restriction
       </p>
-      <h2 className="mt-2 font-heading text-2xl font-semibold text-brand-text">
+      <h2 className="mt-2 font-display text-2xl font-semibold text-reality-text-primary">
         Your profile is currently suspended
       </h2>
-      <p className="mt-2 text-sm leading-6 text-brand-muted">
+      <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
         {reason || "Contact RealityNG support or submit an appeal for review."}
       </p>
       <p className="mt-3 text-xs uppercase tracking-[0.14em] text-red-100">
@@ -115,10 +115,10 @@ export function AppealForm({
         onSubmit({ appeal_type: appealType, reason });
       }}
     >
-      <label className="block text-sm font-semibold text-brand-text">
+      <label className="block text-sm font-semibold text-reality-text-primary">
         Appeal type
         <select
-          className="mt-2 w-full rounded-md border border-white/10 bg-brand-primary px-3 py-2 text-brand-text"
+          className="mt-2 w-full rounded-md border border-reality-border-secondary bg-white px-3 py-2 text-reality-text-primary"
           onChange={(event) => setAppealType(event.target.value as ProviderAppealPayload["appeal_type"])}
           value={appealType}
         >
@@ -126,10 +126,10 @@ export function AppealForm({
           <option value="warning">Warning appeal</option>
         </select>
       </label>
-      <label className="block text-sm font-semibold text-brand-text">
+      <label className="block text-sm font-semibold text-reality-text-primary">
         Appeal reason
         <textarea
-          className="mt-2 min-h-32 w-full rounded-md border border-white/10 bg-brand-primary px-3 py-2 text-brand-text"
+          className="mt-2 min-h-32 w-full rounded-md border border-reality-border-secondary bg-white px-3 py-2 text-reality-text-primary"
           onChange={(event) => setReason(event.target.value)}
           required
           value={reason}
@@ -151,7 +151,7 @@ export function AppealList({
 }) {
   if (!appeals.length) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Appeals submitted to RealityNG operations will appear here.
       </Card>
     );
@@ -163,17 +163,17 @@ export function AppealList({
           <Card className="p-5 transition hover:border-brand-secondary/50">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="font-semibold text-brand-text">
+                <p className="font-semibold text-reality-text-primary">
                   {appeal.appeal_type.replaceAll("_", " ")}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-brand-muted">{appeal.reason}</p>
+                <p className="mt-1 text-sm leading-6 text-reality-text-secondary">{appeal.reason}</p>
               </div>
-              <span className="rounded-full bg-brand-secondary/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-secondary">
+              <span className="rounded-full bg-brand-secondary/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-reality-brand-600">
                 {appeal.status.replaceAll("_", " ")}
               </span>
             </div>
             {appeal.admin_notes ? (
-              <p className="mt-3 rounded-md bg-white/5 p-3 text-sm text-brand-muted">
+              <p className="mt-3 rounded-md bg-reality-bg-subtle p-3 text-sm text-reality-text-secondary">
                 {appeal.admin_notes}
               </p>
             ) : null}
@@ -191,3 +191,4 @@ export function AppealList({
     </div>
   );
 }
+

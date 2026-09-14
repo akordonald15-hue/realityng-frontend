@@ -106,26 +106,26 @@ export function RoleSelectionProvider({ children }: Readonly<{ children: React.R
           className="fixed inset-0 z-[90] flex items-end justify-center bg-black/75 p-4 backdrop-blur-sm sm:items-center"
           role="dialog"
         >
-          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-md border border-brand-secondary/30 bg-brand-background p-5 text-brand-text shadow-2xl sm:p-7">
+          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-md border border-brand-secondary/30 bg-white p-5 text-reality-text-primary shadow-2xl sm:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <BrandLogo className="h-14 w-auto object-contain" tone="light" />
-                <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-brand-secondary">
+                <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-reality-brand-600">
                   Create an account to continue.
                 </p>
                 <h2
-                  className="mt-3 font-heading text-3xl font-semibold text-brand-text"
+                  className="mt-3 font-display text-3xl font-semibold text-reality-text-primary"
                   id="role-selection-title"
                 >
                   Welcome to RealityNG
                 </h2>
-                <p className="mt-2 max-w-xl leading-7 text-brand-muted">
+                <p className="mt-2 max-w-xl leading-7 text-reality-text-secondary">
                   Tell us who you are so we can personalize your experience.
                 </p>
                 {options.actionLabel ? (
-                  <p className="mt-3 text-sm text-brand-muted">
+                  <p className="mt-3 text-sm text-reality-text-secondary">
                     Continue to:{" "}
-                    <span className="font-semibold text-brand-secondary">
+                    <span className="font-semibold text-reality-brand-600">
                       {options.actionLabel}
                     </span>
                   </p>
@@ -133,21 +133,21 @@ export function RoleSelectionProvider({ children }: Readonly<{ children: React.R
               </div>
               <button
                 aria-label="Close account role selection"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-xl text-brand-muted hover:bg-white/10 hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-xl text-reality-text-secondary hover:bg-reality-bg-muted hover:text-reality-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
                 onClick={() => setIsOpen(false)}
                 type="button"
               >
                 x
               </button>
             </div>
-            <div className="mt-5 rounded-md border border-white/10 bg-white/5 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
+            <div className="mt-5 rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-brand-600">
                 Your account unlocks
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {supportedTopics.map((topic) => (
                   <span
-                    className="rounded-full border border-white/10 bg-brand-surface px-3 py-1 text-xs text-brand-muted"
+                    className="rounded-full border border-reality-border-secondary bg-white px-3 py-1 text-xs text-reality-text-secondary"
                     key={topic}
                   >
                     {topic}
@@ -161,23 +161,23 @@ export function RoleSelectionProvider({ children }: Readonly<{ children: React.R
                   aria-disabled={!role.enabled}
                   className={
                     role.enabled
-                      ? "min-h-36 rounded-md border border-white/10 bg-brand-surface p-4 text-left transition hover:border-brand-secondary/70 hover:bg-brand-surface/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
-                      : "min-h-36 cursor-not-allowed rounded-md border border-white/10 bg-white/5 p-4 text-left opacity-60"
+                      ? "min-h-36 rounded-md border border-reality-border-secondary bg-white p-4 text-left transition hover:border-brand-secondary/70 hover:bg-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+                      : "min-h-36 cursor-not-allowed rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4 text-left opacity-60"
                   }
                   disabled={!role.enabled}
                   key={role.value}
                   onClick={() => chooseRole(role.value)}
                   type="button"
                 >
-                  <span className="font-heading text-xl font-semibold text-brand-text">
+                  <span className="font-display text-xl font-semibold text-reality-text-primary">
                     {role.label}
                   </span>
                   {!role.enabled ? (
-                    <span className="ml-2 rounded-full bg-brand-secondary/15 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+                    <span className="ml-2 rounded-full bg-brand-secondary/15 px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
                       Coming Soon
                     </span>
                   ) : null}
-                  <span className="mt-3 block text-sm leading-6 text-brand-muted">
+                  <span className="mt-3 block text-sm leading-6 text-reality-text-secondary">
                     {role.description}
                   </span>
                 </button>
@@ -205,3 +205,4 @@ export function useRoleSelection() {
   }
   return context;
 }
+

@@ -166,9 +166,9 @@ export function PublicAssistantWidget() {
         }
       >
         {showGreeting ? (
-          <div className="assistant-fade-scale assistant-glass-panel pointer-events-none max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-brand-text shadow-2xl sm:max-w-xs">
+          <div className="assistant-fade-scale assistant-glass-panel pointer-events-none max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-reality-text-primary shadow-2xl sm:max-w-xs">
             <p className="font-semibold text-cyan-50">RealityNG AI</p>
-            <p className="mt-2 text-brand-muted">{messages[0].content}</p>
+            <p className="mt-2 text-reality-text-secondary">{messages[0].content}</p>
           </div>
         ) : null}
         <button
@@ -189,19 +189,19 @@ export function PublicAssistantWidget() {
 
   return (
     <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex max-h-[min(35rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-2xl p-0 shadow-2xl sm:left-auto sm:right-6 sm:w-[24rem]">
-      <div className="flex items-start justify-between gap-3 border-b border-brand-secondary/20 bg-white/5 px-4 py-3">
+      <div className="flex items-start justify-between gap-3 border-b border-brand-secondary/20 bg-reality-bg-subtle px-4 py-3">
         <div className="flex items-center gap-3">
           <AssistantOrb state={orbState} size="sm" />
           <div>
-            <h2 className="font-heading text-lg font-semibold text-brand-text">RealityNG AI</h2>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+            <h2 className="font-display text-lg font-semibold text-reality-text-primary">RealityNG AI</h2>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
               {helperText}
             </p>
           </div>
         </div>
         <button
           aria-label="Close RealityNG AI"
-          className="rounded-md px-2 py-1 text-brand-muted transition hover:bg-white/10 hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80"
+          className="rounded-md px-2 py-1 text-reality-text-secondary transition hover:bg-reality-bg-muted hover:text-reality-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80"
           onClick={() => setIsOpen(false)}
           type="button"
         >
@@ -218,8 +218,8 @@ export function PublicAssistantWidget() {
             <p
               className={
                 message.role === "user"
-                  ? "max-w-[86%] rounded-md bg-brand-secondary px-3 py-2 text-sm leading-6 text-brand-background"
-                  : "max-w-[92%] rounded-md border border-brand-secondary/20 bg-white/5 px-3 py-2 text-sm leading-6 text-brand-muted"
+                  ? "max-w-[86%] rounded-md bg-brand-secondary px-3 py-2 text-sm leading-6 text-reality-text-primary"
+                  : "max-w-[92%] rounded-md border border-brand-secondary/20 bg-reality-bg-subtle px-3 py-2 text-sm leading-6 text-reality-text-secondary"
               }
             >
               {message.content}
@@ -230,7 +230,7 @@ export function PublicAssistantWidget() {
         <div className="flex flex-wrap gap-2">
           {suggestions.map((suggestion) => (
             <button
-              className="rounded-md border border-brand-secondary/60 px-3 py-1.5 text-xs font-semibold text-brand-secondary transition hover:bg-brand-secondary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
+              className="rounded-md border border-brand-secondary/60 px-3 py-1.5 text-xs font-semibold text-reality-brand-600 transition hover:bg-brand-secondary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
               key={suggestion}
               onClick={() => submitMessage(suggestion)}
               type="button"
@@ -243,7 +243,7 @@ export function PublicAssistantWidget() {
         <div className="grid grid-cols-2 gap-2">
           {navLinks.map((link) => (
             <Link
-              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-semibold text-brand-text transition hover:border-brand-secondary/60"
+              className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-center text-xs font-semibold text-reality-text-primary transition hover:border-brand-secondary/60"
               href={link.href}
               key={link.href}
             >
@@ -254,7 +254,7 @@ export function PublicAssistantWidget() {
       </div>
 
       <form
-        className="flex items-center gap-2 border-t border-white/10 p-3"
+        className="flex items-center gap-2 border-t border-reality-border-secondary p-3"
         onSubmit={(event) => {
           event.preventDefault();
           submitMessage(draft);
@@ -276,3 +276,4 @@ export function PublicAssistantWidget() {
     </Card>
   );
 }
+

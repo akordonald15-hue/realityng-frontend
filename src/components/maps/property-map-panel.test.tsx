@@ -64,3 +64,4 @@ describe("PropertyMapPanel", () => {
     await waitFor(() => expect(onSelectProperty).toHaveBeenCalledWith("property-1"));
   });
 });
+

@@ -4,36 +4,18 @@ import { describe, expect, it } from "vitest";
 import { Footer } from "@/components/layout/footer";
 
 describe("Footer", () => {
-  it("keeps marketplace, account, and trust links discoverable", () => {
+  it("renders the Reality footer by default with current navigation targets", () => {
     render(<Footer />);
 
-    expect(screen.getByText("Where Dreams Find an Address")).toBeInTheDocument();
+    expect(screen.getByText(/Where Dreams Find an Address/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Buy property" })).toHaveAttribute(
       "href",
       "/properties?listing_type=sale",
     );
-    expect(screen.getByRole("link", { name: "List a Property" })).toHaveAttribute(
-      "href",
-      "/properties/new",
-    );
-    expect(screen.getByRole("link", { name: "Verification standards" })).toHaveAttribute(
-      "href",
-      "/verification-standards",
-    );
+    expect(screen.getByRole("img", { name: "Modern city skyline with green residential spaces" })).toBeInTheDocument();
+    expect(screen.getByText("Company")).toBeInTheDocument();
+    expect(screen.getByText("Legal")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
   });
-
-  it("supports the opt-in Reality footer variant with current navigation targets", () => {
-    render(<Footer variant="reality" />);
-
-    expect(screen.getByRole("link", { name: "Buy property" })).toHaveAttribute(
-      "href",
-      "/properties?listing_type=sale",
-    );
-    expect(screen.getByRole("link", { name: "List a Property" })).toHaveAttribute(
-      "href",
-      "/properties/new",
-    );
-    expect(screen.getByText("Company")).toBeInTheDocument();
-  });
 });
+

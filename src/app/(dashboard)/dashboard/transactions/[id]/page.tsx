@@ -125,19 +125,19 @@ export default function TransactionDetailPage() {
         />
 
         {isLoading ? (
-          <p className="mt-6 text-sm text-brand-muted">Loading...</p>
+          <p className="mt-6 text-sm text-reality-text-secondary">Loading...</p>
         ) : !transaction ? (
-          <p className="mt-6 text-sm text-brand-muted">
+          <p className="mt-6 text-sm text-reality-text-secondary">
             Transaction not found.
           </p>
         ) : (
           <>
             <Card className="mt-6 flex items-center justify-between p-4">
               <div>
-                <p className="font-medium text-brand-text">
+                <p className="font-medium text-reality-text-primary">
                   Transaction {transaction.id.slice(0, 8)}
                 </p>
-                <p className="text-xs text-brand-muted">
+                <p className="text-xs text-reality-text-secondary">
                   {transaction.currency}
                 </p>
               </div>
@@ -146,13 +146,13 @@ export default function TransactionDetailPage() {
 
             <Card className="mt-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="font-semibold text-brand-text">Escrow tracking</h2>
-                <p className="mt-1 text-sm text-brand-muted">
+                <h2 className="font-semibold text-reality-text-primary">Escrow tracking</h2>
+                <p className="mt-1 text-sm text-reality-text-secondary">
                   View provider-confirmed funding, release conditions and settlement status.
                 </p>
               </div>
               <Link
-                className="inline-flex h-11 items-center justify-center rounded-md border border-brand-secondary/70 px-4 text-sm font-semibold text-brand-secondary transition hover:bg-brand-secondary/10"
+                className="inline-flex h-11 items-center justify-center rounded-md border border-brand-secondary/70 px-4 text-sm font-semibold text-reality-brand-600 transition hover:bg-brand-secondary/10"
                 href={`/dashboard/transactions/${transaction.id}/escrow`}
               >
                 Open escrow
@@ -161,13 +161,13 @@ export default function TransactionDetailPage() {
 
             <Card className="mt-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="font-semibold text-brand-text">Financing</h2>
-                <p className="mt-1 text-sm text-brand-muted">
+                <h2 className="font-semibold text-reality-text-primary">Financing</h2>
+                <p className="mt-1 text-sm text-reality-text-secondary">
                   Apply for partner-reviewed rent or mortgage financing linked to this transaction.
                 </p>
               </div>
               <Link
-                className="inline-flex h-11 items-center justify-center rounded-md border border-brand-secondary/70 px-4 text-sm font-semibold text-brand-secondary transition hover:bg-brand-secondary/10"
+                className="inline-flex h-11 items-center justify-center rounded-md border border-brand-secondary/70 px-4 text-sm font-semibold text-reality-brand-600 transition hover:bg-brand-secondary/10"
                 href={`/dashboard/transactions/${transaction.id}/financing`}
               >
                 Finance transaction
@@ -181,7 +181,7 @@ export default function TransactionDetailPage() {
             ) : null}
 
             <section className="mt-6">
-              <h2 className="mb-2 text-lg font-semibold text-brand-text">
+              <h2 className="mb-2 text-lg font-semibold text-reality-text-primary">
                 Milestones
               </h2>
               <div className="grid gap-3">
@@ -275,15 +275,15 @@ function MilestoneCard({
     <Card className="p-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-medium text-brand-text">{milestone.title}</p>
-          <p className="text-xs text-brand-muted">
+          <p className="font-medium text-reality-text-primary">{milestone.title}</p>
+          <p className="text-xs text-reality-text-secondary">
             {milestone.amount} {milestone.currency}
           </p>
         </div>
         <MilestoneStatusBadge status={milestone.status} />
       </div>
 
-      <p className="mt-2 text-xs text-brand-muted">
+      <p className="mt-2 text-xs text-reality-text-secondary">
         {statusLabel[milestone.status]}
       </p>
 

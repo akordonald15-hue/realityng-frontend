@@ -39,3 +39,4 @@ export function TransactionStatusBadge({
 
   return <Badge variant={variant}>{children ? labelFor(status) : null}</Badge>;
 }
+

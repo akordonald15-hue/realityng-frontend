@@ -32,14 +32,14 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
       <form className="space-y-4" onSubmit={submit}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-heading text-xl font-semibold text-brand-text">Refine search</p>
-            <p className="mt-1 text-xs leading-5 text-brand-muted">
+            <p className="font-display text-xl font-semibold text-reality-text-primary">Refine search</p>
+            <p className="mt-1 text-xs leading-5 text-reality-text-secondary">
               These filters are supported by the current public listings API.
             </p>
           </div>
         </div>
         <div>
-          <label className="text-sm font-medium text-brand-text" htmlFor="property-search">
+          <label className="text-sm font-medium text-reality-text-primary" htmlFor="property-search">
             Search
           </label>
           <Input
@@ -51,7 +51,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-brand-text" htmlFor="property-state">
+          <label className="text-sm font-medium text-reality-text-primary" htmlFor="property-state">
             State
           </label>
           <Input
@@ -63,7 +63,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-brand-text" htmlFor="property-city">
+          <label className="text-sm font-medium text-reality-text-primary" htmlFor="property-city">
             City
           </label>
           <Input
@@ -76,7 +76,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium text-brand-text" htmlFor="property-lga">
+            <label className="text-sm font-medium text-reality-text-primary" htmlFor="property-lga">
               LGA
             </label>
             <Input
@@ -88,7 +88,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-brand-text" htmlFor="property-area">
+            <label className="text-sm font-medium text-reality-text-primary" htmlFor="property-area">
               Area
             </label>
             <Input
@@ -101,7 +101,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           </div>
         </div>
         <div>
-          <label className="text-sm font-medium text-brand-text" htmlFor="property-type">
+          <label className="text-sm font-medium text-reality-text-primary" htmlFor="property-type">
             Property type
           </label>
           <Select
@@ -119,7 +119,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           </Select>
         </div>
         <div>
-          <label className="text-sm font-medium text-brand-text" htmlFor="listing-type">
+          <label className="text-sm font-medium text-reality-text-primary" htmlFor="listing-type">
             Listing type
           </label>
           <Select
@@ -136,7 +136,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium text-brand-text" htmlFor="min-price">
+            <label className="text-sm font-medium text-reality-text-primary" htmlFor="min-price">
               Min price
             </label>
             <Input
@@ -149,7 +149,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-brand-text" htmlFor="max-price">
+            <label className="text-sm font-medium text-reality-text-primary" htmlFor="max-price">
               Max price
             </label>
             <Input
@@ -163,7 +163,7 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
           </div>
         </div>
         <div>
-          <label className="text-sm font-medium text-brand-text" htmlFor="ordering">
+          <label className="text-sm font-medium text-reality-text-primary" htmlFor="ordering">
             Sort
           </label>
           <Select
@@ -190,3 +190,4 @@ export function PropertyFilterPanel({ filters, onChange }: PropertyFilterPanelPr
     </Card>
   );
 }
+

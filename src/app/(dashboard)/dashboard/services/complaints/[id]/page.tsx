@@ -23,7 +23,7 @@ export default function CustomerComplaintDetailPage() {
         description="Track the current state, evidence and operational decision on this complaint."
       />
       <div className="mt-8">
-        {complaintQuery.isLoading ? <Card className="p-5 text-brand-muted">Loading...</Card> : null}
+        {complaintQuery.isLoading ? <Card className="p-5 text-reality-text-secondary">Loading...</Card> : null}
         {complaintQuery.data ? <ComplaintDetail complaint={complaintQuery.data} /> : null}
       </div>
     </main>

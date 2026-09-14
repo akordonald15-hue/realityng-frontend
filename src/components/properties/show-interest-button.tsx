@@ -33,7 +33,7 @@ export function ShowInterestButton({
   propertySlug,
   listingType,
   className,
-  variant = "legacy",
+  variant = "reality",
 }: ShowInterestButtonProps) {
   const auth = useOptionalAuth();
   const queryClient = useQueryClient();
@@ -113,7 +113,7 @@ export function ShowInterestButton({
         </p>
       ) : null}
       {hasShownInterest ? (
-        <p className="mt-2 text-sm text-brand-muted">Your interest has been saved for follow-up.</p>
+        <p className="mt-2 text-sm text-reality-text-secondary">Your interest has been saved for follow-up.</p>
       ) : null}
       {isModalOpen ? (
         <div
@@ -123,7 +123,7 @@ export function ShowInterestButton({
           <ModalShell
             className={
               variant === "legacy"
-                ? "rounded-md border-white/10 bg-brand-surface text-brand-text shadow-glow"
+                ? "rounded-md border-reality-border-secondary bg-white text-reality-text-primary shadow-reality-sm"
                 : undefined
             }
             description="Share your intent and preferred contact method so the property owner can follow up from their inquiry dashboard."
@@ -136,7 +136,7 @@ export function ShowInterestButton({
                   className={
                     variant === "reality"
                       ? "text-sm font-medium text-reality-text-primary"
-                      : "text-sm font-medium text-brand-text"
+                      : "text-sm font-medium text-reality-text-primary"
                   }
                 >
                   Purpose
@@ -159,7 +159,7 @@ export function ShowInterestButton({
                   className={
                     variant === "reality"
                       ? "text-sm font-medium text-reality-text-primary"
-                      : "text-sm font-medium text-brand-text"
+                      : "text-sm font-medium text-reality-text-primary"
                   }
                 >
                   Preferred contact
@@ -184,7 +184,7 @@ export function ShowInterestButton({
                   className={
                     variant === "reality"
                       ? "text-sm font-medium text-reality-text-primary"
-                      : "text-sm font-medium text-brand-text"
+                      : "text-sm font-medium text-reality-text-primary"
                   }
                 >
                   Message
@@ -193,7 +193,7 @@ export function ShowInterestButton({
                   className={
                     variant === "reality"
                       ? "mt-2 min-h-28 w-full rounded-[12px] border border-reality-border-secondary bg-white px-3 py-3 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-quaternary focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
-                      : "mt-2 min-h-28 w-full rounded-md border border-white/10 bg-white/5 px-3 py-3 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                      : "mt-2 min-h-28 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-3 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-secondary/60 focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                   }
                   maxLength={1000}
                   onChange={(event) => setMessage(event.target.value)}
@@ -230,3 +230,5 @@ export function ShowInterestButton({
     </div>
   );
 }
+
+

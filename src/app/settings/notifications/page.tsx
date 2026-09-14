@@ -3,9 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { FormMessage } from "@/components/forms/form-message";
+import { AccountSettingsShell } from "@/components/settings/account-settings-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SectionHeader } from "@/components/ui/section-header";
 import {
   getNotificationPreferences,
   updateNotificationPreferences,
@@ -74,15 +75,25 @@ export default function NotificationSettingsPage() {
 
   return (
     <ProtectedRoute>
-      <main className="mx-auto max-w-3xl p-4">
-        <SectionHeader
-          description="Choose how RealityNG should notify you about leads, viewings, applications, and messages."
-          title="Notification preferences"
-        />
+      <AccountSettingsShell
+        description="Choose how RealityNG should notify you about leads, viewings, applications, and messages."
+        title="Account Settings"
+      >
+        <section className="max-w-3xl" aria-labelledby="notification-preferences-heading">
+          <h2
+            className="text-xl font-semibold text-reality-text-primary"
+            id="notification-preferences-heading"
+          >
+            Notification preferences
+          </h2>
+          <p className="mt-2 text-sm text-reality-text-secondary">
+            These preferences use the existing notification settings API and apply to your
+            authenticated account.
+          </p>
 
-        <Card className="mt-6 divide-y divide-white/10 p-2">
+          <Card className="mt-8 divide-y divide-reality-border-secondary p-2" variant="reality">
           {preferencesQuery.isLoading ? (
-            <p className="p-4 text-sm text-brand-muted">Loading preferences...</p>
+            <p className="p-4 text-sm text-reality-text-secondary">Loading preferences...</p>
           ) : preferences ? (
             preferenceRows.map((row) => (
               <div
@@ -90,8 +101,8 @@ export default function NotificationSettingsPage() {
                 key={row.key}
               >
                 <div>
-                  <p className="text-sm font-semibold text-brand-text">{row.label}</p>
-                  <p className="mt-1 text-sm text-brand-muted">{row.description}</p>
+                  <p className="text-sm font-semibold text-reality-text-primary">{row.label}</p>
+                  <p className="mt-1 text-sm text-reality-text-secondary">{row.description}</p>
                 </div>
                 <Button
                   aria-pressed={preferences[row.key]}
@@ -101,19 +112,26 @@ export default function NotificationSettingsPage() {
                       [row.key]: !preferences[row.key],
                     })
                   }
-                  variant={preferences[row.key] ? "primary" : "secondary"}
+                  variant={preferences[row.key] ? "reality" : "realitySecondary"}
                 >
                   {preferences[row.key] ? "On" : "Off"}
                 </Button>
               </div>
             ))
           ) : (
-            <p className="p-4 text-sm text-brand-muted">
+            <p className="p-4 text-sm text-reality-text-secondary">
               Preferences could not be loaded right now.
             </p>
           )}
-        </Card>
-      </main>
+          </Card>
+          {mutation.isError ? (
+            <FormMessage className="mt-4" tone="error" variant="reality">
+              Preferences could not be updated. Please try again.
+            </FormMessage>
+          ) : null}
+        </section>
+      </AccountSettingsShell>
     </ProtectedRoute>
   );
 }
+

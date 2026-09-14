@@ -38,7 +38,7 @@ export function QuoteRequestsList({
 
   if (requests.length === 0) {
     return (
-      <Card className="p-5 text-sm text-brand-muted">
+      <Card className="p-5 text-sm text-reality-text-secondary">
         Quote requests will appear here after customers contact a provider.
       </Card>
     );
@@ -54,19 +54,19 @@ export function QuoteRequestsList({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <QuoteRequestStatusBadge status={request.status} />
-              <h2 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="mt-3 font-display text-2xl font-semibold text-reality-text-primary">
                 {request.project_title}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-brand-muted">
+              <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
                 {request.project_description}
               </p>
             </div>
-            <div className="text-right text-sm text-brand-muted">
+            <div className="text-right text-sm text-reality-text-secondary">
               <p>{new Date(request.created_at).toLocaleDateString("en-NG")}</p>
               <p>{request.preferred_contact_method}</p>
             </div>
           </div>
-          <div className="mt-4 grid gap-3 rounded-md border border-white/10 bg-white/5 p-4 text-sm text-brand-muted md:grid-cols-3">
+          <div className="mt-4 grid gap-3 rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4 text-sm text-reality-text-secondary md:grid-cols-3">
             <span>{request.customer_name}</span>
             <span>{request.phone}</span>
             <span>{request.email}</span>
@@ -80,7 +80,7 @@ export function QuoteRequestsList({
           </div>
           {mode === "admin" ? (
             <div className="mt-4">
-              <p className="text-sm text-brand-muted">
+              <p className="text-sm text-reality-text-secondary">
                 Provider: {request.provider.business_name}
               </p>
               <Button
@@ -121,3 +121,4 @@ export function QuoteRequestsList({
     </div>
   );
 }
+

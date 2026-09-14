@@ -7,8 +7,8 @@ type FormMessageProps = {
 
 const toneClasses = {
   error: "border-red-400/30 bg-red-400/10 text-red-100",
-  success: "border-brand-secondary/30 bg-brand-secondary/10 text-brand-secondary",
-  info: "border-white/10 bg-white/5 text-brand-muted",
+  success: "border-brand-secondary/30 bg-brand-secondary/10 text-reality-brand-600",
+  info: "border-reality-border-secondary bg-reality-bg-subtle text-reality-text-secondary",
 };
 
 const realityToneClasses = {
@@ -21,7 +21,7 @@ export function FormMessage({
   children,
   className = "",
   tone = "info",
-  variant = "legacy",
+  variant = "reality",
 }: FormMessageProps) {
   if (!children) {
     return null;
@@ -37,3 +37,4 @@ export function FormMessage({
     </div>
   );
 }
+

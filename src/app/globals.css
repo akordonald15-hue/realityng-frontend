@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-  background: #06271f;
-  color: #ffffff;
+  color-scheme: light;
+  background: #ffffff;
+  color: #171717;
   --font-display-stack: var(--font-display), "Source Serif 4", Georgia, serif;
   --font-body-stack:
     "General Sans", var(--font-body), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
@@ -33,8 +33,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: #06271f;
-  color: #ffffff;
+  background: #ffffff;
+  color: #171717;
   font-family:
     var(--font-body),
     ui-sans-serif,

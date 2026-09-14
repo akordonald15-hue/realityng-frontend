@@ -1,7 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
-import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { PageContainer } from "@/components/layout/page-container";
 
 const exploreLinks = [
@@ -12,169 +12,78 @@ const exploreLinks = [
   { href: "/properties?property_type=commercial", label: "Commercial" },
 ];
 
-const trustLinks = [
-  { href: "/verification-standards", label: "Verification standards" },
-  { href: "/listing-standards", label: "Listing standards" },
-  { href: "/safety", label: "Safety guidance" },
-  { href: "/verification", label: "Verification centre" },
-  { href: "/help", label: "Help" },
-  { href: "/contact", label: "Contact" },
-  { href: "/fraud-reporting", label: "Report fraud or abuse" },
+const companyLinks = [
+  { href: "/about", label: "About Us" },
+  { href: "/contact", label: "Contact Us" },
 ];
 
-const companyLinks = [
-  { href: "/about", label: "About RealityNG" },
+const legalLinks = [
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
   { href: "/data-deletion", label: "Data deletion" },
-  { href: "/refunds", label: "Refunds and cancellations" },
-  { href: "/escrow-disclosure", label: "Escrow disclosure" },
-  { href: "/financing-disclosure", label: "Financing disclosure" },
+  { href: "/refunds", label: "Refunds" },
+  { href: "/refunds", label: "Cancellation" },
 ];
 
 type FooterProps = {
-  variant?: "legacy" | "reality";
+  variant?: "reality";
 };
 
-export function Footer({ variant = "legacy" }: FooterProps = {}) {
-  if (variant === "reality") {
-    return (
-      <footer className="border-t border-reality-border-secondary bg-white font-body text-reality-text-secondary">
-        <PageContainer className="grid gap-8 py-10 text-sm lg:grid-cols-[1.25fr_1fr_1fr_1fr]">
-          <div>
-            <BrandLogo className="h-9 w-auto object-contain" showTagline={false} />
-            <p className="mt-4 max-w-sm leading-6">
-              Trusted Nigerian property discovery for buyers, renters, landlords, and diaspora
-              investors.
-            </p>
-          </div>
-          <div>
-            <p className="font-semibold text-reality-text-primary">Explore</p>
-            <div className="mt-3 grid gap-2">
-              {exploreLinks.map((link) => (
-                <Link className="hover:text-reality-brand-500" href={link.href} key={link.href}>
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="font-semibold text-reality-text-primary">Account</p>
-            <div className="mt-3 grid gap-2">
-              <Link className="hover:text-reality-brand-500" href="/saved-properties">
-                Saved properties
-              </Link>
-              <ProtectedActionLink
-                actionLabel="List property"
-                className="hover:text-reality-brand-500"
-                href="/properties/new"
-                role="landlord"
-              >
-                List a Property
-              </ProtectedActionLink>
-              <Link className="hover:text-reality-brand-500" href="/dashboard">
-                Dashboard
-              </Link>
-              <Link className="hover:text-reality-brand-500" href="/settings/profile">
-                Profile
-              </Link>
-            </div>
-          </div>
-          <div>
-            <p className="font-semibold text-reality-text-primary">Company</p>
-            <div className="mt-3 grid gap-2">
-              {[...trustLinks, ...companyLinks].map((link) => (
-                <Link className="hover:text-reality-brand-500" href={link.href} key={link.href}>
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </PageContainer>
-        <div className="border-t border-reality-border-secondary">
-          <PageContainer className="flex flex-col gap-2 py-5 text-xs text-reality-text-quaternary md:flex-row md:items-center md:justify-between">
-            <p>© {new Date().getFullYear()} RealityNG. All rights reserved.</p>
-            <p>Where Dreams Find an Address.</p>
-          </PageContainer>
-        </div>
-      </footer>
-    );
-  }
+export function Footer({ variant = "reality" }: FooterProps = {}) {
+  void variant;
 
   return (
-    <footer className="border-t border-white/10 bg-brand-background">
-      <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 text-sm text-brand-muted sm:px-6 lg:grid-cols-[1.35fr_1fr_1fr_1fr_1fr]">
-        <div>
-          <BrandLogo
-            className="h-16 w-auto object-contain"
-            showTagline
-            taglineClassName="mt-0.5 text-[0.58rem]"
-            tone="light"
+    <footer className="border-t border-reality-border-secondary bg-white font-body text-reality-text-secondary">
+      <PageContainer className="py-12 md:py-16">
+        <div className="grid gap-8 md:grid-cols-[1.5fr_0.72fr_0.72fr_0.72fr]">
+          <div>
+            <BrandLogo className="h-9 w-auto object-contain" showTagline={false} />
+          </div>
+          <FooterColumn links={exploreLinks} title="Explore" />
+          <FooterColumn links={companyLinks} title="Company" />
+          <FooterColumn links={legalLinks} title="Legal" />
+        </div>
+
+        <div className="relative mt-12 h-[240px] w-full overflow-hidden rounded-[22px] bg-white md:mt-16 md:h-auto md:aspect-[2.48] md:min-h-[240px]">
+          <Image
+            alt="Modern city skyline with green residential spaces"
+            className="object-cover object-bottom"
+            fill
+            sizes="(min-width: 1280px) 1216px, 100vw"
+            src="/professionals/footer-cityscape.webp"
           />
-          <p className="mt-3 max-w-md leading-6">
-            Trusted Nigerian property discovery for buyers, renters, landlords, and diaspora
-            investors.
-          </p>
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[58%] bg-gradient-to-b from-white via-white/82 to-white/0" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[32%] bg-white/30 backdrop-blur-[1px]" />
         </div>
-        <div>
-          <p className="font-semibold text-brand-text">Explore</p>
-          <div className="mt-3 grid gap-2">
-            {exploreLinks.map((link) => (
-              <Link className="hover:text-brand-text" href={link.href} key={link.href}>
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="font-semibold text-brand-text">Account</p>
-          <div className="mt-3 grid gap-2">
-            <Link className="hover:text-brand-text" href="/saved-properties">
-              Saved properties
-            </Link>
-            <ProtectedActionLink
-              actionLabel="List property"
-              className="hover:text-brand-text"
-              href="/properties/new"
-              role="landlord"
-            >
-              List a Property
-            </ProtectedActionLink>
-            <Link className="hover:text-brand-text" href="/dashboard">
-              Dashboard
-            </Link>
-            <Link className="hover:text-brand-text" href="/settings/profile">
-              Profile
-            </Link>
-          </div>
-        </div>
-        <div>
-          <p className="font-semibold text-brand-text">Trust and support</p>
-          <div className="mt-3 grid gap-2">
-            {trustLinks.map((link) => (
-              <Link className="hover:text-brand-text" href={link.href} key={link.href}>
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="font-semibold text-brand-text">Company and legal</p>
-          <div className="mt-3 grid gap-2">
-            {companyLinks.map((link) => (
-              <Link className="hover:text-brand-text" href={link.href} key={link.href}>
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-5 text-xs text-brand-muted sm:px-6 md:flex-row md:items-center md:justify-between">
+      </PageContainer>
+      <div className="border-t border-reality-border-secondary">
+        <PageContainer className="flex flex-col gap-2 py-5 text-xs text-reality-text-quaternary md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} RealityNG. All rights reserved.</p>
           <p>Where Dreams Find an Address.</p>
-        </div>
+        </PageContainer>
       </div>
     </footer>
   );
 }
+
+function FooterColumn({
+  links,
+  title,
+}: {
+  links: Array<{ href: string; label: string }>;
+  title: string;
+}) {
+  return (
+    <div>
+      <p className="text-sm font-semibold text-reality-text-primary">{title}</p>
+      <div className="mt-4 grid gap-3 text-sm text-reality-text-tertiary">
+        {links.map((link) => (
+          <Link className="transition hover:text-reality-brand-500" href={link.href} key={`${link.href}-${link.label}`}>
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+

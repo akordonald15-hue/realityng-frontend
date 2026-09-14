@@ -42,3 +42,4 @@ export function AuthCard({ children, description, showLogomark = false, title }:
     </main>
   );
 }
+

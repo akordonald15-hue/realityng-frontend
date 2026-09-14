@@ -13,7 +13,7 @@ const inter = Inter({
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-display",
 });
 
 const sourceSerif = Source_Serif_4({
@@ -80,3 +80,4 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
+

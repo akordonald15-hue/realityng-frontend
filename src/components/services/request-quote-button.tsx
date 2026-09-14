@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 
+import { useRealityAuthModal } from "@/components/auth/reality-auth-modal";
 import { FormMessage } from "@/components/forms/form-message";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,6 +24,7 @@ function field(form: FormData, key: string) {
 export function RequestQuoteButton({ provider }: { provider: ServiceProvider }) {
   const auth = useOptionalAuth();
   const user = auth?.user;
+  const { requireAuth } = useRealityAuthModal();
   const [isOpen, setIsOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -58,7 +60,21 @@ export function RequestQuoteButton({ provider }: { provider: ServiceProvider }) 
 
   return (
     <>
-      <Button className="w-full" onClick={() => setIsOpen(true)}>
+      <Button
+        className="w-full"
+        onClick={() => {
+          if (auth?.isAuthenticated) {
+            setIsOpen(true);
+            return;
+          }
+          void requireAuth({
+            actionLabel: "Request service",
+            nextPath: `/services/providers/${provider.slug}`,
+            onAuthenticated: () => setIsOpen(true),
+          });
+        }}
+        variant="reality"
+      >
         Request Quote
       </Button>
 
@@ -68,22 +84,22 @@ export function RequestQuoteButton({ provider }: { provider: ServiceProvider }) 
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-4 py-6 sm:items-center"
           role="dialog"
         >
-          <Card className="max-h-[92vh] w-full max-w-2xl overflow-y-auto p-5">
+          <Card className="max-h-[92vh] w-full max-w-2xl overflow-y-auto p-5" variant="realityElevated">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand-secondary">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-reality-brand-600">
                   Request quotation
                 </p>
-                <h2 className="mt-2 font-heading text-3xl font-semibold text-brand-text">
+                <h2 className="mt-2 font-display text-3xl font-semibold text-reality-text-primary">
                   Tell {provider.business_name} what you need.
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-brand-muted">
+                <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
                   Step 1 of 1: share project details so the provider can contact you directly.
                 </p>
               </div>
               <button
                 aria-label="Close quote request"
-                className="rounded-md border border-white/10 px-3 py-2 text-sm text-brand-muted"
+                className="rounded-full border border-reality-border-secondary px-3 py-2 text-sm text-reality-text-secondary transition hover:bg-reality-bg-subtle"
                 onClick={() => {
                   setIsOpen(false);
                   setIsSuccess(false);
@@ -95,11 +111,11 @@ export function RequestQuoteButton({ provider }: { provider: ServiceProvider }) 
             </div>
 
             {isSuccess ? (
-              <div className="mt-6 rounded-md border border-brand-secondary/30 bg-brand-secondary/10 p-5">
-                <h3 className="font-heading text-2xl font-semibold text-brand-text">
+              <div className="mt-6 rounded-[24px] border border-reality-brand-500/20 bg-reality-brand-50 p-5">
+                <h3 className="font-display text-2xl font-semibold text-reality-text-primary">
                   Your request has been sent.
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-brand-muted">
+                <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
                   The provider will contact you shortly using your preferred contact method.
                 </p>
                 <Button className="mt-5" onClick={() => setIsOpen(false)}>
@@ -108,9 +124,9 @@ export function RequestQuoteButton({ provider }: { provider: ServiceProvider }) 
               </div>
             ) : (
               <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   Service category
-                  <Select name="service_category_id">
+                  <Select name="service_category_id" variant="reality">
                     <option value="">Let provider advise</option>
                     {provider.trades.map((trade) => (
                       <option key={trade.id} value={trade.category.id}>
@@ -119,69 +135,69 @@ export function RequestQuoteButton({ provider }: { provider: ServiceProvider }) 
                     ))}
                   </Select>
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   Preferred contact
-                  <Select defaultValue="whatsapp" name="preferred_contact_method">
+                  <Select defaultValue="whatsapp" name="preferred_contact_method" variant="reality">
                     <option value="whatsapp">WhatsApp</option>
                     <option value="phone">Phone</option>
                     <option value="email">Email</option>
                   </Select>
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text sm:col-span-2">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary sm:col-span-2">
                   Project title
-                  <Input name="project_title" placeholder="e.g. Repair inverter wiring" required />
+                  <Input name="project_title" placeholder="e.g. Repair inverter wiring" required variant="reality" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text sm:col-span-2">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary sm:col-span-2">
                   Project details
                   <textarea
-                    className="min-h-28 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                    className="min-h-28 rounded-[12px] border border-reality-border-secondary bg-white px-3 py-2 text-sm text-reality-text-primary outline-none transition focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                     name="project_description"
                     placeholder="Describe the work, urgency, property type, and any access notes."
                     required
                   />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   Your name
-                  <Input defaultValue={user?.full_name ?? ""} name="customer_name" required={!user} />
+                  <Input defaultValue={user?.full_name ?? ""} name="customer_name" required={!user} variant="reality" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   Budget range
-                  <Input name="budget_range" placeholder="e.g. NGN 100,000 - 250,000" />
+                  <Input name="budget_range" placeholder="e.g. NGN 100,000 - 250,000" variant="reality" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   Phone
-                  <Input defaultValue={user?.phone_number ?? ""} name="phone" required={!user} />
+                  <Input defaultValue={user?.phone_number ?? ""} name="phone" required={!user} variant="reality" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   Email
-                  <Input defaultValue={user?.email ?? ""} name="email" required={!user} type="email" />
+                  <Input defaultValue={user?.email ?? ""} name="email" required={!user} type="email" variant="reality" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text sm:col-span-2">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary sm:col-span-2">
                   Property address
-                  <Input name="property_address" placeholder="Nearest safe address or landmark" />
+                  <Input name="property_address" placeholder="Nearest safe address or landmark" variant="reality" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   State
-                  <Input defaultValue={provider.state} name="state" required />
+                  <Input defaultValue={provider.state} name="state" required variant="reality" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   LGA
-                  <Input defaultValue={provider.lga ?? ""} name="lga" />
+                  <Input defaultValue={provider.lga ?? ""} name="lga" variant="reality" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-brand-text">
+                <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
                   Preferred start date
-                  <Input name="preferred_start_date" type="date" />
+                  <Input name="preferred_start_date" type="date" variant="reality" />
                 </label>
                 {error ? (
                   <div className="sm:col-span-2">
-                    <FormMessage tone="error">{error}</FormMessage>
+                    <FormMessage tone="error" variant="reality">{error}</FormMessage>
                   </div>
                 ) : null}
                 <div className="flex flex-wrap gap-3 sm:col-span-2">
-                  <Button disabled={mutation.isPending} type="submit">
+                  <Button disabled={mutation.isPending} type="submit" variant="reality">
                     {mutation.isPending ? "Sending..." : "Send quote request"}
                   </Button>
-                  <Button onClick={() => setIsOpen(false)} type="button" variant="secondary">
+                  <Button onClick={() => setIsOpen(false)} type="button" variant="realitySecondary">
                     Cancel
                   </Button>
                 </div>
@@ -193,3 +209,4 @@ export function RequestQuoteButton({ provider }: { provider: ServiceProvider }) 
     </>
   );
 }
+

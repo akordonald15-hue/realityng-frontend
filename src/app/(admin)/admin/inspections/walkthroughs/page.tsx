@@ -51,7 +51,7 @@ export default function AdminWalkthroughsPage() {
         </Card>
         <div className="mt-6 grid gap-4">
           {walkthroughsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading walkthroughs...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading walkthroughs...</Card>
           ) : null}
           {walkthroughsQuery.data?.results.map((walkthrough) => (
             <WalkthroughModerationCard
@@ -67,10 +67,11 @@ export default function AdminWalkthroughsPage() {
             />
           ))}
           {walkthroughsQuery.data?.results.length === 0 ? (
-            <Card className="p-5 text-sm text-brand-muted">No walkthroughs match this queue.</Card>
+            <Card className="p-5 text-sm text-reality-text-secondary">No walkthroughs match this queue.</Card>
           ) : null}
         </div>
       </main>
     </ProtectedRoute>
   );
 }
+

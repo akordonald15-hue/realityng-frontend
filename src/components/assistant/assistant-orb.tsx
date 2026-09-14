@@ -64,3 +64,4 @@ export function AssistantOrb({ state = "idle", size = "md", className }: Assista
     </span>
   );
 }
+

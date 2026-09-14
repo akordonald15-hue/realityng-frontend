@@ -52,3 +52,4 @@ export function ParallaxMedia({ children, disabled = false, ...props }: Parallax
     </div>
   );
 }
+

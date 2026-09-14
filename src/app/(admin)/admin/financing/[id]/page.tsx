@@ -83,21 +83,21 @@ export default function AdminFinancingDetailPage() {
         />
 
         {applicationQuery.isLoading ? (
-          <p className="mt-6 text-sm text-brand-muted">Loading application...</p>
+          <p className="mt-6 text-sm text-reality-text-secondary">Loading application...</p>
         ) : !application ? (
-          <p className="mt-6 text-sm text-brand-muted">Application not found.</p>
+          <p className="mt-6 text-sm text-reality-text-secondary">Application not found.</p>
         ) : (
           <div className="mt-6 grid gap-4">
             <Card className="p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-reality-brand-600">
                     {application.application_reference}
                   </p>
-                  <h2 className="mt-1 text-xl font-semibold text-brand-text">
+                  <h2 className="mt-1 text-xl font-semibold text-reality-text-primary">
                     {application.product.name}
                   </h2>
-                  <p className="mt-1 text-sm text-brand-muted">
+                  <p className="mt-1 text-sm text-reality-text-secondary">
                     {application.currency} {application.requested_amount} ·{" "}
                     {application.partner.name}
                   </p>
@@ -115,7 +115,7 @@ export default function AdminFinancingDetailPage() {
             <FinancingDocumentChecklist application={application} />
 
             <Card className="p-4">
-              <h2 className="text-base font-semibold text-brand-text">
+              <h2 className="text-base font-semibold text-reality-text-primary">
                 Submit to partner
               </h2>
               <form className="mt-3 flex flex-col gap-3 sm:flex-row" onSubmit={submitPartner}>
@@ -132,7 +132,7 @@ export default function AdminFinancingDetailPage() {
             </Card>
 
             <Card className="p-4">
-              <h2 className="text-base font-semibold text-brand-text">Record offer</h2>
+              <h2 className="text-base font-semibold text-reality-text-primary">Record offer</h2>
               <form className="mt-3 grid gap-3 sm:grid-cols-4" onSubmit={submitOffer}>
                 <Input
                   required
@@ -159,13 +159,13 @@ export default function AdminFinancingDetailPage() {
             </Card>
 
             <section className="grid gap-3">
-              <h2 className="text-lg font-semibold text-brand-text">Offers</h2>
+              <h2 className="text-lg font-semibold text-reality-text-primary">Offers</h2>
               {application.offers.length ? (
                 application.offers.map((offer) => (
                   <FinancingOfferCard key={offer.id} offer={offer} />
                 ))
               ) : (
-                <p className="text-sm text-brand-muted">No offers recorded.</p>
+                <p className="text-sm text-reality-text-secondary">No offers recorded.</p>
               )}
             </section>
           </div>

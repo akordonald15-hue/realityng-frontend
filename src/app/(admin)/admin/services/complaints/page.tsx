@@ -41,7 +41,7 @@ export default function AdminServiceComplaintsPage() {
 
         <div className="mt-8 space-y-4">
           {complaintsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading complaints...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading complaints...</Card>
           ) : null}
           {complaintsQuery.data?.results.map((complaint) => (
             <div className="space-y-3" key={complaint.id}>
@@ -64,10 +64,11 @@ export default function AdminServiceComplaintsPage() {
             </div>
           ))}
           {complaintsQuery.data?.results.length === 0 ? (
-            <Card className="p-5 text-sm text-brand-muted">No service complaints are open.</Card>
+            <Card className="p-5 text-sm text-reality-text-secondary">No service complaints are open.</Card>
           ) : null}
         </div>
       </main>
     </ProtectedRoute>
   );
 }
+

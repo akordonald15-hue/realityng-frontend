@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "Where dreams find an address. Find, verify, buy, rent, build, and manage properties in Nigeria.",
     start_url: "/",
     display: "standalone",
-    background_color: "#06271F",
+    background_color: "#FFFFFF",
     theme_color: "#0B3B2E",
     icons: [
       {
@@ -29,3 +29,4 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
   };
 }
+

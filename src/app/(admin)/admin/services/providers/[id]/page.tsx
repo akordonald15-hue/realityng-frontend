@@ -24,11 +24,11 @@ export default function AdminServiceProviderDetailPage() {
   return (
     <ProtectedRoute requireAdmin>
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link className="text-sm font-semibold text-brand-secondary" href="/admin/services/providers">
+        <Link className="text-sm font-semibold text-reality-brand-600" href="/admin/services/providers">
           Back to provider queue
         </Link>
         {providerQuery.isLoading ? (
-          <Card className="mt-6 p-5 text-brand-muted">Loading provider...</Card>
+          <Card className="mt-6 p-5 text-reality-text-secondary">Loading provider...</Card>
         ) : providerQuery.data ? (
           <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_24rem]">
             <div className="space-y-6">
@@ -39,17 +39,17 @@ export default function AdminServiceProviderDetailPage() {
                   title={providerQuery.data.business_name || "Untitled provider"}
                   description={providerQuery.data.headline || "No headline supplied yet."}
                 />
-                <p className="mt-4 text-sm leading-6 text-brand-muted">
+                <p className="mt-4 text-sm leading-6 text-reality-text-secondary">
                   {providerQuery.data.biography || "No biography supplied yet."}
                 </p>
               </Card>
 
               <Card className="p-6">
-                <h2 className="font-heading text-2xl font-semibold text-brand-text">Trades</h2>
+                <h2 className="font-display text-2xl font-semibold text-reality-text-primary">Trades</h2>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {providerQuery.data.trades.map((trade) => (
                     <span
-                      className="rounded-sm border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-muted"
+                      className="rounded-sm border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-sm text-reality-text-secondary"
                       key={trade.id}
                     >
                       {trade.category.name}
@@ -60,10 +60,10 @@ export default function AdminServiceProviderDetailPage() {
               </Card>
 
               <Card className="p-6">
-                <h2 className="font-heading text-2xl font-semibold text-brand-text">Service areas</h2>
+                <h2 className="font-display text-2xl font-semibold text-reality-text-primary">Service areas</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {providerQuery.data.service_areas.map((area) => (
-                    <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-brand-muted" key={area.id}>
+                    <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-3 text-sm text-reality-text-secondary" key={area.id}>
                       {[area.neighborhood, area.lga, area.city, area.state].filter(Boolean).join(", ")}
                       {area.is_primary ? " - primary" : ""}
                     </div>
@@ -72,7 +72,7 @@ export default function AdminServiceProviderDetailPage() {
               </Card>
 
               <Card className="p-6">
-                <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                   Verification snapshot
                 </h2>
                 <div className="mt-4">
@@ -83,7 +83,7 @@ export default function AdminServiceProviderDetailPage() {
             <aside className="space-y-6">
               <ProviderCompletenessChecklist completion={providerQuery.data.completion} />
               <Card className="p-5">
-                <h2 className="mb-4 font-heading text-2xl font-semibold text-brand-text">
+                <h2 className="mb-4 font-display text-2xl font-semibold text-reality-text-primary">
                   Moderation
                 </h2>
                 <AdminProviderDecisionForm provider={providerQuery.data} />
@@ -91,7 +91,7 @@ export default function AdminServiceProviderDetailPage() {
             </aside>
           </div>
         ) : (
-          <Card className="mt-6 p-5 text-brand-muted">Provider not found.</Card>
+          <Card className="mt-6 p-5 text-reality-text-secondary">Provider not found.</Card>
         )}
       </main>
     </ProtectedRoute>

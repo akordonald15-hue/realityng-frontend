@@ -11,7 +11,7 @@ type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<IconButtonVariant, string> = {
   legacy:
-    "rounded-md border border-white/10 bg-white/5 text-brand-text hover:bg-white/10 focus-visible:ring-brand-secondary focus-visible:ring-offset-brand-background",
+    "rounded-md border border-reality-border-secondary bg-reality-bg-subtle text-reality-text-primary hover:bg-reality-bg-muted focus-visible:ring-reality-brand-500 focus-visible:ring-offset-white",
   reality:
     "rounded-full border border-reality-border-secondary bg-white text-reality-text-primary shadow-reality-xs hover:bg-reality-bg-subtle focus-visible:ring-reality-brand-500 focus-visible:ring-offset-white",
   realityGhost:
@@ -42,3 +42,4 @@ export function IconButton({
     </button>
   );
 }
+

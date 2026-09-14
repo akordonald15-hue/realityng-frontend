@@ -70,7 +70,7 @@ export default function ArtisanQuoteRequestsPage() {
 
       <div className="mt-6">
         {quoteRequestsQuery.isLoading ? (
-          <Card className="p-5 text-brand-muted">Loading quote requests...</Card>
+          <Card className="p-5 text-reality-text-secondary">Loading quote requests...</Card>
         ) : quoteRequestsQuery.isError ? (
           <FormMessage tone="error">
             {getApiErrorMessage(quoteRequestsQuery.error)}
@@ -82,3 +82,4 @@ export default function ArtisanQuoteRequestsPage() {
     </main>
   );
 }
+

@@ -184,3 +184,4 @@ describe("PropertiesPage", () => {
     expect(mocks.replace).not.toHaveBeenCalled();
   });
 });
+

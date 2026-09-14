@@ -85,11 +85,11 @@ export function TransactionEscrowClient() {
         />
 
         {transactionQuery.isLoading || escrowQuery.isLoading ? (
-          <p className="mt-6 text-sm text-brand-muted">Loading escrow...</p>
+          <p className="mt-6 text-sm text-reality-text-secondary">Loading escrow...</p>
         ) : escrowQuery.isError || !escrow ? (
           <Card className="mt-6 p-4">
-            <h2 className="text-base font-semibold text-brand-text">Escrow not started</h2>
-            <p className="mt-2 text-sm text-brand-muted">
+            <h2 className="text-base font-semibold text-reality-text-primary">Escrow not started</h2>
+            <p className="mt-2 text-sm text-reality-text-secondary">
               This transaction does not yet have an escrow record. Payment proof tracking can still
               continue from the transaction page.
             </p>
@@ -105,8 +105,8 @@ export function TransactionEscrowClient() {
             ) : null}
 
             <Card className="p-4">
-              <h2 className="text-base font-semibold text-brand-text">Release actions</h2>
-              <p className="mt-1 text-sm text-brand-muted">
+              <h2 className="text-base font-semibold text-reality-text-primary">Release actions</h2>
+              <p className="mt-1 text-sm text-reality-text-secondary">
                 A request does not mark funds as released. Settlement is only complete after the
                 escrow partner confirms it.
               </p>
@@ -119,7 +119,7 @@ export function TransactionEscrowClient() {
                 </Button>
                 <div className="flex flex-1 flex-col gap-2 sm:flex-row">
                   <input
-                    className="min-h-11 flex-1 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text"
+                    className="min-h-11 flex-1 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 text-sm text-reality-text-primary"
                     placeholder="Refund reason"
                     value={refundReason}
                     onChange={(event) => setRefundReason(event.target.value)}
@@ -149,13 +149,13 @@ function EscrowSummary({ escrow }: { escrow: EscrowTransaction }) {
     <Card className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
+          <p className="text-xs font-semibold uppercase tracking-wide text-reality-brand-600">
             {escrow.provider.name}
           </p>
-          <h2 className="mt-1 text-xl font-semibold text-brand-text">
+          <h2 className="mt-1 text-xl font-semibold text-reality-text-primary">
             {escrow.currency} {escrow.expected_amount}
           </h2>
-          <p className="mt-1 text-sm text-brand-muted">
+          <p className="mt-1 text-sm text-reality-text-secondary">
             Provider reference: {escrow.external_reference || "Not recorded"}
           </p>
         </div>
@@ -180,9 +180,9 @@ function EscrowSummary({ escrow }: { escrow: EscrowTransaction }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/5 p-3">
-      <p className="text-xs uppercase tracking-wide text-brand-muted">{label}</p>
-      <p className="mt-1 font-semibold text-brand-text">{value}</p>
+    <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-3">
+      <p className="text-xs uppercase tracking-wide text-reality-text-secondary">{label}</p>
+      <p className="mt-1 font-semibold text-reality-text-primary">{value}</p>
     </div>
   );
 }
@@ -190,21 +190,21 @@ function Metric({ label, value }: { label: string; value: string }) {
 function ConditionsList({ conditions }: { conditions: EscrowCondition[] }) {
   return (
     <Card className="p-4">
-      <h2 className="text-base font-semibold text-brand-text">Release conditions</h2>
+      <h2 className="text-base font-semibold text-reality-text-primary">Release conditions</h2>
       {conditions.length === 0 ? (
-        <p className="mt-2 text-sm text-brand-muted">No release conditions have been added.</p>
+        <p className="mt-2 text-sm text-reality-text-secondary">No release conditions have been added.</p>
       ) : (
         <div className="mt-3 grid gap-2">
           {conditions.map((condition) => (
             <div
               key={condition.id}
-              className="flex items-center justify-between rounded-md border border-white/10 p-3"
+              className="flex items-center justify-between rounded-md border border-reality-border-secondary p-3"
             >
               <div>
-                <p className="font-medium text-brand-text">
+                <p className="font-medium text-reality-text-primary">
                   {condition.condition_type.replaceAll("_", " ")}
                 </p>
-                <p className="text-xs text-brand-muted">
+                <p className="text-xs text-reality-text-secondary">
                   {condition.description || "Condition managed by RealityNG operations."}
                 </p>
               </div>
@@ -241,16 +241,16 @@ function Timeline({ escrow }: { escrow: EscrowTransaction }) {
 
   return (
     <Card className="p-4">
-      <h2 className="text-base font-semibold text-brand-text">Escrow timeline</h2>
+      <h2 className="text-base font-semibold text-reality-text-primary">Escrow timeline</h2>
       {items.length === 0 ? (
-        <p className="mt-2 text-sm text-brand-muted">No escrow events have been recorded yet.</p>
+        <p className="mt-2 text-sm text-reality-text-secondary">No escrow events have been recorded yet.</p>
       ) : (
         <div className="mt-3 grid gap-2">
           {items.map((item) => (
-            <div key={item.id} className="rounded-md border border-white/10 p-3">
-              <p className="font-medium text-brand-text">{item.title}</p>
-              <p className="text-sm text-brand-muted">{item.body}</p>
-              <p className="mt-1 text-xs text-brand-muted">
+            <div key={item.id} className="rounded-md border border-reality-border-secondary p-3">
+              <p className="font-medium text-reality-text-primary">{item.title}</p>
+              <p className="text-sm text-reality-text-secondary">{item.body}</p>
+              <p className="mt-1 text-xs text-reality-text-secondary">
                 {new Date(item.date).toLocaleString()}
               </p>
             </div>

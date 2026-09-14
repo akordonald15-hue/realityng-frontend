@@ -8,7 +8,7 @@ function SearchResultsCard({
   result: Extract<ToolResult, { tool: "search_properties" }>["result"];
 }) {
   if (result.result_count === 0) {
-    return <p className="text-sm text-brand-muted">No matching properties found.</p>;
+    return <p className="text-sm text-reality-text-secondary">No matching properties found.</p>;
   }
   return (
     <div className="flex gap-3 overflow-x-auto pb-1">
@@ -36,7 +36,7 @@ function CompareResultsCard({
         ))}
       </div>
       {result.missing_property_ids.length > 0 && (
-        <p className="text-xs text-brand-muted">
+        <p className="text-xs text-reality-text-secondary">
           {result.missing_property_ids.length}{" "}
           {result.missing_property_ids.length === 1 ? "property" : "properties"} could
           not be found or are no longer approved.
@@ -57,7 +57,7 @@ function NavigateResultCard({
   return (
     <Link
       href={result.path}
-      className="inline-block rounded-md border border-brand-secondary/70 bg-transparent px-3 py-1.5 text-xs text-brand-secondary transition hover:bg-brand-secondary/10"
+      className="inline-block rounded-md border border-brand-secondary/70 bg-transparent px-3 py-1.5 text-xs text-reality-brand-600 transition hover:bg-brand-secondary/10"
     >
       View {result.target.replace(/_/g, " ")}
     </Link>
@@ -82,3 +82,4 @@ export function ToolResultCards({ toolResults }: { toolResults: ToolResult[] }) 
     </div>
   );
 }
+

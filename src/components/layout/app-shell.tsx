@@ -4,14 +4,14 @@ import { Navbar } from "@/components/layout/navbar";
 
 type AppShellProps = {
   children: React.ReactNode;
-  variant?: "legacy" | "reality";
+  variant?: "reality";
   withAssistant?: boolean;
 };
 
-export function AppShell({ children, variant = "legacy", withAssistant = true }: AppShellProps) {
+export function AppShell({ children, variant = "reality", withAssistant = true }: AppShellProps) {
   return (
     <ProtectedRoute>
-      <div className={variant === "reality" ? "[color-scheme:light]" : undefined}>
+      <div className="[color-scheme:light]">
         <Navbar variant={variant} />
         {children}
         {withAssistant ? <AssistantWidget /> : null}
@@ -19,3 +19,4 @@ export function AppShell({ children, variant = "legacy", withAssistant = true }:
     </ProtectedRoute>
   );
 }
+

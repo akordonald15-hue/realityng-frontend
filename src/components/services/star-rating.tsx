@@ -21,7 +21,7 @@ export function StarRating({
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             aria-hidden="true"
-            className={star <= Math.round(value) ? "text-brand-secondary" : "text-brand-muted/40"}
+            className={star <= Math.round(value) ? "text-reality-brand-600" : "text-reality-text-secondary/40"}
             key={star}
           >
             ★
@@ -33,16 +33,16 @@ export function StarRating({
 
   return (
     <fieldset className="grid gap-2">
-      {label ? <legend className="text-sm font-semibold text-brand-text">{label}</legend> : null}
+      {label ? <legend className="text-sm font-semibold text-reality-text-primary">{label}</legend> : null}
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             aria-pressed={star === value}
             className={clsx(
-              "h-10 w-10 rounded-md border border-white/10 text-xl transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary",
+              "h-10 w-10 rounded-md border border-reality-border-secondary text-xl transition focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500",
               star <= value
-                ? "bg-brand-secondary/15 text-brand-secondary"
-                : "bg-white/5 text-brand-muted",
+                ? "bg-brand-secondary/15 text-reality-brand-600"
+                : "bg-reality-bg-subtle text-reality-text-secondary",
             )}
             key={star}
             name={name}
@@ -58,3 +58,4 @@ export function StarRating({
     </fieldset>
   );
 }
+

@@ -63,6 +63,7 @@ export const mockApplications: RentalApplication[] = mockViewings
       message: "I am ready to proceed after the RealityNG review.",
       status: status[index],
       owner_notes: index === 1 ? "Applicant has a strong profile and completed viewing." : "",
+      can_manage_application: false,
       created_at: viewing.created_at,
       updated_at: viewing.updated_at,
     };
@@ -124,7 +125,10 @@ export async function mockGetApplication(applicationId: string): Promise<RentalA
     throw new Error("Application not found.");
   }
 
-  return application;
+  return {
+    ...application,
+    can_manage_application: application.property_owner.id === user.id,
+  };
 }
 
 function transitionApplication(
@@ -165,6 +169,7 @@ export async function mockCreateApplication(
     message: payload.message ?? "",
     status: "submitted",
     owner_notes: "",
+    can_manage_application: false,
     created_at: nowIso,
     updated_at: nowIso,
   };
@@ -178,7 +183,11 @@ export async function mockListMyApplications(): Promise<PaginatedApplications> {
   if (!user) {
     return paginate([]);
   }
-  return paginate(readApplications().filter((application) => application.applicant.id === user.id));
+  return paginate(
+    readApplications()
+      .filter((application) => application.applicant.id === user.id)
+      .map((application) => ({ ...application, can_manage_application: false })),
+  );
 }
 
 export async function mockListReceivedApplications(): Promise<PaginatedApplications> {
@@ -187,7 +196,9 @@ export async function mockListReceivedApplications(): Promise<PaginatedApplicati
     return paginate([]);
   }
   return paginate(
-    readApplications().filter((application) => application.property_owner.id === user.id),
+    readApplications()
+      .filter((application) => application.property_owner.id === user.id)
+      .map((application) => ({ ...application, can_manage_application: true })),
   );
 }
 

@@ -80,22 +80,22 @@ export function ViewingRequestButton({ inquiryId, disabled = false }: ViewingReq
           className="fixed inset-0 z-50 flex items-end bg-black/70 px-4 py-5 backdrop-blur-sm sm:items-center sm:justify-center"
           role="dialog"
         >
-          <div className="w-full max-w-lg rounded-md border border-white/10 bg-brand-surface p-5 shadow-glow">
+          <div className="w-full max-w-lg rounded-md border border-reality-border-secondary bg-white p-5 shadow-reality-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2
-                  className="font-heading text-2xl font-semibold text-brand-text"
+                  className="font-display text-2xl font-semibold text-reality-text-primary"
                   id="viewing-request-title"
                 >
                   Request viewing
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-brand-muted">
+                <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
                   Choose a preferred slot. The owner can confirm or suggest another time.
                 </p>
               </div>
               <button
                 aria-label="Close viewing request form"
-                className="rounded-md px-2 py-1 text-brand-muted transition hover:bg-white/10 hover:text-brand-text"
+                className="rounded-md px-2 py-1 text-reality-text-secondary transition hover:bg-reality-bg-muted hover:text-reality-text-primary"
                 onClick={() => setIsOpen(false)}
                 type="button"
               >
@@ -104,7 +104,7 @@ export function ViewingRequestButton({ inquiryId, disabled = false }: ViewingReq
             </div>
             <form className="mt-5 space-y-4" onSubmit={submitViewing}>
               <label className="block">
-                <span className="text-sm font-medium text-brand-text">Viewing type</span>
+                <span className="text-sm font-medium text-reality-text-primary">Viewing type</span>
                 <Select
                   className="mt-2"
                   onChange={(event) => setViewingType(event.target.value as ViewingType)}
@@ -119,9 +119,9 @@ export function ViewingRequestButton({ inquiryId, disabled = false }: ViewingReq
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                  <span className="text-sm font-medium text-brand-text">Preferred date</span>
+                  <span className="text-sm font-medium text-reality-text-primary">Preferred date</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text outline-none transition focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                    className="mt-2 h-11 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 text-sm text-reality-text-primary outline-none transition focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                     min={minDate}
                     onChange={(event) => setPreferredDate(event.target.value)}
                     required
@@ -130,9 +130,9 @@ export function ViewingRequestButton({ inquiryId, disabled = false }: ViewingReq
                   />
                 </label>
                 <label className="block">
-                  <span className="text-sm font-medium text-brand-text">Preferred time</span>
+                  <span className="text-sm font-medium text-reality-text-primary">Preferred time</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text outline-none transition focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                    className="mt-2 h-11 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 text-sm text-reality-text-primary outline-none transition focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                     onChange={(event) => setPreferredTime(event.target.value)}
                     required
                     type="time"
@@ -141,9 +141,9 @@ export function ViewingRequestButton({ inquiryId, disabled = false }: ViewingReq
                 </label>
               </div>
               <label className="block">
-                <span className="text-sm font-medium text-brand-text">Notes</span>
+                <span className="text-sm font-medium text-reality-text-primary">Notes</span>
                 <textarea
-                  className="mt-2 min-h-24 w-full rounded-md border border-white/10 bg-white/5 px-3 py-3 text-sm text-brand-text outline-none transition placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+                  className="mt-2 min-h-24 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-3 text-sm text-reality-text-primary outline-none transition placeholder:text-reality-text-secondary/60 focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
                   maxLength={1000}
                   onChange={(event) => setNotes(event.target.value)}
                   placeholder="Share timing constraints or access preferences."
@@ -175,3 +175,4 @@ export function ViewingRequestButton({ inquiryId, disabled = false }: ViewingReq
     </>
   );
 }
+

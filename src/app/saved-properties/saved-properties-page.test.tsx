@@ -76,3 +76,4 @@ describe("SavedPropertiesPage", () => {
     await waitFor(() => expect(mocks.deleteFavorite).toHaveBeenCalledWith("property-1"));
   });
 });
+

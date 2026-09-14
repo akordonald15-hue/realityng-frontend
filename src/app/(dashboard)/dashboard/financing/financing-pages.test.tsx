@@ -223,3 +223,4 @@ describe("financing pages", () => {
     expect(mocks.consentToFinancingApplication).toHaveBeenCalledWith("app-1");
   });
 });
+

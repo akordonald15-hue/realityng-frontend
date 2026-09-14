@@ -52,3 +52,4 @@ describe("RoleSetupPage", () => {
     expect(await screen.findByText("agent role requested and awaiting approval.")).toBeInTheDocument();
   });
 });
+

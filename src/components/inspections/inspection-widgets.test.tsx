@@ -38,3 +38,4 @@ describe("inspection UI widgets", () => {
     expect(screen.getByText(/No moderated walkthrough video/)).toBeInTheDocument();
   });
 });
+

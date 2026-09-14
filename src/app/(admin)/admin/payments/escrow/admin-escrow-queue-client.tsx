@@ -25,7 +25,7 @@ export function AdminEscrowQueueClient() {
         />
 
         {escrowsQuery.isLoading ? (
-          <Card className="mt-8 p-5 text-brand-muted">Loading escrow queue...</Card>
+          <Card className="mt-8 p-5 text-reality-text-secondary">Loading escrow queue...</Card>
         ) : null}
 
         {escrowsQuery.isError ? (
@@ -35,23 +35,23 @@ export function AdminEscrowQueueClient() {
         ) : null}
 
         {escrowsQuery.data ? (
-          <div className="mt-8 overflow-hidden rounded-md border border-white/10">
+          <div className="mt-8 overflow-hidden rounded-md border border-reality-border-secondary">
             {escrowsQuery.data.length === 0 ? (
-              <Card className="p-5 text-brand-muted">No escrow records found.</Card>
+              <Card className="p-5 text-reality-text-secondary">No escrow records found.</Card>
             ) : (
               <div className="divide-y divide-white/10">
                 {escrowsQuery.data.map((escrow) => (
                   <Link
-                    className="block bg-white/[0.03] p-4 transition hover:bg-white/[0.06]"
+                    className="block bg-white/[0.03] p-4 transition hover:bg-reality-bg-subtle"
                     href={`/dashboard/transactions/${escrow.transaction}/escrow`}
                     key={escrow.id}
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
-                        <p className="font-semibold text-brand-text">
+                        <p className="font-semibold text-reality-text-primary">
                           Transaction {escrow.transaction.slice(0, 8)}
                         </p>
-                        <p className="mt-1 text-sm text-brand-muted">
+                        <p className="mt-1 text-sm text-reality-text-secondary">
                           {escrow.provider.name} - {escrow.currency} {escrow.expected_amount}
                         </p>
                       </div>
@@ -72,3 +72,4 @@ export function AdminEscrowQueueClient() {
     </ProtectedRoute>
   );
 }
+

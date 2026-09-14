@@ -14,3 +14,4 @@ export function ReviewStatusBadge({ status }: { status: ServiceReviewStatus }) {
   const variant = status === "published" ? "green" : status === "pending" ? "gold" : "muted";
   return <Badge variant={variant}>{labels[status]}</Badge>;
 }
+

@@ -37,14 +37,14 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
       <StarRating label="Overall rating" onChange={setRating} value={rating} />
-      <label className="grid gap-2 text-sm font-semibold text-brand-text">
+      <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
         Review title
         <Input maxLength={160} name="title" required />
       </label>
-      <label className="grid gap-2 text-sm font-semibold text-brand-text">
+      <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
         Review
         <textarea
-          className="min-h-32 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-brand-text outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20"
+          className="min-h-32 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-sm text-reality-text-primary outline-none focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
           maxLength={2000}
           name="comment"
           required
@@ -62,7 +62,7 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
         />
         <Input max="5" min="1" name="value_rating" placeholder="Value" type="number" />
       </div>
-      <label className="flex items-center gap-2 text-sm text-brand-muted">
+      <label className="flex items-center gap-2 text-sm text-reality-text-secondary">
         <input defaultChecked name="would_recommend" type="checkbox" />
         I would recommend this provider
       </label>
@@ -76,3 +76,4 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
     </form>
   );
 }
+

@@ -23,7 +23,7 @@ export default function AdminConstructionDashboardPage() {
           description="Monitor construction projects, delayed timelines, pending updates, stakeholder access, and inspection-linked milestones."
         />
         {dashboardQuery.isLoading ? (
-          <Card className="mt-8 p-5 text-brand-muted">Loading construction oversight...</Card>
+          <Card className="mt-8 p-5 text-reality-text-secondary">Loading construction oversight...</Card>
         ) : null}
         {dashboardQuery.isError ? (
           <Card className="mt-8 p-5 text-red-200">Construction oversight could not load.</Card>
@@ -38,3 +38,4 @@ export default function AdminConstructionDashboardPage() {
     </ProtectedRoute>
   );
 }
+

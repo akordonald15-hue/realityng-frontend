@@ -90,14 +90,14 @@ export default function InspectorAssignmentDetailPage() {
           {request ? (
             <Card className="p-5">
               <InspectionStatusBadge status={request.status} />
-              <p className="mt-4 text-sm leading-6 text-brand-muted">{request.description}</p>
+              <p className="mt-4 text-sm leading-6 text-reality-text-secondary">{request.description}</p>
             </Card>
           ) : null}
           {report ? (
             <>
               <InspectionReportCard report={report} />
               <Card className="p-5">
-                <h2 className="font-heading text-2xl font-semibold text-brand-text">
+                <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                   Private evidence
                 </h2>
                 <div className="mt-5">
@@ -124,7 +124,7 @@ export default function InspectorAssignmentDetailPage() {
             </>
           ) : (
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
                 Draft report
               </h2>
               <form
@@ -134,19 +134,19 @@ export default function InspectorAssignmentDetailPage() {
                   createReportMutation.mutate();
                 }}
               >
-                <label className="block text-sm font-semibold text-brand-text">
+                <label className="block text-sm font-semibold text-reality-text-primary">
                   Summary
                   <textarea
-                    className="mt-2 min-h-28 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-brand-text"
+                    className="mt-2 min-h-28 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-reality-text-primary"
                     onChange={(event) => setSummary(event.target.value)}
                     required
                     value={summary}
                   />
                 </label>
-                <label className="block text-sm font-semibold text-brand-text">
+                <label className="block text-sm font-semibold text-reality-text-primary">
                   Recommendation
                   <textarea
-                    className="mt-2 min-h-28 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-brand-text"
+                    className="mt-2 min-h-28 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-reality-text-primary"
                     onChange={(event) => setRecommendation(event.target.value)}
                     required
                     value={recommendation}
@@ -174,7 +174,7 @@ export default function InspectorAssignmentDetailPage() {
           ) : null}
         </div>
         <Card className="h-fit p-5">
-          <h2 className="font-heading text-2xl font-semibold text-brand-text">Timeline</h2>
+          <h2 className="font-display text-2xl font-semibold text-reality-text-primary">Timeline</h2>
           <div className="mt-5">
             <InspectionTimeline events={timelineQuery.data ?? []} />
           </div>

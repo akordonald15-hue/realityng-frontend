@@ -15,14 +15,14 @@ export function CompareTray() {
   return (
     <aside
       aria-label="Selected properties for comparison"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-brand-secondary/40 bg-brand-background/95 shadow-[0_-12px_36px_rgba(0,0,0,0.35)] backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-brand-secondary/40 bg-white/95 shadow-[0_-12px_36px_rgba(0,0,0,0.35)] backdrop-blur"
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-4 sm:px-6 lg:flex-row lg:items-center">
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-4">
-            <p className="font-semibold text-brand-text">
+            <p className="font-semibold text-reality-text-primary">
               Compare properties{" "}
-              <span className="text-brand-secondary">
+              <span className="text-reality-brand-600">
                 {properties.length}/{MAX_COMPARE_PROPERTIES}
               </span>
             </p>
@@ -33,18 +33,18 @@ export function CompareTray() {
           <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
             {properties.map((property) => (
               <div
-                className="flex min-w-56 items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 px-3 py-2"
+                className="flex min-w-56 items-center justify-between gap-3 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2"
                 key={property.id}
               >
                 <Link
-                  className="truncate text-sm text-brand-muted hover:text-brand-text"
+                  className="truncate text-sm text-reality-text-secondary hover:text-reality-text-primary"
                   href={`/properties/${property.slug}`}
                 >
                   {property.title}
                 </Link>
                 <button
                   aria-label={`Remove ${property.title} from comparison`}
-                  className="text-lg leading-none text-brand-muted hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary"
+                  className="text-lg leading-none text-reality-text-secondary hover:text-reality-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
                   onClick={() => removeProperty(property.id)}
                   type="button"
                 >
@@ -73,3 +73,4 @@ export function CompareTray() {
     </aside>
   );
 }
+

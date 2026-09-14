@@ -26,7 +26,7 @@ export function ReviewModerationList({ reviews }: { reviews: ServiceReview[] }) 
   });
 
   if (!reviews.length) {
-    return <Card className="p-5 text-brand-muted">No reviews match this queue.</Card>;
+    return <Card className="p-5 text-reality-text-secondary">No reviews match this queue.</Card>;
   }
 
   return (
@@ -39,7 +39,7 @@ export function ReviewModerationList({ reviews }: { reviews: ServiceReview[] }) 
           <ReviewCard mode="admin" review={review} />
           <div className="flex flex-wrap gap-2">
             <Link
-              className="inline-flex h-11 items-center justify-center rounded-md border border-white/10 px-4 text-sm font-semibold text-brand-text hover:bg-white/10"
+              className="inline-flex h-11 items-center justify-center rounded-md border border-reality-border-secondary px-4 text-sm font-semibold text-reality-text-primary hover:bg-reality-bg-muted"
               href={`/admin/services/reviews/${review.id}`}
             >
               Inspect
@@ -102,3 +102,4 @@ export function ReviewModerationList({ reviews }: { reviews: ServiceReview[] }) 
     </div>
   );
 }
+

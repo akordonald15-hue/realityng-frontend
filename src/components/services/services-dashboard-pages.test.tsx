@@ -210,3 +210,4 @@ describe("services operational dashboards", () => {
     expect(screen.getByText("Service category counts")).toBeInTheDocument();
   });
 });
+

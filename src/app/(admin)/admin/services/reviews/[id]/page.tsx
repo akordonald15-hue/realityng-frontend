@@ -21,7 +21,7 @@ export default function AdminServiceReviewDetailPage() {
   return (
     <ProtectedRoute requireAdmin>
       <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link className="text-sm font-semibold text-brand-secondary" href="/admin/services/reviews">
+        <Link className="text-sm font-semibold text-reality-brand-600" href="/admin/services/reviews">
           Back to review queue
         </Link>
         <SectionHeader
@@ -31,11 +31,11 @@ export default function AdminServiceReviewDetailPage() {
         />
         <div className="mt-6">
           {reviewQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading review...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading review...</Card>
           ) : reviewQuery.data ? (
             <ReviewModerationList reviews={[reviewQuery.data]} />
           ) : (
-            <Card className="p-5 text-brand-muted">Review not found.</Card>
+            <Card className="p-5 text-reality-text-secondary">Review not found.</Card>
           )}
         </div>
       </main>

@@ -85,25 +85,25 @@ export default function FinancingDetailPage() {
         />
 
         {applicationQuery.isLoading ? (
-          <p className="mt-6 text-sm text-brand-muted">Loading financing application...</p>
+          <p className="mt-6 text-sm text-reality-text-secondary">Loading financing application...</p>
         ) : !application ? (
-          <p className="mt-6 text-sm text-brand-muted">Application not found.</p>
+          <p className="mt-6 text-sm text-reality-text-secondary">Application not found.</p>
         ) : (
           <div className="mt-6 grid gap-4">
             <Card className="p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-reality-brand-600">
                     {application.application_reference}
                   </p>
-                  <h2 className="mt-1 text-xl font-semibold text-brand-text">
+                  <h2 className="mt-1 text-xl font-semibold text-reality-text-primary">
                     {application.product.name}
                   </h2>
-                  <p className="mt-1 text-sm text-brand-muted">
+                  <p className="mt-1 text-sm text-reality-text-secondary">
                     {application.currency} {application.requested_amount} ·{" "}
                     {application.preferred_tenor_months} months · {application.partner.name}
                   </p>
-                  <p className="mt-2 text-sm text-brand-muted">
+                  <p className="mt-2 text-sm text-reality-text-secondary">
                     RealityNG coordinates this workflow. The financing partner owns underwriting,
                     approval, rates, repayment and collection.
                   </p>
@@ -119,8 +119,8 @@ export default function FinancingDetailPage() {
             ) : null}
 
             <Card className="p-4">
-              <h2 className="text-base font-semibold text-brand-text">Consent</h2>
-              <p className="mt-1 text-sm text-brand-muted">
+              <h2 className="text-base font-semibold text-reality-text-primary">Consent</h2>
+              <p className="mt-1 text-sm text-reality-text-secondary">
                 Consent is required before RealityNG can submit your application to a financing
                 partner.
               </p>
@@ -136,10 +136,10 @@ export default function FinancingDetailPage() {
             <FinancingDocumentChecklist application={application} />
 
             <Card className="p-4">
-              <h2 className="text-base font-semibold text-brand-text">Upload document</h2>
+              <h2 className="text-base font-semibold text-reality-text-primary">Upload document</h2>
               <div className="mt-3 grid gap-3 sm:grid-cols-[180px_1fr_auto]">
                 <select
-                  className="h-11 rounded-md border border-white/10 bg-brand-surface px-3 text-sm text-brand-text"
+                  className="h-11 rounded-md border border-reality-border-secondary bg-white px-3 text-sm text-reality-text-primary"
                   value={documentType}
                   onChange={(event) => setDocumentType(event.target.value)}
                 >
@@ -150,7 +150,7 @@ export default function FinancingDetailPage() {
                   <option value="property_document">Property document</option>
                 </select>
                 <input
-                  className="text-sm text-brand-muted"
+                  className="text-sm text-reality-text-secondary"
                   type="file"
                   onChange={(event) => setFile(event.target.files?.[0] ?? null)}
                 />
@@ -161,8 +161,8 @@ export default function FinancingDetailPage() {
             </Card>
 
             <Card className="p-4">
-              <h2 className="text-base font-semibold text-brand-text">Submit</h2>
-              <p className="mt-1 text-sm text-brand-muted">
+              <h2 className="text-base font-semibold text-reality-text-primary">Submit</h2>
+              <p className="mt-1 text-sm text-reality-text-secondary">
                 Submission sends the application to RealityNG operations for manual partner
                 review. It is not a loan approval.
               </p>
@@ -176,7 +176,7 @@ export default function FinancingDetailPage() {
             </Card>
 
             <section className="grid gap-3">
-              <h2 className="text-lg font-semibold text-brand-text">Partner offers</h2>
+              <h2 className="text-lg font-semibold text-reality-text-primary">Partner offers</h2>
               {application.offers.length ? (
                 application.offers.map((offer) => (
                   <FinancingOfferCard
@@ -190,17 +190,17 @@ export default function FinancingDetailPage() {
                   />
                 ))
               ) : (
-                <p className="text-sm text-brand-muted">No partner offers yet.</p>
+                <p className="text-sm text-reality-text-secondary">No partner offers yet.</p>
               )}
             </section>
 
             <Card className="p-4">
-              <h2 className="text-base font-semibold text-brand-text">Timeline</h2>
+              <h2 className="text-base font-semibold text-reality-text-primary">Timeline</h2>
               <div className="mt-3 grid gap-2">
                 {application.timeline_events.map((event) => (
-                  <div key={event.id} className="rounded-md border border-white/10 p-3">
-                    <p className="font-medium text-brand-text">{event.message}</p>
-                    <p className="text-xs text-brand-muted">
+                  <div key={event.id} className="rounded-md border border-reality-border-secondary p-3">
+                    <p className="font-medium text-reality-text-primary">{event.message}</p>
+                    <p className="text-xs text-reality-text-secondary">
                       {new Date(event.created_at).toLocaleString()}
                     </p>
                   </div>

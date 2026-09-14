@@ -23,7 +23,7 @@ export default function ProviderComplaintsPage() {
 
       <div className="mt-8 space-y-4">
         {complaintsQuery.isLoading ? (
-          <Card className="p-5 text-brand-muted">Loading provider complaints...</Card>
+          <Card className="p-5 text-reality-text-secondary">Loading provider complaints...</Card>
         ) : null}
         {complaintsQuery.isError ? (
           <Card className="p-5 text-red-200">Provider complaints could not be loaded.</Card>
@@ -36,7 +36,7 @@ export default function ProviderComplaintsPage() {
           />
         ))}
         {complaintsQuery.data?.results.length === 0 ? (
-          <Card className="p-5 text-sm text-brand-muted">
+          <Card className="p-5 text-sm text-reality-text-secondary">
             No complaints are currently linked to your provider profile.
           </Card>
         ) : null}
@@ -44,3 +44,4 @@ export default function ProviderComplaintsPage() {
     </main>
   );
 }
+

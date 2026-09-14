@@ -29,3 +29,4 @@ export function ConstructionStatusBadge({
 }) {
   return <Badge variant={toneByStatus[status] ?? "gold"}>{status.replaceAll("_", " ")}</Badge>;
 }
+

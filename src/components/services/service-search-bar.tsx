@@ -15,6 +15,20 @@ function childCategories(categories: TradeCategory[]) {
   return categories.flatMap((category) => category.children);
 }
 
+function SearchIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" height="18" viewBox="0 0 18 18" width="18">
+      <path
+        d="M8.25 14.25a6 6 0 1 0 0-12 6 6 0 0 0 0 12ZM12.5 12.5 16 16"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 export function ServiceSearchBar({
   categories,
   initialFilters = {},
@@ -23,18 +37,14 @@ export function ServiceSearchBar({
   const [search, setSearch] = useState(initialFilters.search ?? "");
   const [category, setCategory] = useState(initialFilters.category ?? "");
   const [state, setState] = useState(initialFilters.state ?? "");
-  const [city, setCity] = useState(initialFilters.city ?? "");
-  const [lga, setLga] = useState(initialFilters.lga ?? "");
-  const [providerType, setProviderType] = useState<ProviderType | "">(
-    initialFilters.provider_type ?? "",
-  );
-  const [ordering, setOrdering] = useState<ServiceProviderFilters["ordering"]>(
-    initialFilters.ordering ?? "-created_at",
-  );
+  const city = initialFilters.city ?? "";
+  const lga = initialFilters.lga ?? "";
+  const providerType = initialFilters.provider_type ?? "";
+  const ordering = initialFilters.ordering ?? "-created_at";
 
   return (
     <form
-      className="grid gap-3 rounded-md border border-white/10 bg-white p-4 text-brand-background shadow-glow md:grid-cols-2 xl:grid-cols-6"
+      className="grid gap-3 rounded-[28px] border border-reality-border-secondary bg-white p-3 text-reality-text-primary shadow-reality-sm md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_auto]"
       onSubmit={(event) => {
         event.preventDefault();
         onSearch({
@@ -48,23 +58,23 @@ export function ServiceSearchBar({
         });
       }}
     >
-      <label className="grid gap-2 text-sm font-semibold xl:col-span-2">
-        Keyword
+      <label className="grid gap-2 text-sm font-semibold">
+        Location
         <input
-          className="h-11 rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-brand-secondary"
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Electrician, cleaning, solar..."
-          value={search}
+          className="h-12 rounded-[14px] border border-reality-border-secondary bg-reality-bg-subtle px-4 text-sm outline-none transition focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
+          onChange={(event) => setState(event.target.value)}
+          placeholder="Where"
+          value={state}
         />
       </label>
       <label className="grid gap-2 text-sm font-semibold">
-        Category
+        Services
         <select
-          className="h-11 rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-brand-secondary"
+          className="h-12 rounded-[14px] border border-reality-border-secondary bg-reality-bg-subtle px-4 text-sm outline-none transition focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
           onChange={(event) => setCategory(event.target.value)}
           value={category}
         >
-          <option value="">Any trade</option>
+          <option value="">All services</option>
           {childCategories(categories).map((item) => (
             <option key={item.slug} value={item.slug}>
               {item.name}
@@ -73,61 +83,23 @@ export function ServiceSearchBar({
         </select>
       </label>
       <label className="grid gap-2 text-sm font-semibold">
-        State
+        Keyword
         <input
-          className="h-11 rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-brand-secondary"
-          onChange={(event) => setState(event.target.value)}
-          placeholder="Lagos"
-          value={state}
+          className="h-12 rounded-[14px] border border-reality-border-secondary bg-reality-bg-subtle px-4 text-sm outline-none transition focus:border-reality-brand-500 focus:ring-2 focus:ring-reality-brand-500/15"
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Electrician, cleaning, solar..."
+          value={search}
         />
       </label>
-      <label className="grid gap-2 text-sm font-semibold">
-        City
-        <input
-          className="h-11 rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-brand-secondary"
-          onChange={(event) => setCity(event.target.value)}
-          placeholder="Lagos"
-          value={city}
-        />
-      </label>
-      <label className="grid gap-2 text-sm font-semibold">
-        LGA
-        <input
-          className="h-11 rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-brand-secondary"
-          onChange={(event) => setLga(event.target.value)}
-          placeholder="Eti-Osa"
-          value={lga}
-        />
-      </label>
-      <label className="grid gap-2 text-sm font-semibold">
-        Provider type
-        <select
-          className="h-11 rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-brand-secondary"
-          onChange={(event) => setProviderType(event.target.value as ProviderType | "")}
-          value={providerType}
-        >
-          <option value="">Any provider</option>
-          <option value="individual">Individual</option>
-          <option value="company">Company</option>
-        </select>
-      </label>
-      <label className="grid gap-2 text-sm font-semibold">
-        Sort
-        <select
-          className="h-11 rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-brand-secondary"
-          onChange={(event) =>
-            setOrdering(event.target.value as ServiceProviderFilters["ordering"])
-          }
-          value={ordering}
-        >
-          <option value="-created_at">Newest</option>
-          <option value="-average_rating">Highest rated</option>
-          <option value="business_name">Alphabetical</option>
-        </select>
-      </label>
-      <Button className="md:col-span-2 xl:col-span-6" type="submit">
-        Search services
+      <input name="city" type="hidden" value={city} readOnly />
+      <input name="lga" type="hidden" value={lga} readOnly />
+      <input name="provider_type" type="hidden" value={providerType} readOnly />
+      <input name="ordering" type="hidden" value={ordering ?? "-created_at"} readOnly />
+      <Button className="h-12 gap-2 self-end rounded-full px-6" type="submit" variant="reality">
+        <SearchIcon />
+        Search
       </Button>
     </form>
   );
 }
+

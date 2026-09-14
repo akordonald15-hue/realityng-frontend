@@ -155,10 +155,10 @@ export default function NewPropertyVerificationPage() {
             <div className="mt-4 grid gap-6">
               {EVIDENCE_FIELDS.map((field) => (
                 <div key={field.key}>
-                  <label className="block text-sm font-medium text-brand-text">
+                  <label className="block text-sm font-medium text-reality-text-primary">
                     {field.label}
                   </label>
-                  <p className="mt-1 text-xs text-brand-muted">
+                  <p className="mt-1 text-xs text-reality-text-secondary">
                     {field.helpText}
                   </p>
                   <input

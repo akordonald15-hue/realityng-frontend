@@ -24,7 +24,7 @@ export default function ProviderAppealDetailPage() {
       />
       <div className="mt-8">
         {appealQuery.isLoading ? (
-          <Card className="p-5 text-brand-muted">Loading...</Card>
+          <Card className="p-5 text-reality-text-secondary">Loading...</Card>
         ) : null}
         {appealQuery.data ? <AppealDetail appeal={appealQuery.data} /> : null}
       </div>

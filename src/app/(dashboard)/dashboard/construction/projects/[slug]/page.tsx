@@ -31,7 +31,7 @@ export default function ConstructionProjectDetailPage() {
     <ProtectedRoute>
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {projectQuery.isLoading ? (
-          <Card className="p-5 text-brand-muted">Loading construction project...</Card>
+          <Card className="p-5 text-reality-text-secondary">Loading construction project...</Card>
         ) : null}
         {projectQuery.isError ? (
           <Card className="p-5 text-red-200">Construction project could not load.</Card>
@@ -48,7 +48,7 @@ export default function ConstructionProjectDetailPage() {
             </div>
             <Card className="p-6">
               <ProjectProgressBar value={project.overall_progress} />
-              <div className="mt-5 grid gap-4 text-sm text-brand-muted sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-5 grid gap-4 text-sm text-reality-text-secondary sm:grid-cols-2 lg:grid-cols-4">
                 <span>Property: {project.property.title}</span>
                 <span>Type: {project.project_type.replaceAll("_", " ")}</span>
                 <span>Start: {project.planned_start_date ?? "Not set"}</span>
@@ -63,11 +63,11 @@ export default function ConstructionProjectDetailPage() {
                 <div className="space-y-3">
                   {(project.stakeholders ?? []).map((stakeholder) => (
                     <div
-                      className="rounded-md border border-white/10 bg-white/5 p-4"
+                      className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4"
                       key={stakeholder.id}
                     >
-                      <p className="font-semibold text-brand-text">{stakeholder.user_email}</p>
-                      <p className="mt-1 text-sm text-brand-muted">
+                      <p className="font-semibold text-reality-text-primary">{stakeholder.user_email}</p>
+                      <p className="mt-1 text-sm text-reality-text-secondary">
                         {stakeholder.stakeholder_role.replaceAll("_", " ")} ·{" "}
                         {stakeholder.access_level.replaceAll("_", " ")}
                       </p>

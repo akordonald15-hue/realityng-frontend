@@ -23,7 +23,7 @@ export default function CustomerInspectionsPage() {
       />
 
       {dashboardQuery.isLoading ? (
-        <Card className="mt-8 p-5 text-brand-muted">Loading inspection requests...</Card>
+        <Card className="mt-8 p-5 text-reality-text-secondary">Loading inspection requests...</Card>
       ) : null}
       {dashboardQuery.isError ? (
         <Card className="mt-8 p-5 text-red-200">Inspection dashboard could not be loaded.</Card>
@@ -37,7 +37,7 @@ export default function CustomerInspectionsPage() {
           />
         ))}
         {dashboard?.recent_requests.length === 0 ? (
-          <Card className="p-5 text-sm text-brand-muted">
+          <Card className="p-5 text-sm text-reality-text-secondary">
             Inspection requests you create from property pages will appear here.
           </Card>
         ) : null}
@@ -45,3 +45,4 @@ export default function CustomerInspectionsPage() {
     </main>
   );
 }
+

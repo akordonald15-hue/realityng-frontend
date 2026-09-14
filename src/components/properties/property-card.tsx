@@ -95,9 +95,9 @@ export function PropertyCard({ property, variant = "grid", className }: Property
             </div>
             <span
               aria-label={`View ${property.title}`}
-              className="flex size-9 shrink-0 items-center justify-center rounded-full text-black transition group-hover:bg-reality-bg-muted"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-black transition group-hover:bg-reality-bg-muted"
             >
-              <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 20 20">
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 20 20">
                 <path
                   d="M5.833 14.167 14.167 5.833m0 0H7.5m6.667 0V12.5"
                   stroke="currentColor"
@@ -137,7 +137,7 @@ export function PropertyCard({ property, variant = "grid", className }: Property
     >
       <Link
         aria-label={`View ${property.title}`}
-        className="absolute inset-0 z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-brand-background"
+        className="absolute inset-0 z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         href={`/properties/${property.slug}`}
       />
       <div className="absolute right-3 top-3 z-20">
@@ -151,8 +151,8 @@ export function PropertyCard({ property, variant = "grid", className }: Property
       <div
         className={
           variant === "list"
-            ? "relative aspect-[4/3] h-full overflow-hidden bg-brand-background md:aspect-auto"
-            : "relative aspect-[4/3] overflow-hidden bg-brand-background"
+            ? "relative aspect-[4/3] h-full overflow-hidden bg-white md:aspect-auto"
+            : "relative aspect-[4/3] overflow-hidden bg-white"
         }
       >
         {property.cover_image_url ? (
@@ -165,7 +165,7 @@ export function PropertyCard({ property, variant = "grid", className }: Property
             src={property.cover_image_url}
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#06271F,#0B3B2E)] px-6 text-center font-heading text-2xl text-brand-secondary">
+          <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#06271F,#0B3B2E)] px-6 text-center font-display text-2xl text-reality-brand-600">
             RealityNG
           </div>
         )}
@@ -182,37 +182,37 @@ export function PropertyCard({ property, variant = "grid", className }: Property
           <Badge variant="muted">{formatListingType(property.listing_type)}</Badge>
           <Badge variant="muted">{formatPropertyType(property.property_type)}</Badge>
         </div>
-        <h3 className="mt-4 line-clamp-2 font-heading text-xl font-semibold text-brand-text transition group-hover:text-brand-secondary">
+        <h3 className="mt-4 line-clamp-2 font-display text-xl font-semibold text-reality-text-primary transition group-hover:text-reality-brand-600">
           {property.title}
         </h3>
-        <p className="mt-1 text-sm text-brand-muted">
+        <p className="mt-1 text-sm text-reality-text-secondary">
           {property.display_location || `${property.city}, ${property.state}`}
         </p>
         {property.location_metadata?.has_map_location ? (
-          <p className="mt-2 text-xs font-semibold text-brand-muted">
+          <p className="mt-2 text-xs font-semibold text-reality-text-secondary">
             {property.approximate_location
               ? "Approximate map location"
               : "Exact map location approved"}
           </p>
         ) : null}
-        <p className="mt-3 text-2xl font-semibold text-brand-secondary">{formatPrice(property)}</p>
-        <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-brand-muted">
+        <p className="mt-3 text-2xl font-semibold text-reality-brand-600">{formatPrice(property)}</p>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-reality-text-secondary">
           {facts.length > 0 ? (
             facts.map((fact) => (
-              <span className="rounded-sm border border-white/10 bg-white/5 px-2 py-1" key={fact}>
+              <span className="rounded-sm border border-reality-border-secondary bg-reality-bg-subtle px-2 py-1" key={fact}>
                 {fact}
               </span>
             ))
           ) : (
-            <span className="rounded-sm border border-white/10 bg-white/5 px-2 py-1">
+            <span className="rounded-sm border border-reality-border-secondary bg-reality-bg-subtle px-2 py-1">
               Details available on request
             </span>
           )}
         </div>
-        <p className="mt-3 line-clamp-2 text-sm leading-6 text-brand-muted">
+        <p className="mt-3 line-clamp-2 text-sm leading-6 text-reality-text-secondary">
           {property.description}
         </p>
-        <div className="mt-4 grid gap-1 border-t border-white/10 pt-4 text-xs text-brand-muted">
+        <div className="mt-4 grid gap-1 border-t border-reality-border-secondary pt-4 text-xs text-reality-text-secondary">
           <p>Availability shown from approved public listing data.</p>
           <p>Listed {formatDate(property.created_at)}</p>
           {property.agent_name ? <p>Representative: {property.agent_name}</p> : null}
@@ -224,3 +224,5 @@ export function PropertyCard({ property, variant = "grid", className }: Property
     </Card>
   );
 }
+
+

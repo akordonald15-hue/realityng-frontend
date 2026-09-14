@@ -23,7 +23,7 @@ export default function OwnerConstructionDashboardPage() {
           description="Follow milestone progress, evidence, inspection gates, and recent changes for properties where you have construction visibility."
         />
         {dashboardQuery.isLoading ? (
-          <Card className="mt-8 p-5 text-brand-muted">Loading construction projects...</Card>
+          <Card className="mt-8 p-5 text-reality-text-secondary">Loading construction projects...</Card>
         ) : null}
         {dashboardQuery.isError ? (
           <Card className="mt-8 p-5 text-red-200">Construction dashboard could not load.</Card>
@@ -38,3 +38,4 @@ export default function OwnerConstructionDashboardPage() {
     </ProtectedRoute>
   );
 }
+

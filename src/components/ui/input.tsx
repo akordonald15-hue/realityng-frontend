@@ -10,13 +10,13 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 
 const inputClasses: Record<InputVariant, string> = {
   legacy:
-    "h-11 rounded-md border-white/10 bg-white/5 text-brand-text placeholder:text-brand-muted/60 focus:border-brand-secondary focus:ring-brand-secondary/20",
+    "h-11 rounded-md border-reality-border-secondary bg-reality-bg-subtle text-reality-text-primary placeholder:text-reality-text-secondary/60 focus:border-reality-brand-500 focus:ring-reality-brand-500/15",
   reality:
     "h-14 rounded-[12px] border-reality-border-secondary bg-white text-reality-text-primary shadow-reality-sm placeholder:text-reality-text-quaternary focus:border-reality-brand-500 focus:ring-reality-brand-500/15",
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { className, variant = "legacy", ...props },
+  { className, variant = "reality", ...props },
   ref,
 ) {
   return (
@@ -31,3 +31,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     />
   );
 });
+

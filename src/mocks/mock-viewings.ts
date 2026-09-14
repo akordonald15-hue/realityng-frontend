@@ -23,6 +23,7 @@ export const mockViewings: Viewing[] = mockInquiries.slice(0, 5).map((inquiry, i
   meeting_link: index % 2 === 0 ? "" : "https://meet.example.com/realityng-demo",
   notes: index === 0 ? "Please confirm access with estate security." : "",
   status: index === 0 ? "confirmed" : index === 1 ? "rescheduled" : "requested",
+  can_manage_viewing: false,
   created_at: inquiry.created_at,
   updated_at: inquiry.updated_at,
 }));
@@ -98,6 +99,7 @@ export async function mockCreateViewing(payload: ViewingPayload): Promise<Viewin
     meeting_link: "",
     notes: payload.notes ?? "",
     status: "requested",
+    can_manage_viewing: false,
     created_at: nowIso,
     updated_at: nowIso,
   };
@@ -111,7 +113,11 @@ export async function mockListMyViewings() {
   if (!user) {
     return paginate([]);
   }
-  return paginate(readViewings().filter((viewing) => viewing.requester.id === user.id));
+  return paginate(
+    readViewings()
+      .filter((viewing) => viewing.requester.id === user.id)
+      .map((viewing) => ({ ...viewing, can_manage_viewing: false })),
+  );
 }
 
 export async function mockListReceivedViewings() {
@@ -119,7 +125,11 @@ export async function mockListReceivedViewings() {
   if (!user) {
     return paginate([]);
   }
-  return paginate(readViewings().filter((viewing) => viewing.property_owner.id === user.id));
+  return paginate(
+    readViewings()
+      .filter((viewing) => viewing.property_owner.id === user.id)
+      .map((viewing) => ({ ...viewing, can_manage_viewing: true })),
+  );
 }
 
 export async function mockConfirmViewing(payload: ViewingDecisionPayload): Promise<Viewing> {

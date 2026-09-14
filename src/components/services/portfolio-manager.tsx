@@ -68,18 +68,18 @@ export function PortfolioManager() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-5">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand-secondary">
+      <Card className="p-5" variant="reality">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-reality-brand-600">
           Portfolio
         </p>
-        <h1 className="mt-2 font-heading text-3xl font-semibold text-brand-text">
+        <h1 className="mt-2 font-display text-3xl font-semibold text-reality-text-primary">
           Manage work samples
         </h1>
-        <p className="mt-3 text-sm leading-6 text-brand-muted">
+        <p className="mt-3 text-sm leading-6 text-reality-text-secondary">
           Upload public work samples for an approved services profile. Verification documents stay
           in the private trust workflow and are not managed here.
         </p>
-        {message ? <div className="mt-4"><FormMessage>{message}</FormMessage></div> : null}
+        {message ? <div className="mt-4"><FormMessage variant="reality">{message}</FormMessage></div> : null}
         <form
           className="mt-5 grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto]"
           noValidate
@@ -91,28 +91,29 @@ export function PortfolioManager() {
             name="image"
             required
             type="file"
+            variant="reality"
           />
-          <Input name="caption" placeholder="Caption" />
-          <label className="flex items-center gap-2 text-sm text-brand-muted">
+          <Input name="caption" placeholder="Caption" variant="reality" />
+          <label className="flex items-center gap-2 text-sm text-reality-text-secondary">
             <input name="is_cover" type="checkbox" /> Cover
           </label>
-          <Button disabled={uploadMutation.isPending} type="submit">
+          <Button disabled={uploadMutation.isPending} type="submit" variant="reality">
             {uploadMutation.isPending ? "Uploading..." : "Upload image"}
           </Button>
         </form>
       </Card>
 
       {portfolioQuery.isLoading ? (
-        <Card className="p-5 text-brand-muted">Loading portfolio...</Card>
+        <Card className="p-5 text-reality-text-secondary" variant="reality">Loading portfolio...</Card>
       ) : images.length === 0 ? (
-        <Card className="p-5 text-sm text-brand-muted">
+        <Card className="p-5 text-sm text-reality-text-secondary" variant="reality">
           Add completed project photos to help customers evaluate your work.
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {images.map((image) => (
-            <Card className="overflow-hidden" key={image.id}>
-              <div className="relative aspect-[4/3] bg-white/5">
+            <Card className="overflow-hidden" key={image.id} variant="reality">
+              <div className="relative aspect-[4/3] bg-reality-bg-subtle">
                 <Image
                   alt={image.caption || "Provider portfolio image"}
                   className="object-cover"
@@ -123,17 +124,17 @@ export function PortfolioManager() {
               </div>
               <div className="space-y-3 p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-brand-text">
+                  <p className="text-sm font-semibold text-reality-text-primary">
                     {image.caption || "Portfolio image"}
                   </p>
-                  {image.is_cover ? <Badge>Cover</Badge> : null}
+                  {image.is_cover ? <Badge variant="approved">Cover</Badge> : null}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     disabled={image.is_cover || coverMutation.isPending}
                     onClick={() => coverMutation.mutate(image.id)}
                     type="button"
-                    variant="secondary"
+                    variant="realitySecondary"
                   >
                     Set cover
                   </Button>
@@ -141,7 +142,7 @@ export function PortfolioManager() {
                     disabled={deleteMutation.isPending}
                     onClick={() => deleteMutation.mutate(image.id)}
                     type="button"
-                    variant="ghost"
+                    variant="realityGhost"
                   >
                     Delete
                   </Button>
@@ -154,3 +155,4 @@ export function PortfolioManager() {
     </div>
   );
 }
+

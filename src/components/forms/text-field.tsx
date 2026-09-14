@@ -11,7 +11,7 @@ type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
-  { label, error, id, variant = "legacy", ...props },
+  { label, error, id, variant = "reality", ...props },
   ref,
 ) {
   const inputId = id ?? props.name;
@@ -21,13 +21,18 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
       className={
         variant === "reality"
           ? "block text-sm font-medium text-reality-text-primary"
-          : "block text-sm font-medium text-brand-text"
+          : "block text-sm font-medium text-reality-text-primary"
       }
       htmlFor={inputId}
     >
       <span>{label}</span>
       <Input className="mt-2" id={inputId} ref={ref} variant={variant} {...props} />
-      {error ? <span className="mt-1 block text-sm text-red-300">{error.message}</span> : null}
+      {error ? (
+        <span className={`mt-1 block text-sm ${variant === "reality" ? "text-red-600" : "text-red-300"}`}>
+          {error.message}
+        </span>
+      ) : null}
     </label>
   );
 });
+

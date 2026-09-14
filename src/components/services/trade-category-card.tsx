@@ -9,19 +9,22 @@ type TradeCategoryCardProps = {
 
 export function TradeCategoryCard({ category }: TradeCategoryCardProps) {
   return (
-    <Link href={`/services?category=${category.slug}`}>
-      <Card className="h-full p-5 transition hover:-translate-y-0.5 hover:border-brand-secondary/50">
-        <p className="text-xs font-bold uppercase tracking-[0.28em] text-brand-secondary">
+    <Link
+      className="block h-full rounded-[28px] focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 focus-visible:ring-offset-2"
+      href={`/services?category=${category.slug}`}
+    >
+      <Card className="h-full p-5 transition hover:-translate-y-0.5 hover:border-reality-brand-500/30" variant="reality">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-reality-brand-600">
           {category.children.length} trades
         </p>
-        <h3 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+        <h3 className="mt-3 text-2xl font-semibold text-reality-text-primary">
           {category.name}
         </h3>
-        <p className="mt-3 text-sm leading-6 text-brand-muted">{category.description}</p>
+        <p className="mt-3 text-sm leading-6 text-reality-text-secondary">{category.description}</p>
         <div className="mt-5 flex flex-wrap gap-2">
           {category.children.slice(0, 4).map((child) => (
             <span
-              className="rounded-sm border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-brand-muted"
+              className="rounded-full border border-reality-border-secondary bg-reality-bg-subtle px-2.5 py-1 text-xs font-semibold text-reality-text-secondary"
               key={child.slug}
             >
               {child.name}
@@ -32,3 +35,4 @@ export function TradeCategoryCard({ category }: TradeCategoryCardProps) {
     </Link>
   );
 }
+

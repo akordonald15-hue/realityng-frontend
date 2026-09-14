@@ -33,7 +33,7 @@ type NotificationBellProps = {
   variant?: "legacy" | "reality";
 };
 
-export function NotificationBell({ variant = "legacy" }: NotificationBellProps) {
+export function NotificationBell({ variant = "reality" }: NotificationBellProps) {
   const auth = useOptionalAuth();
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const [unreadCount, setUnreadCount] = useState(0);
@@ -108,16 +108,16 @@ export function NotificationBell({ variant = "legacy" }: NotificationBellProps) 
         className={
           isReality
             ? "relative flex h-10 w-10 list-none items-center justify-center rounded-full text-reality-text-tertiary transition hover:cursor-pointer hover:bg-reality-bg-muted hover:text-reality-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 focus-visible:ring-offset-2"
-            : "relative flex h-10 w-10 list-none items-center justify-center rounded-full transition hover:cursor-pointer hover:bg-white/10"
+            : "relative flex h-10 w-10 list-none items-center justify-center rounded-full transition hover:cursor-pointer hover:bg-reality-bg-muted"
         }
       >
-        <BellIcon className={isReality ? "h-5 w-5" : "h-5 w-5 text-brand-muted"} />
+        <BellIcon className={isReality ? "h-5 w-5" : "h-5 w-5 text-reality-text-secondary"} />
         {unreadCount > 0 && (
           <span
             className={
               isReality
                 ? "absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-reality-brand-500 px-1 text-[10px] font-semibold text-white"
-                : "absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-secondary px-1 text-[10px] font-semibold text-brand-background"
+                : "absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-secondary px-1 text-[10px] font-semibold text-reality-text-primary"
             }
           >
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -128,14 +128,14 @@ export function NotificationBell({ variant = "legacy" }: NotificationBellProps) 
         className={
           isReality
             ? "reality-menu absolute right-0 top-full z-50 mt-3 w-80 rounded-reality border border-reality-border-secondary bg-white p-2 shadow-reality-sm"
-            : "absolute right-0 top-full mt-3 w-80 rounded-md border border-white/10 bg-brand-surface p-2 shadow-glow"
+            : "absolute right-0 top-full mt-3 w-80 rounded-md border border-reality-border-secondary bg-white p-2 shadow-reality-sm"
         }
       >
         <div
           className={
             isReality
               ? "flex items-center justify-between px-2 py-2 text-sm font-semibold text-reality-text-primary"
-              : "flex items-center justify-between px-2 py-1 text-sm font-semibold text-brand-text"
+              : "flex items-center justify-between px-2 py-1 text-sm font-semibold text-reality-text-primary"
           }
         >
           <span>Notifications</span>
@@ -143,7 +143,7 @@ export function NotificationBell({ variant = "legacy" }: NotificationBellProps) 
             className={
               isReality
                 ? "flex gap-2 text-xs font-semibold text-reality-brand-600"
-                : "flex gap-2 text-xs font-medium text-brand-secondary"
+                : "flex gap-2 text-xs font-medium text-reality-brand-600"
             }
           >
             <Link className="hover:underline" href="/settings/notifications">
@@ -159,7 +159,7 @@ export function NotificationBell({ variant = "legacy" }: NotificationBellProps) 
             className={
               isReality
                 ? "px-2 py-5 text-sm text-reality-text-quaternary"
-                : "px-2 py-4 text-sm text-brand-muted"
+                : "px-2 py-4 text-sm text-reality-text-secondary"
             }
           >
             Loading...
@@ -169,7 +169,7 @@ export function NotificationBell({ variant = "legacy" }: NotificationBellProps) 
             className={
               isReality
                 ? "rounded-[12px] bg-reality-bg-subtle px-3 py-5 text-sm text-reality-text-quaternary"
-                : "px-2 py-4 text-sm text-brand-muted"
+                : "px-2 py-4 text-sm text-reality-text-secondary"
             }
           >
             No notifications yet.
@@ -186,8 +186,8 @@ export function NotificationBell({ variant = "legacy" }: NotificationBellProps) 
                             ? "text-reality-text-quaternary"
                             : "text-reality-text-primary"
                         }`
-                      : `block w-full rounded-sm px-2 py-2 text-left text-sm transition hover:bg-white/10 ${
-                          notification.is_read ? "text-brand-muted" : "text-brand-text"
+                      : `block w-full rounded-sm px-2 py-2 text-left text-sm transition hover:bg-reality-bg-muted ${
+                          notification.is_read ? "text-reality-text-secondary" : "text-reality-text-primary"
                         }`
                   }
                   onClick={() => void handleMarkRead(notification)}
@@ -198,7 +198,7 @@ export function NotificationBell({ variant = "legacy" }: NotificationBellProps) 
                     className={
                       isReality
                         ? "mt-0.5 block text-xs leading-5 text-reality-text-quaternary"
-                        : "mt-0.5 block text-xs text-brand-muted"
+                        : "mt-0.5 block text-xs text-reality-text-secondary"
                     }
                   >
                     {notification.body}
@@ -212,3 +212,5 @@ export function NotificationBell({ variant = "legacy" }: NotificationBellProps) 
     </details>
   );
 }
+
+

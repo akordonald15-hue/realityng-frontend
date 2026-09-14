@@ -31,3 +31,4 @@ export function EscrowStatusBadge({ status }: { status: EscrowStatus }) {
 export function EscrowSimpleStatusBadge({ status }: { status: string }) {
   return <Badge variant={status.includes("confirmed") ? "green" : "muted"}>{labelFor(status)}</Badge>;
 }
+

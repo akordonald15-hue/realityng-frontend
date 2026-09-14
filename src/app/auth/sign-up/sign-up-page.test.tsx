@@ -97,3 +97,4 @@ describe("SignUpPage", () => {
     expect(screen.getByRole("heading", { name: "Complete sign up" })).toBeInTheDocument();
   });
 });
+

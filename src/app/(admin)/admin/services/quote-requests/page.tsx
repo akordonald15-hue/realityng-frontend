@@ -45,7 +45,7 @@ export default function AdminQuoteRequestsPage() {
             title="Service quote requests"
             description="Monitor customer enquiries, close abusive or stale requests, and keep provider leads orderly."
           />
-          <Link className={buttonClasses("secondary")} href="/admin/services/providers">
+          <Link className={buttonClasses("realitySecondary")} href="/admin/services/providers">
             Provider queue
           </Link>
         </div>
@@ -79,7 +79,7 @@ export default function AdminQuoteRequestsPage() {
 
         <div className="mt-6">
           {quoteRequestsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading quote requests...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading quote requests...</Card>
           ) : quoteRequestsQuery.isError ? (
             <FormMessage tone="error">
               {getApiErrorMessage(quoteRequestsQuery.error)}
@@ -95,3 +95,4 @@ export default function AdminQuoteRequestsPage() {
     </ProtectedRoute>
   );
 }
+

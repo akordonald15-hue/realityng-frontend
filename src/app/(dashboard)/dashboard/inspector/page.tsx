@@ -25,13 +25,13 @@ export default function InspectorDashboardPage() {
           title="Inspection assignments and reports"
           description="Manage assigned inspection work, field evidence, reports, and private evidence submission."
         />
-        <Link className={buttonClasses("secondary")} href="/dashboard/inspector/assignments">
+        <Link className={buttonClasses("realitySecondary")} href="/dashboard/inspector/assignments">
           Assignments
         </Link>
       </div>
 
       {dashboardQuery.isLoading ? (
-        <Card className="mt-8 p-5 text-brand-muted">Loading inspector dashboard...</Card>
+        <Card className="mt-8 p-5 text-reality-text-secondary">Loading inspector dashboard...</Card>
       ) : null}
       {dashboardQuery.isError ? (
         <Card className="mt-8 p-5 text-red-200">
@@ -41,7 +41,7 @@ export default function InspectorDashboardPage() {
       {dashboard ? (
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <Card className="p-5">
-            <h2 className="font-heading text-2xl font-semibold text-brand-text">
+            <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
               Pending assignments
             </h2>
             <div className="mt-5 space-y-4">
@@ -49,12 +49,12 @@ export default function InspectorDashboardPage() {
                 <AssignmentCard assignment={assignment} key={assignment.id} />
               ))}
               {(dashboard.pending_assignments ?? []).length === 0 ? (
-                <p className="text-sm text-brand-muted">No active assignments.</p>
+                <p className="text-sm text-reality-text-secondary">No active assignments.</p>
               ) : null}
             </div>
           </Card>
           <Card className="p-5">
-            <h2 className="font-heading text-2xl font-semibold text-brand-text">
+            <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
               Recent inspection work
             </h2>
             <div className="mt-5 space-y-4">
@@ -72,3 +72,4 @@ export default function InspectorDashboardPage() {
     </main>
   );
 }
+

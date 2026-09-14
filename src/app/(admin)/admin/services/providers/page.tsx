@@ -34,10 +34,10 @@ export default function AdminServiceProvidersPage() {
             description="Review profile submissions, requested changes, suspensions, and public marketplace readiness."
           />
           <div className="flex flex-wrap gap-2">
-            <Link className={buttonClasses("secondary")} href="/admin/services/quote-requests">
+            <Link className={buttonClasses("realitySecondary")} href="/admin/services/quote-requests">
               Quote requests
             </Link>
-            <Link className={buttonClasses("secondary")} href="/admin/services/reviews">
+            <Link className={buttonClasses("realitySecondary")} href="/admin/services/reviews">
               Reviews
             </Link>
           </div>
@@ -65,22 +65,22 @@ export default function AdminServiceProvidersPage() {
 
         <div className="mt-6 grid gap-4">
           {providersQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading providers...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading providers...</Card>
           ) : providersQuery.data?.results.length ? (
             providersQuery.data.results.map((provider) => (
               <Card className="p-5" key={provider.id}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <ProviderStatusBadge status={provider.status} />
-                    <h2 className="mt-3 font-heading text-2xl font-semibold text-brand-text">
+                    <h2 className="mt-3 font-display text-2xl font-semibold text-reality-text-primary">
                       {provider.business_name || "Untitled provider"}
                     </h2>
-                    <p className="mt-2 text-sm text-brand-muted">
+                    <p className="mt-2 text-sm text-reality-text-secondary">
                       {provider.display_location || `${provider.city}, ${provider.state}`}
                     </p>
                   </div>
                   <Link
-                    className={buttonClasses("secondary")}
+                    className={buttonClasses("realitySecondary")}
                     href={`/admin/services/providers/${provider.id}`}
                   >
                     Review
@@ -89,10 +89,11 @@ export default function AdminServiceProvidersPage() {
               </Card>
             ))
           ) : (
-            <Card className="p-5 text-brand-muted">No provider profiles match this queue.</Card>
+            <Card className="p-5 text-reality-text-secondary">No provider profiles match this queue.</Card>
           )}
         </div>
       </main>
     </ProtectedRoute>
   );
 }
+

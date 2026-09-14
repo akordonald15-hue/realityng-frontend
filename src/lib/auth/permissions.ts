@@ -14,6 +14,10 @@ export function isApprovedProfessional(user: User | null): boolean {
   return ["agent", "artisan", "inspector"].some((role) => hasApprovedRole(user, role));
 }
 
+export function isApprovedSupplyUser(user: User | null): boolean {
+  return ["agent", "landlord"].some((role) => hasApprovedRole(user, role));
+}
+
 export function getRoleDashboardPath(user: User | null): string {
   if (isAdmin(user)) {
     return "/admin";

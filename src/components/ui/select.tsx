@@ -10,13 +10,13 @@ type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
 
 const selectClasses: Record<SelectVariant, string> = {
   legacy:
-    "h-11 rounded-md border-white/10 bg-brand-surface text-brand-text focus:border-brand-secondary focus:ring-brand-secondary/20",
+    "h-11 rounded-md border-reality-border-secondary bg-white text-reality-text-primary focus:border-reality-brand-500 focus:ring-reality-brand-500/15",
   reality:
     "h-14 rounded-[12px] border-reality-border-secondary bg-white text-reality-text-primary shadow-reality-sm focus:border-reality-brand-500 focus:ring-reality-brand-500/15",
 };
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { className, children, variant = "legacy", ...props },
+  { className, children, variant = "reality", ...props },
   ref,
 ) {
   return (
@@ -33,3 +33,4 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     </select>
   );
 });
+

@@ -25,7 +25,7 @@ export default function AdminFinancingPage() {
 
         <section className="mt-6 grid gap-3">
           {applicationsQuery.isLoading ? (
-            <p className="text-sm text-brand-muted">Loading financing queue...</p>
+            <p className="text-sm text-reality-text-secondary">Loading financing queue...</p>
           ) : applicationsQuery.data?.length ? (
             applicationsQuery.data.map((application) => (
               <Link href={`/admin/financing/${application.id}`} key={application.id}>
@@ -34,7 +34,7 @@ export default function AdminFinancingPage() {
             ))
           ) : (
             <Card className="p-4">
-              <p className="text-sm text-brand-muted">No financing applications in queue.</p>
+              <p className="text-sm text-reality-text-secondary">No financing applications in queue.</p>
             </Card>
           )}
         </section>
@@ -42,3 +42,4 @@ export default function AdminFinancingPage() {
     </ProtectedRoute>
   );
 }
+

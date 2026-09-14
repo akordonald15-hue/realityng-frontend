@@ -17,3 +17,4 @@ export function QuoteRequestStatusBadge({ status }: { status: QuoteRequestStatus
   const variant = status === "closed" || status === "cancelled" ? "muted" : "gold";
   return <Badge variant={status === "responded" ? "green" : variant}>{labels[status]}</Badge>;
 }
+

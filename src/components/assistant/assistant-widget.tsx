@@ -140,18 +140,18 @@ export function AssistantWidget() {
 
   return (
     <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex h-[min(32rem,calc(100vh-2rem))] w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]">
-      <div className="flex items-center justify-between border-b border-brand-secondary/20 bg-white/5 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-brand-secondary/20 bg-reality-bg-subtle px-4 py-3">
         <div className="flex items-center gap-3">
           <AssistantOrb
             state={send.isPending ? "thinking" : isInputFocused ? "listening" : "idle"}
             size="sm"
           />
           <div>
-            <h2 className="font-heading text-sm font-semibold text-brand-text">
+            <h2 className="font-display text-sm font-semibold text-reality-text-primary">
               {assistantConfig.data?.label ?? "RealityNG Assistant"}
             </h2>
             {assistantConfig.data?.provider_mode === "demo" ? (
-              <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+              <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
                 Guided demo mode
               </p>
             ) : null}
@@ -161,7 +161,7 @@ export function AssistantWidget() {
           <button
             type="button"
             onClick={() => setShowHistory((prev) => !prev)}
-            className="text-brand-muted transition hover:text-brand-text"
+            className="text-reality-text-secondary transition hover:text-reality-text-primary"
             aria-label={showHistory ? "Hide conversation history" : "Show conversation history"}
           >
             <HistoryIcon />
@@ -169,7 +169,7 @@ export function AssistantWidget() {
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="text-brand-muted transition hover:text-brand-text"
+            className="text-reality-text-secondary transition hover:text-reality-text-primary"
             aria-label="Close assistant"
           >
             <CloseIcon />
@@ -182,28 +182,28 @@ export function AssistantWidget() {
           <button
             type="button"
             onClick={startNewConversation}
-            className="w-full rounded-md border border-brand-secondary/70 px-3 py-1.5 text-xs text-brand-secondary transition hover:bg-brand-secondary/10"
+            className="w-full rounded-md border border-brand-secondary/70 px-3 py-1.5 text-xs text-reality-brand-600 transition hover:bg-brand-secondary/10"
           >
             New Conversation
           </button>
           {conversationHistory.isLoading && (
-            <p className="text-sm text-brand-muted">Loading conversations...</p>
+            <p className="text-sm text-reality-text-secondary">Loading conversations...</p>
           )}
           {conversationHistory.isError && (
-            <p className="text-sm text-brand-muted">Could not load conversation history.</p>
+            <p className="text-sm text-reality-text-secondary">Could not load conversation history.</p>
           )}
           {conversationHistory.data?.length === 0 && (
-            <p className="text-sm text-brand-muted">No previous conversations yet.</p>
+            <p className="text-sm text-reality-text-secondary">No previous conversations yet.</p>
           )}
           {conversationHistory.data?.map((conversation: AIConversation) => (
             <button
               key={conversation.id}
               type="button"
               onClick={() => loadConversation(conversation.id)}
-              className="block w-full rounded-md border border-white/10 px-3 py-2 text-left text-sm text-brand-text transition hover:bg-white/5"
+              className="block w-full rounded-md border border-reality-border-secondary px-3 py-2 text-left text-sm text-reality-text-primary transition hover:bg-reality-bg-subtle"
             >
               <div className="truncate">{conversation.title ?? "Untitled conversation"}</div>
-              <div className="text-xs text-brand-muted">
+              <div className="text-xs text-reality-text-secondary">
                 {new Date(conversation.updated_at).toLocaleString()} - {conversation.status}
               </div>
             </button>
@@ -215,17 +215,17 @@ export function AssistantWidget() {
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
           {messages.length === 0 && !ensureConversation.isPending && (
             <div className="space-y-2">
-              <p className="text-sm text-brand-muted">
+              <p className="text-sm text-reality-text-secondary">
                 {assistantConfig.data?.provider_mode === "demo"
                   ? "I can guide you through selected RealityNG workflows while live AI approval is pending."
                   : "Ask me to find a property, compare listings, or answer questions about RealityNG."}
               </p>
               {assistantConfig.data?.supported_topics?.length ? (
-                <div className="rounded-md border border-white/10 bg-white/5 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-secondary">
+                <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
                     Supported topics
                   </p>
-                  <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-brand-muted">
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-reality-text-secondary">
                     {assistantConfig.data.supported_topics.slice(0, 6).map((topic) => (
                       <li key={topic}>{topic}</li>
                     ))}
@@ -238,7 +238,7 @@ export function AssistantWidget() {
                     key={prompt}
                     type="button"
                     onClick={() => setDraft(prompt)}
-                    className="rounded-md border border-brand-secondary/70 bg-transparent px-3 py-1.5 text-xs text-brand-secondary transition hover:bg-brand-secondary/10"
+                    className="rounded-md border border-brand-secondary/70 bg-transparent px-3 py-1.5 text-xs text-reality-brand-600 transition hover:bg-brand-secondary/10"
                   >
                     {prompt}
                   </button>
@@ -248,7 +248,7 @@ export function AssistantWidget() {
           )}
 
           {ensureConversation.isPending && (
-            <p className="text-sm text-brand-muted">Starting conversation...</p>
+            <p className="text-sm text-reality-text-secondary">Starting conversation...</p>
           )}
 
           {messages.map((message) => (
@@ -256,13 +256,13 @@ export function AssistantWidget() {
           ))}
 
           {send.isPending && (
-            <p className="text-sm text-brand-muted">Thinking...</p>
+            <p className="text-sm text-reality-text-secondary">Thinking...</p>
           )}
 
           {unavailable && (
-            <div className="rounded-md border border-white/10 bg-white/5 p-3 text-sm text-brand-muted">
+            <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-3 text-sm text-reality-text-secondary">
               The assistant is temporarily unavailable.{" "}
-              <a href="/properties" className="text-brand-secondary underline">
+              <a href="/properties" className="text-reality-brand-600 underline">
                 Use standard search instead
               </a>
               .
@@ -271,7 +271,7 @@ export function AssistantWidget() {
         </div>
 
       )}
-      <div className="flex items-center gap-2 border-t border-white/10 p-3">
+      <div className="flex items-center gap-2 border-t border-reality-border-secondary p-3">
         <Input
           value={draft}
           onBlur={() => setIsInputFocused(false)}
@@ -307,8 +307,8 @@ function MessageBubble({ message }: { message: AIMessage }) {
         className={clsx(
           "max-w-[85%] rounded-md px-3 py-2 text-sm",
           isUser
-            ? "bg-brand-secondary text-brand-background"
-            : "border border-white/10 bg-white/5 text-brand-text",
+            ? "bg-brand-secondary text-reality-text-primary"
+            : "border border-reality-border-secondary bg-reality-bg-subtle text-reality-text-primary",
         )}
       >
         {message.content}
@@ -359,3 +359,4 @@ function CloseIcon() {
     </svg>
   );
 }
+

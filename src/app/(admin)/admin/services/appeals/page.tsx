@@ -41,7 +41,7 @@ export default function AdminServiceAppealsPage() {
 
         <div className="mt-8 space-y-5">
           {appealsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading appeals...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading appeals...</Card>
           ) : (
             <AppealList
               appeals={appealsQuery.data?.results ?? []}
@@ -50,7 +50,7 @@ export default function AdminServiceAppealsPage() {
           )}
           {appealsQuery.data?.results.map((appeal) => (
             <Card className="p-4" key={`${appeal.id}-actions`}>
-              <p className="text-sm text-brand-muted">
+              <p className="text-sm text-reality-text-secondary">
                 Admin actions for {appeal.provider.business_name}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -72,3 +72,4 @@ export default function AdminServiceAppealsPage() {
     </ProtectedRoute>
   );
 }
+

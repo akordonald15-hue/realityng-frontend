@@ -7,6 +7,8 @@ import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   getDashboardOverview: vi.fn(),
+  listManagedProperties: vi.fn(),
+  listThreads: vi.fn(),
   currentUser: {
     id: "buyer-1",
     first_name: "Ify",
@@ -30,6 +32,24 @@ vi.mock("@/lib/api/dashboard", async () => {
   return {
     ...actual,
     getDashboardOverview: (user: unknown) => mocks.getDashboardOverview(user),
+  };
+});
+
+vi.mock("@/lib/api/messages", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/messages")>("@/lib/api/messages");
+  return {
+    ...actual,
+    listThreads: () => mocks.listThreads(),
+  };
+});
+
+vi.mock("@/lib/api/properties", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/properties")>(
+    "@/lib/api/properties",
+  );
+  return {
+    ...actual,
+    listManagedProperties: (filters: unknown) => mocks.listManagedProperties(filters),
   };
 });
 
@@ -124,6 +144,7 @@ function viewing(overrides = {}) {
     meeting_link: "",
     notes: "",
     status: "requested",
+    can_manage_viewing: false,
     created_at: "2026-06-01T10:00:00Z",
     updated_at: "2026-06-01T10:00:00Z",
     ...overrides,
@@ -167,6 +188,13 @@ function overview(overrides = {}) {
 describe("DashboardPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.listManagedProperties.mockResolvedValue({
+      count: 0,
+      next: null,
+      previous: null,
+      results: [],
+    });
+    mocks.listThreads.mockResolvedValue([]);
     mocks.currentUser = {
       id: "buyer-1",
       first_name: "Ify",
@@ -279,7 +307,7 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("heading", { name: "Hi, Ify" })).toBeInTheDocument();
   });
 
-  it("does not replace non-buyer dashboard behavior", async () => {
+  it("renders the Phase 9B supply dashboard body for approved agents", async () => {
     mocks.currentUser = {
       id: "agent-1",
       first_name: "Tunde",
@@ -288,15 +316,264 @@ describe("DashboardPage", () => {
     mocks.getDashboardOverview.mockResolvedValueOnce(
       overview({
         role: "agent",
-        metrics: [{ label: "Active listings", value: "5", detail: "Live marketplace inventory" }],
+        metrics: [
+          { label: "Active listings", value: "5", detail: "Live marketplace inventory" },
+          { label: "Received applications", value: "2", detail: "Applications received" },
+          { label: "Property inquiries", value: "3", detail: "Inquiries received" },
+          { label: "Viewing requests", value: "1", detail: "Viewing requests" },
+        ],
         activeListings: [property()],
+        leads: [inquiry()],
+        receivedApplications: [application()],
+        receivedViewings: [
+          viewing({ can_manage_viewing: true }),
+          viewing({
+            id: "viewing-2",
+            requester: { id: "buyer-2", email: "buyer2@realityng.com", full_name: "Lola Ade" },
+            can_manage_viewing: false,
+          }),
+        ],
+        savedProperties: [property({ id: "saved-1", title: "Saved Ikoyi Apartment" })],
+        recentlyViewed: [property({ id: "viewed-1", title: "Viewed Wuse Maisonette" })],
+      }),
+    );
+    mocks.listManagedProperties.mockResolvedValueOnce({
+      count: 1,
+      next: null,
+      previous: null,
+      results: [property()],
+    });
+    mocks.listThreads.mockResolvedValueOnce([
+      {
+        id: "thread-1",
+        property: "property-1",
+        inquiry: "inquiry-1",
+        viewing: null,
+        application: null,
+        created_by: "buyer-1",
+        is_closed: false,
+        participants: [],
+        last_message: {
+          id: "message-1",
+          thread: "thread-1",
+          sender: "buyer-1",
+          body: "Can we inspect this property tomorrow?",
+          client_message_id: null,
+          thread_sequence: 1,
+          edited_at: null,
+          created_at: "2026-06-05T10:00:00Z",
+        },
+        unread_count: 2,
+        created_at: "2026-06-05T09:00:00Z",
+        updated_at: "2026-06-05T10:00:00Z",
+      },
+    ]);
+
+    renderWithQueryClient(<DashboardPage />);
+
+    expect(await screen.findByRole("heading", { name: "Hi, Tunde" })).toBeInTheDocument();
+    expect(screen.getByText("Manage properties you own or represent.")).toBeInTheDocument();
+    expect(
+      screen.getByRole("tablist", { name: "Agent and landlord dashboard sections" }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Add Property" })[0]).toHaveAttribute(
+      "href",
+      "/properties/new",
+    );
+    expect(screen.getByText("Received applications")).toBeInTheDocument();
+    expect(screen.getByText("Property inquiries")).toBeInTheDocument();
+    expect(screen.getByText("Viewing requests")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Applications & Requests" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "My Property" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Message" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Saved Property" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Recently viewed property" })).toBeInTheDocument();
+    expect(await screen.findByText("Can we inspect this property tomorrow?")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Conversation/i })).toHaveAttribute(
+      "href",
+      "/dashboard/messages/thread-1",
+    );
+    expect(screen.getAllByText("Waterfront Banana Island Duplex").length).toBeGreaterThan(0);
+    expect(
+      screen
+        .getAllByRole("link", { name: "View all" })
+        .some((link) => link.getAttribute("href") === "/dashboard/properties"),
+    ).toBe(true);
+    expect(screen.getByText("Saved Ikoyi Apartment")).toBeInTheDocument();
+    expect(screen.getByText("Viewed Wuse Maisonette")).toBeInTheDocument();
+    expect(screen.queryByText("Pipeline visibility")).not.toBeInTheDocument();
+  });
+
+  it("renders intentional zero states for approved landlords", async () => {
+    mocks.currentUser = {
+      id: "landlord-1",
+      first_name: "Ada",
+      roles: [{ role: { name: "landlord" }, status: "approved" }],
+    };
+    mocks.getDashboardOverview.mockResolvedValueOnce(
+      overview({
+        role: "agent",
+        metrics: [
+          { label: "Active listings", value: "0", detail: "Live marketplace inventory" },
+          { label: "Received applications", value: "0", detail: "Applications received" },
+          { label: "Property inquiries", value: "0", detail: "Inquiries received" },
+          { label: "Viewing requests", value: "0", detail: "Viewing requests" },
+        ],
+        activeListings: [],
+        leads: [],
+        receivedApplications: [],
+        receivedViewings: [],
+        savedProperties: [],
+        recentlyViewed: [],
       }),
     );
 
     renderWithQueryClient(<DashboardPage />);
 
-    expect(await screen.findByText("Owner and agent workspace")).toBeInTheDocument();
-    expect(screen.getByText("Pipeline visibility")).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Hi, Tunde" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Hi, Ada" })).toBeInTheDocument();
+    expect(screen.getByText("Manage properties you own or represent.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "No applications, inquiries, or viewing requests yet. New buyer activity will appear here.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("You haven't added or been assigned any properties yet."),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("No messages yet. Buyer conversations will appear here."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Saved properties will appear here if this supply account saves marketplace listings.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Recently viewed properties will appear as this account browses the marketplace.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("supports supply dashboard tabs without changing routes", async () => {
+    const user = userEvent.setup();
+    mocks.currentUser = {
+      id: "agent-2",
+      first_name: "Tola",
+      roles: [{ role: { name: "agent" }, status: "approved" }],
+    };
+    mocks.getDashboardOverview.mockResolvedValueOnce(
+      overview({
+        role: "agent",
+        leads: [inquiry()],
+        receivedApplications: [],
+        receivedViewings: [],
+      }),
+    );
+
+    renderWithQueryClient(<DashboardPage />);
+
+    await screen.findByRole("heading", { name: "Hi, Tola" });
+    await user.click(screen.getByRole("tab", { name: "Messages" }));
+
+    expect(screen.getByRole("tab", { name: "Messages" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByRole("heading", { name: "Message" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Applications & Requests" })).not.toBeInTheDocument();
+  });
+
+  it("uses the backend viewing permission signal for supply viewing controls", async () => {
+    const user = userEvent.setup();
+    mocks.currentUser = {
+      id: "agent-viewings",
+      first_name: "Timi",
+      roles: [{ role: { name: "agent" }, status: "approved" }],
+    };
+    mocks.getDashboardOverview.mockResolvedValueOnce(
+      overview({
+        role: "agent",
+        leads: [],
+        receivedApplications: [],
+        receivedViewings: [
+          viewing({ can_manage_viewing: true }),
+          viewing({
+            id: "viewing-2",
+            requester: { id: "buyer-2", email: "buyer2@realityng.com", full_name: "Lola Ade" },
+            can_manage_viewing: false,
+          }),
+        ],
+      }),
+    );
+
+    renderWithQueryClient(<DashboardPage />);
+
+    await screen.findByRole("heading", { name: "Hi, Timi" });
+    await user.click(screen.getByRole("tab", { name: "Applications" }));
+
+    expect(screen.getByRole("button", { name: "Confirm" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reschedule" })).toBeInTheDocument();
+    expect(screen.getAllByText("Shared notes")).toHaveLength(2);
+    expect(
+      screen.getByText(
+        "You can view this request, but management actions are unavailable for your current permissions.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("does not give pending supply roles the approved supply shell", async () => {
+    mocks.currentUser = {
+      id: "agent-pending",
+      first_name: "Pending",
+      roles: [{ role: { name: "agent" }, status: "pending" }],
+    };
+    mocks.getDashboardOverview.mockResolvedValueOnce(overview({ role: "buyer" }));
+
+    renderWithQueryClient(<DashboardPage />);
+
+    expect(await screen.findByRole("heading", { name: "Hi, Pending" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("tablist", { name: "Agent and landlord dashboard sections" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not give rejected supply roles the approved supply shell", async () => {
+    mocks.currentUser = {
+      id: "landlord-rejected",
+      first_name: "Rejected",
+      roles: [{ role: { name: "landlord" }, status: "rejected" }],
+    };
+    mocks.getDashboardOverview.mockResolvedValueOnce(overview({ role: "buyer" }));
+
+    renderWithQueryClient(<DashboardPage />);
+
+    expect(await screen.findByRole("heading", { name: "Hi, Rejected" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("tablist", { name: "Agent and landlord dashboard sections" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps admin on the existing admin dashboard behavior", async () => {
+    mocks.currentUser = {
+      id: "admin-1",
+      first_name: "Admin",
+      roles: [{ role: { name: "admin" }, status: "approved" }],
+    };
+    mocks.getDashboardOverview.mockResolvedValueOnce(
+      overview({
+        role: "admin",
+        metrics: [{ label: "Pending approvals", value: "3", detail: "Admin queue" }],
+      }),
+    );
+
+    renderWithQueryClient(<DashboardPage />);
+
+    expect(await screen.findByText("Admin operations")).toBeInTheDocument();
+    expect(screen.getByText("Admin review queues")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("tablist", { name: "Agent and landlord dashboard sections" }),
+    ).not.toBeInTheDocument();
   });
 });
+

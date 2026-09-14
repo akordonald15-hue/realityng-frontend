@@ -45,19 +45,19 @@ export default function RoleSetupPage() {
   return (
     <ProtectedRoute>
       <main className="mx-auto max-w-4xl px-5 py-10 sm:px-6">
-        <h1 className="font-heading text-3xl font-semibold text-brand-text">
+        <h1 className="font-display text-3xl font-semibold text-reality-text-primary">
           Choose your RealityNG roles
         </h1>
-        <p className="mt-2 text-brand-muted">
+        <p className="mt-2 text-reality-text-secondary">
           Tenant, buyer, and landlord roles are approved immediately. Professional roles require
           admin review.
         </p>
         {selectedRole ? (
-          <div className="mt-5 rounded-md border border-brand-secondary/40 bg-brand-secondary/10 px-4 py-3 text-brand-muted">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-secondary">
+          <div className="mt-5 rounded-md border border-brand-secondary/40 bg-brand-secondary/10 px-4 py-3 text-reality-text-secondary">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-brand-600">
               Suggested role
             </p>
-            <p className="mt-1 capitalize text-brand-text">
+            <p className="mt-1 capitalize text-reality-text-primary">
               Continue with {selectedRole.replace("_", " ")} or choose another role below.
             </p>
           </div>
@@ -73,17 +73,17 @@ export default function RoleSetupPage() {
             return (
               <Card
                 className={
-                  role.name === selectedRole ? "border-brand-secondary/70 p-4 shadow-glow" : "p-4"
+                  role.name === selectedRole ? "border-brand-secondary/70 p-4 shadow-reality-sm" : "p-4"
                 }
                 key={role.id}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-semibold capitalize text-brand-text">
+                    <h2 className="text-lg font-semibold capitalize text-reality-text-primary">
                       {role.name.replace("_", " ")}
                     </h2>
-                    <p className="mt-1 text-sm text-brand-muted">{role.description}</p>
-                    <p className="mt-3 text-sm font-medium text-brand-secondary">
+                    <p className="mt-1 text-sm text-reality-text-secondary">{role.description}</p>
+                    <p className="mt-3 text-sm font-medium text-reality-brand-600">
                       {role.approval_required ? "Admin approval required" : "Auto-approved"}
                     </p>
                   </div>
@@ -98,9 +98,9 @@ export default function RoleSetupPage() {
             );
           })}
         </div>
-        {rolesQuery.isLoading ? <p className="mt-8 text-brand-muted">Loading roles...</p> : null}
-        <div className="mt-8 border-t border-white/10 pt-6">
-          <Link className={buttonClasses("primary")} href="/dashboard">
+        {rolesQuery.isLoading ? <p className="mt-8 text-reality-text-secondary">Loading roles...</p> : null}
+        <div className="mt-8 border-t border-reality-border-secondary pt-6">
+          <Link className={buttonClasses("reality")} href="/dashboard">
             Continue to dashboard
           </Link>
         </div>
@@ -108,3 +108,4 @@ export default function RoleSetupPage() {
     </ProtectedRoute>
   );
 }
+

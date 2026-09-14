@@ -38,3 +38,4 @@ export function WorkflowStatusBadge({ status, children }: WorkflowStatusBadgePro
 
   return <Badge variant={variant}>{children ?? labelFor(status)}</Badge>;
 }
+

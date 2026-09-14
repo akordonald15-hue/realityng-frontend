@@ -60,3 +60,4 @@ describe("SEO routes and structured data", () => {
     expect(JSON.stringify(data)).toContain("does not replace independent legal");
   });
 });
+

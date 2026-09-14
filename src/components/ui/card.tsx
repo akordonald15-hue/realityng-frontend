@@ -8,13 +8,14 @@ type CardProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const cardClasses: Record<CardVariant, string> = {
-  legacy: "rounded-md border-white/10 bg-brand-surface/90 shadow-glow",
+  legacy: "rounded-md border-reality-border-secondary bg-white/90 shadow-reality-sm",
   reality: "rounded-[32px] border-reality-border-secondary bg-white shadow-none",
   realityElevated: "rounded-[32px] border-reality-border-secondary bg-white shadow-reality-sm",
 };
 
-export function Card({ className, variant = "legacy", ...props }: CardProps) {
+export function Card({ className, variant = "reality", ...props }: CardProps) {
   return (
     <div className={clsx("border transition-colors", cardClasses[variant], className)} {...props} />
   );
 }
+

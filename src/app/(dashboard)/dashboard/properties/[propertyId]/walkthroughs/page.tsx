@@ -53,7 +53,7 @@ export default function PropertyWalkthroughsPage() {
       />
       <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="p-5">
-          <h2 className="font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
             Upload walkthrough
           </h2>
           <form
@@ -63,19 +63,19 @@ export default function PropertyWalkthroughsPage() {
               uploadMutation.mutate();
             }}
           >
-            <label className="block text-sm font-semibold text-brand-text">
+            <label className="block text-sm font-semibold text-reality-text-primary">
               Title
               <Input className="mt-2" onChange={(event) => setTitle(event.target.value)} required value={title} />
             </label>
-            <label className="block text-sm font-semibold text-brand-text">
+            <label className="block text-sm font-semibold text-reality-text-primary">
               Description
               <textarea
-                className="mt-2 min-h-24 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-brand-text"
+                className="mt-2 min-h-24 w-full rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-reality-text-primary"
                 onChange={(event) => setDescription(event.target.value)}
                 value={description}
               />
             </label>
-            <label className="block text-sm font-semibold text-brand-text">
+            <label className="block text-sm font-semibold text-reality-text-primary">
               Video file
               <Input
                 accept="video/mp4,video/webm"
@@ -95,7 +95,7 @@ export default function PropertyWalkthroughsPage() {
         </Card>
         <div className="space-y-4">
           {walkthroughsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading walkthroughs...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading walkthroughs...</Card>
           ) : null}
           {walkthroughsQuery.data?.results.map((walkthrough) => (
             <WalkthroughModerationCard
@@ -108,7 +108,7 @@ export default function PropertyWalkthroughsPage() {
             />
           ))}
           {walkthroughsQuery.data?.results.length === 0 ? (
-            <Card className="p-5 text-sm text-brand-muted">No walkthroughs uploaded yet.</Card>
+            <Card className="p-5 text-sm text-reality-text-secondary">No walkthroughs uploaded yet.</Card>
           ) : null}
         </div>
       </div>

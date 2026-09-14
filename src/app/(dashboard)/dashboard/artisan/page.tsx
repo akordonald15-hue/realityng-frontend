@@ -97,10 +97,10 @@ export default function ArtisanDashboardPage() {
 
       {!profile && !dashboardQuery.isLoading ? (
         <Card className="mt-8 p-6">
-          <h2 className="font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
             Create your provider profile
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-brand-muted">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-reality-text-secondary">
             Start a draft profile before adding trades, service areas, and portfolio samples.
             Profiles become public only after admin approval.
           </p>
@@ -124,7 +124,7 @@ export default function ArtisanDashboardPage() {
       ) : null}
 
       {dashboardQuery.isLoading ? (
-        <Card className="mt-8 p-5 text-brand-muted">Loading provider operations...</Card>
+        <Card className="mt-8 p-5 text-reality-text-secondary">Loading provider operations...</Card>
       ) : null}
 
       {dashboard && profile ? (
@@ -141,15 +141,15 @@ export default function ArtisanDashboardPage() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <ProviderStatusBadge status={profile.status} />
-                <h2 className="mt-4 font-heading text-3xl font-semibold text-brand-text">
+                <h2 className="mt-4 font-display text-3xl font-semibold text-reality-text-primary">
                   {profile.business_name || "Untitled provider profile"}
                 </h2>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-brand-muted">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-reality-text-secondary">
                   {profile.headline || "Add a headline that explains your strongest service."}
                 </p>
               </div>
               {profile.status === "active" ? (
-                <Link className={buttonClasses("secondary")} href={`/services/providers/${profile.slug}`}>
+                <Link className={buttonClasses("realitySecondary")} href={`/services/providers/${profile.slug}`}>
                   Public profile
                 </Link>
               ) : null}
@@ -167,7 +167,7 @@ export default function ArtisanDashboardPage() {
                 </div>
               ) : null}
               <div className="mt-5 flex flex-wrap gap-3">
-                <Link className={buttonClasses("primary")} href="/dashboard/artisan/profile">
+                <Link className={buttonClasses("reality")} href="/dashboard/artisan/profile">
                   Manage profile
                 </Link>
                 <Button
@@ -192,11 +192,11 @@ export default function ArtisanDashboardPage() {
             >
               <div className="space-y-3">
                 {dashboard.recent_quote_requests.map((quote) => (
-                  <div className="rounded-md border border-white/10 bg-white/5 p-4" key={quote.id}>
+                  <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4" key={quote.id}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-brand-text">{quote.project_title}</p>
-                        <p className="mt-1 text-sm text-brand-muted">{quote.customer_name}</p>
+                        <p className="font-semibold text-reality-text-primary">{quote.project_title}</p>
+                        <p className="mt-1 text-sm text-reality-text-secondary">{quote.customer_name}</p>
                       </div>
                       <QuoteRequestStatusBadge status={quote.status} />
                     </div>
@@ -228,12 +228,12 @@ export default function ArtisanDashboardPage() {
               <div className="space-y-3">
                 {dashboard.response_reminders.map((review) => (
                   <Link
-                    className="block rounded-md border border-white/10 bg-white/5 p-4"
+                    className="block rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4"
                     href="/dashboard/artisan/reviews"
                     key={review.id}
                   >
-                    <p className="font-semibold text-brand-text">{review.title}</p>
-                    <p className="mt-1 text-sm text-brand-muted">
+                    <p className="font-semibold text-reality-text-primary">{review.title}</p>
+                    <p className="mt-1 text-sm text-reality-text-secondary">
                       Published review awaiting your response
                     </p>
                   </Link>
@@ -253,3 +253,4 @@ export default function ArtisanDashboardPage() {
     </main>
   );
 }
+

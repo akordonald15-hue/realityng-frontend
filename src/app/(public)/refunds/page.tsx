@@ -11,3 +11,4 @@ export const metadata: Metadata = {
 export default function RefundsPage() {
   return <PublicInfoPage {...refundsPage} />;
 }
+

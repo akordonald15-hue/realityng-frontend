@@ -42,7 +42,7 @@ export function FavoriteButton({
   initialFavorited = false,
   className,
   compact = false,
-  variant = "legacy",
+  variant = "reality",
 }: FavoriteButtonProps) {
   const auth = useOptionalAuth();
   const { requireAuth } = useRealityAuthModal();
@@ -110,7 +110,7 @@ export function FavoriteButton({
       aria-pressed={isFavorited}
       className={clsx(
         compact ? "h-10 w-10 gap-0 p-0" : "gap-2",
-        variant === "legacy" && isFavorited ? "text-brand-background" : "",
+        variant === "legacy" && isFavorited ? "text-reality-text-primary" : "",
         className,
       )}
       disabled={mutation.isPending}
@@ -127,3 +127,5 @@ export function FavoriteButton({
     </Button>
   );
 }
+
+

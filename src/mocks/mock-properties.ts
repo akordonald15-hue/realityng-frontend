@@ -737,6 +737,32 @@ export async function mockGetPublicProperty(propertySlug: string): Promise<Prope
   return property;
 }
 
+export async function mockListManagedProperties(
+  filters: PropertyFilters = {},
+): Promise<PaginatedProperties> {
+  const user = getMockSessionUser();
+  const roles = user?.roles.map((role) => role.role.name) ?? [];
+  if (!roles.some((role) => role === "agent" || role === "landlord" || role === "admin")) {
+    return paginate([], Number(filters.page ?? 1));
+  }
+
+  const managedProperties = mockProperties.map((property, index) => ({
+    ...property,
+    status:
+      index % 5 === 0
+        ? "draft"
+        : index % 5 === 1
+          ? "pending_review"
+          : index % 5 === 2
+            ? "rejected"
+            : index % 5 === 3
+              ? "archived"
+              : "approved",
+  })) as Property[];
+
+  return paginate(applyFilters(managedProperties, filters), Number(filters.page ?? 1));
+}
+
 export async function mockCreateProperty(payload: PropertyPayload): Promise<Property> {
   const user = getMockSessionUser();
   const id = `property-demo-${Date.now()}`;
@@ -776,7 +802,32 @@ export async function mockCreateProperty(payload: PropertyPayload): Promise<Prop
     agent_avatar_url: user?.profile.avatar_url,
     views_count: 0,
     inquiry_count: 0,
+    owner_id: user?.id,
+    owner_email: user?.email,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+export async function mockUpdateProperty(
+  propertySlug: string,
+  payload: PropertyPayload,
+): Promise<Property> {
+  const existing = await mockGetPublicProperty(propertySlug);
+  return {
+    ...existing,
+    ...payload,
+    status: existing.status === "approved" ? "draft" : existing.status,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+export async function mockSubmitPropertyForReview(propertySlug: string): Promise<Property> {
+  const existing = await mockGetPublicProperty(propertySlug);
+  return {
+    ...existing,
+    status: "pending_review",
+    updated_at: new Date().toISOString(),
   };
 }
 

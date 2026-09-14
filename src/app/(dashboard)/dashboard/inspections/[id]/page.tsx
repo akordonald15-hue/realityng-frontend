@@ -51,23 +51,23 @@ export default function InspectionDetailPage() {
           title={request?.property.title ?? "Inspection request"}
           description="Review status, private report availability, and every visible step in the inspection timeline."
         />
-        <Link className={buttonClasses("secondary")} href="/dashboard/inspections">
+        <Link className={buttonClasses("realitySecondary")} href="/dashboard/inspections">
           Back to inspections
         </Link>
       </div>
 
       {requestQuery.isLoading ? (
-        <Card className="mt-8 p-5 text-brand-muted">Loading inspection...</Card>
+        <Card className="mt-8 p-5 text-reality-text-secondary">Loading inspection...</Card>
       ) : null}
       {request ? (
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_22rem]">
           <div className="space-y-6">
             <Card className="p-5">
               <InspectionStatusBadge status={request.status} />
-              <h1 className="mt-4 font-heading text-3xl font-semibold text-brand-text">
+              <h1 className="mt-4 font-display text-3xl font-semibold text-reality-text-primary">
                 {request.purpose}
               </h1>
-              <p className="mt-3 text-sm leading-6 text-brand-muted">{request.description}</p>
+              <p className="mt-3 text-sm leading-6 text-reality-text-secondary">{request.description}</p>
               {request.rejection_reason ? (
                 <FormMessage tone="error">{request.rejection_reason}</FormMessage>
               ) : null}
@@ -78,13 +78,13 @@ export default function InspectionDetailPage() {
                 <InspectionReportCard report={reportQuery.data} />
               </>
             ) : reportQuery.isError ? (
-              <Card className="p-5 text-sm text-brand-muted">
+              <Card className="p-5 text-sm text-reality-text-secondary">
                 No approved report is available yet.
               </Card>
             ) : null}
 
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">Timeline</h2>
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">Timeline</h2>
               <div className="mt-5">
                 <InspectionTimeline events={timelineQuery.data ?? []} />
               </div>
@@ -93,25 +93,25 @@ export default function InspectionDetailPage() {
 
           <aside className="space-y-5">
             <Card className="p-5">
-              <h2 className="font-heading text-2xl font-semibold text-brand-text">Schedule</h2>
-              <dl className="mt-4 space-y-3 text-sm text-brand-muted">
+              <h2 className="font-display text-2xl font-semibold text-reality-text-primary">Schedule</h2>
+              <dl className="mt-4 space-y-3 text-sm text-reality-text-secondary">
                 <div>
-                  <dt className="font-semibold text-brand-text">Preferred date</dt>
+                  <dt className="font-semibold text-reality-text-primary">Preferred date</dt>
                   <dd>{request.preferred_date}</dd>
                 </div>
                 <div>
-                  <dt className="font-semibold text-brand-text">Scheduled for</dt>
+                  <dt className="font-semibold text-reality-text-primary">Scheduled for</dt>
                   <dd>{request.scheduled_for ?? "Not scheduled yet"}</dd>
                 </div>
                 <div>
-                  <dt className="font-semibold text-brand-text">Inspector</dt>
+                  <dt className="font-semibold text-reality-text-primary">Inspector</dt>
                   <dd>{request.assigned_inspector?.full_name ?? "Not assigned yet"}</dd>
                 </div>
               </dl>
             </Card>
             {["requested", "under_review", "needs_more_information"].includes(request.status) ? (
               <Card className="p-5">
-                <h2 className="font-heading text-2xl font-semibold text-brand-text">Actions</h2>
+                <h2 className="font-display text-2xl font-semibold text-reality-text-primary">Actions</h2>
                 {cancelMutation.isError ? (
                   <FormMessage tone="error">{getApiErrorMessage(cancelMutation.error)}</FormMessage>
                 ) : null}

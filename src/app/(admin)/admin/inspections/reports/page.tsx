@@ -53,7 +53,7 @@ export default function AdminInspectionReportsPage() {
           </Select>
         </Card>
         <div className="mt-6 grid gap-4">
-          {reportsQuery.isLoading ? <Card className="p-5 text-brand-muted">Loading reports...</Card> : null}
+          {reportsQuery.isLoading ? <Card className="p-5 text-reality-text-secondary">Loading reports...</Card> : null}
           {reportsQuery.data?.results.map((report) => (
             <div className="space-y-3" key={report.id}>
               <InspectionReportCard report={report} />
@@ -63,7 +63,7 @@ export default function AdminInspectionReportsPage() {
                     Approve
                   </Button>
                   <input
-                    className="h-11 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text"
+                    className="h-11 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 text-sm text-reality-text-primary"
                     onChange={(event) =>
                       setReasonById((current) => ({ ...current, [report.id]: event.target.value }))
                     }
@@ -82,10 +82,11 @@ export default function AdminInspectionReportsPage() {
             </div>
           ))}
           {reportsQuery.data?.results.length === 0 ? (
-            <Card className="p-5 text-sm text-brand-muted">No reports match this queue.</Card>
+            <Card className="p-5 text-sm text-reality-text-secondary">No reports match this queue.</Card>
           ) : null}
         </div>
       </main>
     </ProtectedRoute>
   );
 }
+

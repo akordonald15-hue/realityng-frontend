@@ -22,7 +22,7 @@ function SavedPropertiesContent() {
 
   return (
     <main>
-      <section className="border-b border-white/10 bg-brand-surface/45">
+      <section className="border-b border-reality-border-secondary bg-white">
         <div className="mx-auto max-w-7xl px-5 py-10 sm:px-6">
           <SectionHeader
             eyebrow="Saved"
@@ -35,15 +35,15 @@ function SavedPropertiesContent() {
         {favoritesQuery.isLoading ? (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div className="h-80 animate-pulse rounded-md bg-white/10" key={item} />
+              <div className="h-80 animate-pulse rounded-[28px] bg-reality-bg-muted" key={item} />
             ))}
           </div>
         ) : null}
         {favoritesQuery.isError ? (
-          <Card className="p-6 text-sm text-red-200">Saved properties could not be loaded.</Card>
+          <Card className="p-6 text-sm text-red-700">Saved properties could not be loaded.</Card>
         ) : null}
         {!favoritesQuery.isLoading && favorites.length === 0 ? (
-          <Card className="p-8 text-brand-muted">
+          <Card className="p-8 text-reality-text-secondary">
             You have not saved any properties yet. Browse approved listings and save the ones you
             want to revisit.
           </Card>
@@ -62,15 +62,15 @@ function SavedPropertiesContent() {
               <Button
                 disabled={!favoritesQuery.data?.previous || favoritesQuery.isFetching}
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
-                variant="secondary"
+                variant="realitySecondary"
               >
                 Previous
               </Button>
-              <p className="text-sm text-brand-muted">Page {page}</p>
+              <p className="text-sm text-reality-text-secondary">Page {page}</p>
               <Button
                 disabled={!favoritesQuery.data?.next || favoritesQuery.isFetching}
                 onClick={() => setPage((value) => value + 1)}
-                variant="secondary"
+                variant="realitySecondary"
               >
                 Next
               </Button>
@@ -84,12 +84,13 @@ function SavedPropertiesContent() {
 
 export default function SavedPropertiesPage() {
   return (
-    <div className="min-h-screen bg-brand-background text-brand-text">
-      <Navbar />
+    <div className="min-h-screen bg-white text-reality-text-primary [color-scheme:light]">
+      <Navbar variant="reality" />
       <ProtectedRoute>
         <SavedPropertiesContent />
       </ProtectedRoute>
-      <Footer />
+      <Footer variant="reality" />
     </div>
   );
 }
+

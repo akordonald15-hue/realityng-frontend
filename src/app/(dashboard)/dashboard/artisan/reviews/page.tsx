@@ -36,13 +36,13 @@ export default function ProviderReviewsPage() {
       </Card>
       <div className="mt-6 grid gap-4">
         {reviewsQuery.isLoading ? (
-          <Card className="p-5 text-brand-muted">Loading provider reviews...</Card>
+          <Card className="p-5 text-reality-text-secondary">Loading provider reviews...</Card>
         ) : reviewsQuery.data?.results.length ? (
           reviewsQuery.data.results.map((review) => (
             <ReviewCard key={review.id} mode="provider" review={review} />
           ))
         ) : (
-          <Card className="p-5 text-sm text-brand-muted">
+          <Card className="p-5 text-sm text-reality-text-secondary">
             Reviews from completed service engagements will appear here.
           </Card>
         )}
@@ -50,3 +50,4 @@ export default function ProviderReviewsPage() {
     </main>
   );
 }
+

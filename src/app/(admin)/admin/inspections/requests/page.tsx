@@ -58,7 +58,7 @@ export default function AdminInspectionRequestsPage() {
         </Card>
         <div className="mt-6 grid gap-4">
           {requestsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading inspection requests...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading inspection requests...</Card>
           ) : null}
           {requestsQuery.data?.results.map((request) => (
             <div className="space-y-3" key={request.id}>
@@ -72,7 +72,7 @@ export default function AdminInspectionRequestsPage() {
                     Approve
                   </Button>
                   <input
-                    className="h-11 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-brand-text"
+                    className="h-11 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 text-sm text-reality-text-primary"
                     onChange={(event) =>
                       setReasonById((current) => ({ ...current, [request.id]: event.target.value }))
                     }
@@ -96,10 +96,11 @@ export default function AdminInspectionRequestsPage() {
             </div>
           ))}
           {requestsQuery.data?.results.length === 0 ? (
-            <Card className="p-5 text-sm text-brand-muted">No inspection requests match this queue.</Card>
+            <Card className="p-5 text-sm text-reality-text-secondary">No inspection requests match this queue.</Card>
           ) : null}
         </div>
       </main>
     </ProtectedRoute>
   );
 }
+

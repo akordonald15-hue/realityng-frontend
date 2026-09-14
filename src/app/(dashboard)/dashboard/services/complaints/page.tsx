@@ -48,7 +48,7 @@ export default function CustomerComplaintsPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="p-5">
-          <h2 className="font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
             Submit complaint
           </h2>
           <form
@@ -58,19 +58,19 @@ export default function CustomerComplaintsPage() {
               submitMutation.mutate(form);
             }}
           >
-            <label className="block text-sm font-semibold text-brand-text">
+            <label className="block text-sm font-semibold text-reality-text-primary">
               Provider ID
               <input
-                className="mt-2 w-full rounded-md border border-white/10 bg-brand-primary px-3 py-2 text-brand-text"
+                className="mt-2 w-full rounded-md border border-reality-border-secondary bg-white px-3 py-2 text-reality-text-primary"
                 onChange={(event) => setForm((current) => ({ ...current, provider_id: event.target.value }))}
                 required
                 value={form.provider_id}
               />
             </label>
-            <label className="block text-sm font-semibold text-brand-text">
+            <label className="block text-sm font-semibold text-reality-text-primary">
               Category
               <select
-                className="mt-2 w-full rounded-md border border-white/10 bg-brand-primary px-3 py-2 text-brand-text"
+                className="mt-2 w-full rounded-md border border-reality-border-secondary bg-white px-3 py-2 text-reality-text-primary"
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
@@ -87,19 +87,19 @@ export default function CustomerComplaintsPage() {
                 <option value="other">Other</option>
               </select>
             </label>
-            <label className="block text-sm font-semibold text-brand-text">
+            <label className="block text-sm font-semibold text-reality-text-primary">
               Subject
               <input
-                className="mt-2 w-full rounded-md border border-white/10 bg-brand-primary px-3 py-2 text-brand-text"
+                className="mt-2 w-full rounded-md border border-reality-border-secondary bg-white px-3 py-2 text-reality-text-primary"
                 onChange={(event) => setForm((current) => ({ ...current, subject: event.target.value }))}
                 required
                 value={form.subject}
               />
             </label>
-            <label className="block text-sm font-semibold text-brand-text">
+            <label className="block text-sm font-semibold text-reality-text-primary">
               Description
               <textarea
-                className="mt-2 min-h-32 w-full rounded-md border border-white/10 bg-brand-primary px-3 py-2 text-brand-text"
+                className="mt-2 min-h-32 w-full rounded-md border border-reality-border-secondary bg-white px-3 py-2 text-reality-text-primary"
                 onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
                 required
                 value={form.description}
@@ -119,7 +119,7 @@ export default function CustomerComplaintsPage() {
 
         <section className="space-y-4">
           {complaintsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading complaints...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading complaints...</Card>
           ) : null}
           {complaintsQuery.data?.results.map((complaint) => (
             <ComplaintCard
@@ -129,10 +129,11 @@ export default function CustomerComplaintsPage() {
             />
           ))}
           {complaintsQuery.data?.results.length === 0 ? (
-            <Card className="p-5 text-sm text-brand-muted">No complaints submitted yet.</Card>
+            <Card className="p-5 text-sm text-reality-text-secondary">No complaints submitted yet.</Card>
           ) : null}
         </section>
       </div>
     </main>
   );
 }
+

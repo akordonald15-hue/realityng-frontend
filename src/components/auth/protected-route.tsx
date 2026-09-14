@@ -28,7 +28,7 @@ export function ProtectedRoute({
   }, [isAuthenticated, isLoading, pathname, router, requireAdmin, user]);
 
   if (isLoading) {
-    return <main className="mx-auto max-w-3xl px-6 py-10 text-brand-muted">Loading...</main>;
+    return <main className="mx-auto max-w-3xl px-6 py-10 text-reality-text-secondary">Loading...</main>;
   }
 
   if (!isAuthenticated) {
@@ -41,3 +41,4 @@ export function ProtectedRoute({
 
   return <>{children}</>;
 }
+

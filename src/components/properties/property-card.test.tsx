@@ -104,3 +104,4 @@ describe("PropertyCard favorites", () => {
     expect(mocks.createFavorite).not.toHaveBeenCalled();
   });
 });
+

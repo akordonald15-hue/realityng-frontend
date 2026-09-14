@@ -140,3 +140,4 @@ describe("AdminVerificationsPage", () => {
     expect(screen.getByText("No property verification requests yet.")).toBeInTheDocument();
   });
 });
+

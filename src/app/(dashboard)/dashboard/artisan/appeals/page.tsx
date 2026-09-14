@@ -45,10 +45,10 @@ export default function ProviderAppealsPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="p-5">
-          <h2 className="font-heading text-2xl font-semibold text-brand-text">
+          <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
             Submit appeal
           </h2>
-          <p className="mt-2 text-sm leading-6 text-brand-muted">
+          <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
             Appeals are reviewed by administrators and do not automatically reinstate a restricted
             profile.
           </p>
@@ -59,7 +59,7 @@ export default function ProviderAppealsPage() {
                 onSubmit={(payload) => appealMutation.mutate(payload)}
               />
             ) : (
-              <p className="text-sm text-brand-muted">
+              <p className="text-sm text-reality-text-secondary">
                 Your profile has no current warning or suspension available for appeal.
               </p>
             )}
@@ -78,7 +78,7 @@ export default function ProviderAppealsPage() {
 
         <section>
           {appealsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading appeals...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading appeals...</Card>
           ) : (
             <AppealList
               appeals={appealsQuery.data?.results ?? []}
@@ -90,3 +90,4 @@ export default function ProviderAppealsPage() {
     </main>
   );
 }
+

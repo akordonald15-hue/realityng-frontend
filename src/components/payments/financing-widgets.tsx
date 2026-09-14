@@ -39,16 +39,16 @@ export function FinancingProductCard({
     <Card className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
+          <p className="text-xs font-semibold uppercase tracking-wide text-reality-brand-600">
             {product.product_type.replaceAll("_", " ")}
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-brand-text">{product.name}</h3>
-          <p className="mt-1 text-sm text-brand-muted">{product.description}</p>
-          <p className="mt-2 text-xs text-brand-muted">
+          <h3 className="mt-1 text-lg font-semibold text-reality-text-primary">{product.name}</h3>
+          <p className="mt-1 text-sm text-reality-text-secondary">{product.description}</p>
+          <p className="mt-2 text-xs text-reality-text-secondary">
             {product.currency} {product.minimum_amount} - {product.maximum_amount} ·{" "}
             {product.minimum_tenor_months}-{product.maximum_tenor_months} months
           </p>
-          <p className="mt-1 text-xs text-brand-muted">
+          <p className="mt-1 text-xs text-reality-text-secondary">
             Partner: {product.partner.name} ({product.partner.integration_mode})
           </p>
         </div>
@@ -63,13 +63,13 @@ export function FinancingApplicationCard({ application }: { application: Financi
     <Card className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
+          <p className="text-xs font-semibold uppercase tracking-wide text-reality-brand-600">
             {application.application_reference}
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-brand-text">
+          <h3 className="mt-1 text-lg font-semibold text-reality-text-primary">
             {application.product.name}
           </h3>
-          <p className="mt-1 text-sm text-brand-muted">
+          <p className="mt-1 text-sm text-reality-text-secondary">
             {application.currency} {application.requested_amount} ·{" "}
             {application.preferred_tenor_months} months · {application.partner.name}
           </p>
@@ -86,23 +86,23 @@ export function FinancingDocumentChecklist({ application }: { application: Finan
 
   return (
     <Card className="p-4">
-      <h2 className="text-base font-semibold text-brand-text">Document checklist</h2>
+      <h2 className="text-base font-semibold text-reality-text-primary">Document checklist</h2>
       <div className="mt-3 grid gap-2">
         {requirements.length === 0 ? (
-          <p className="text-sm text-brand-muted">
+          <p className="text-sm text-reality-text-secondary">
             RealityNG operations will confirm document requirements for this partner.
           </p>
         ) : (
           requirements.map((requirement) => (
             <div
-              className="flex items-center justify-between rounded-md border border-white/10 p-3"
+              className="flex items-center justify-between rounded-md border border-reality-border-secondary p-3"
               key={requirement.id}
             >
               <div>
-                <p className="font-medium text-brand-text">
+                <p className="font-medium text-reality-text-primary">
                   {requirement.document_type.replaceAll("_", " ")}
                 </p>
-                <p className="text-xs text-brand-muted">{requirement.description}</p>
+                <p className="text-xs text-reality-text-secondary">{requirement.description}</p>
               </div>
               <Badge variant={uploadedTypes.has(requirement.document_type) ? "green" : "muted"}>
                 {uploadedTypes.has(requirement.document_type) ? "Uploaded" : "Required"}
@@ -130,17 +130,17 @@ export function FinancingOfferCard({
     <Card className="p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-secondary">
+          <p className="text-xs font-semibold uppercase tracking-wide text-reality-brand-600">
             {offer.partner.name}
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-brand-text">
+          <h3 className="mt-1 text-lg font-semibold text-reality-text-primary">
             {offer.currency} {offer.approved_amount}
           </h3>
-          <p className="mt-1 text-sm text-brand-muted">
+          <p className="mt-1 text-sm text-reality-text-secondary">
             {offer.tenor_months} months · {offer.interest_rate_display || "Partner terms"}
           </p>
           {offer.partner_terms_summary ? (
-            <p className="mt-2 text-sm text-brand-muted">{offer.partner_terms_summary}</p>
+            <p className="mt-2 text-sm text-reality-text-secondary">{offer.partner_terms_summary}</p>
           ) : null}
         </div>
         <Badge variant={offer.status === "accepted" ? "green" : "gold"}>{offer.status}</Badge>
@@ -162,3 +162,4 @@ export function FinancingOfferCard({
     </Card>
   );
 }
+

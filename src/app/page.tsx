@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 
 import { PublicAssistantWidget } from "@/components/assistant/public-assistant-widget";
+import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { PublicShell } from "@/components/layout/public-shell";
 import { StaggerReveal } from "@/components/motion/stagger-reveal";
 import { PropertyCard } from "@/components/properties/property-card";
@@ -227,7 +228,7 @@ function HeroSearch({ onDropdownOpenChange }: { onDropdownOpenChange?: (isOpen: 
           onClick={submitSearch}
           variant="reality"
         >
-          <SearchIcon className="size-4" />
+          <SearchIcon className="h-4 w-4" />
           <span className="ml-2 md:sr-only">Search</span>
         </Button>
       </div>
@@ -245,8 +246,8 @@ function SearchField({
   label: string;
 }) {
   return (
-    <div className="flex h-14 min-w-0 items-center gap-3 rounded-[1.35rem] bg-[#0a3b2e] px-4 text-left transition focus-within:bg-[#0d4637] md:rounded-none md:bg-transparent md:px-6 md:focus-within:bg-white/[0.04] md:[&:not(:last-of-type)]:border-r md:[&:not(:last-of-type)]:border-white/10">
-      <Icon className="size-4 shrink-0 text-white" />
+    <div className="flex h-14 min-w-0 items-center gap-3 rounded-[1.35rem] bg-[#0a3b2e] px-4 text-left transition focus-within:bg-[#0d4637] md:rounded-none md:bg-transparent md:px-6 md:focus-within:bg-white/[0.04] md:[&:not(:last-of-type)]:border-r md:[&:not(:last-of-type)]:border-reality-border-secondary">
+      <Icon className="h-4 w-4 shrink-0 text-white" />
       <span className="grid min-w-0 flex-1 gap-0.5">
         <span className="text-xs font-medium leading-[18px] text-white">{label}</span>
         {children}
@@ -273,8 +274,8 @@ function PropertyRail({
           <h2 className="font-display text-[2rem] font-medium leading-none text-black md:text-[3.75rem] md:leading-none">
             <Link className="group inline-flex items-center gap-3" href="/properties">
               {title}
-              <span className="hidden size-10 items-center justify-center rounded-full bg-reality-bg-muted text-black transition group-hover:bg-reality-brand-50 md:inline-flex">
-                <ArrowRightIcon className="size-5" />
+              <span className="hidden h-10 w-10 items-center justify-center rounded-full bg-reality-bg-muted text-black transition group-hover:bg-reality-brand-50 md:inline-flex">
+                <ArrowRightIcon className="h-5 w-5" />
               </span>
             </Link>
           </h2>
@@ -335,8 +336,8 @@ function CityCard({
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70" />
-      <span className="absolute right-3 top-3 flex size-11 items-center justify-center rounded-full bg-white/60 text-black backdrop-blur">
-        <ArrowUpRightIcon className="size-6" />
+      <span className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/60 text-black backdrop-blur">
+        <ArrowUpRightIcon className="h-6 w-6" />
       </span>
       <div className="absolute inset-x-6 bottom-6 text-center text-white">
         <h3 className="text-xl font-semibold leading-7">{city}</h3>
@@ -364,20 +365,22 @@ function RoleCard({
       className={`${toneClass} flex min-h-[298px] flex-col items-center justify-between rounded-[2rem] p-6 text-center md:min-h-[335px]`}
     >
       <div className="flex flex-col items-center gap-6">
-        <div className="flex size-14 items-center justify-center rounded-full bg-white md:size-[93px]">
-          <Icon className="size-6 text-black md:size-8" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white md:h-[93px] md:w-[93px]">
+          <Icon className="h-6 w-6 text-black md:h-8 md:w-8" />
         </div>
         <div className="max-w-[247px]">
           <h3 className="text-2xl font-medium leading-8 text-black">{card.title}</h3>
           <p className="mt-3 text-xs leading-[18px] text-black">{card.description}</p>
         </div>
       </div>
-      <Link
-        href={`/auth/sign-up?role=${encodeURIComponent(card.role)}&next=${encodeURIComponent(card.nextPath)}`}
+      <ProtectedActionLink
+        actionLabel={card.button}
         className={buttonClasses("reality", "mt-6 h-12 px-[18px]")}
+        href={card.nextPath}
+        role={card.role}
       >
         {card.button}
-      </Link>
+      </ProtectedActionLink>
     </article>
   );
 }
@@ -451,7 +454,7 @@ export default function HomePage() {
       <PublicShell transparentHeader variant="reality">
         <main>
           <section
-            className="relative isolate flex min-h-[860px] items-start justify-center overflow-hidden bg-reality-brand-900 px-6 pb-12 pt-[132px] md:min-h-[820px] md:px-6 md:pt-[190px] xl:min-h-[900px] xl:px-0 xl:pt-[220px]"
+            className="relative isolate flex min-h-[960px] items-start justify-center overflow-hidden bg-reality-brand-900 px-5 pb-16 pt-[118px] md:min-h-[820px] md:px-6 md:pt-[190px] xl:min-h-[900px] xl:px-0 xl:pt-[220px]"
             ref={heroScope}
           >
             <Image
@@ -464,12 +467,12 @@ export default function HomePage() {
               src="/home/hero-house.webp"
             />
             <div className="absolute inset-0 z-0 bg-[#0a3b2e]/60" />
-            <div className="relative z-10 flex w-full max-w-[1066px] flex-col items-center gap-10 text-center text-white md:gap-[35px]">
+            <div className="relative z-10 flex w-full max-w-[1066px] flex-col items-center gap-7 text-center text-white md:gap-[35px]">
               <div className="max-w-[725px]" data-hero-reveal>
-                <h1 className="font-display text-[3.75rem] font-semibold leading-none tracking-normal md:text-[4.5rem] md:leading-[90px]">
+                <h1 className="font-display text-[3rem] font-semibold leading-[0.98] tracking-normal sm:text-[3.4rem] md:text-[4.5rem] md:leading-[90px]">
                   Find property in Nigeria with confidence.
                 </h1>
-                <p className="mt-3 text-base leading-6">
+                <p className="mx-auto mt-4 max-w-[340px] text-base leading-6 sm:max-w-none">
                   Search verified homes, shortlets, land, and commercial spaces.
                 </p>
               </div>
@@ -478,7 +481,7 @@ export default function HomePage() {
               </div>
             </div>
             <div
-              className="pointer-events-none absolute bottom-10 left-1/2 grid w-[334px] -translate-x-1/2 grid-cols-3 gap-3 text-left transition-[opacity,filter] duration-200 md:bottom-16 md:flex md:w-auto md:gap-8"
+              className="pointer-events-none absolute bottom-9 left-1/2 grid w-[min(334px,calc(100%-2.5rem))] -translate-x-1/2 grid-cols-3 gap-3 text-left transition-[opacity,filter] duration-200 md:bottom-16 md:flex md:w-auto md:gap-8"
               data-hero-reveal
               style={{
                 filter: isHeroFilterOpen ? "blur(1.5px)" : "blur(0)",
@@ -489,7 +492,7 @@ export default function HomePage() {
                 const Icon = item.icon;
                 return (
                   <div className="flex flex-col gap-2.5 text-white" key={item.label}>
-                    <Icon className="size-5 md:size-6" />
+                    <Icon className="h-5 w-5 md:h-6 md:w-6" />
                     <p className="text-xs font-medium leading-[18px] md:w-[146px] md:text-base md:leading-6">
                       {item.label}
                     </p>
@@ -520,8 +523,8 @@ export default function HomePage() {
                       key={step.title}
                     >
                       <div className="flex items-center justify-between">
-                        <Icon className="size-6 text-black" />
-                        <ArrowUpRightIcon className="hidden size-5 text-black transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 md:block" />
+                        <Icon className="h-6 w-6 text-black" />
+                        <ArrowUpRightIcon className="hidden h-5 w-5 text-black transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 md:block" />
                       </div>
                       <h3 className="mt-4 text-base font-medium leading-6 text-black md:text-xl md:leading-7">
                         <span className="md:hidden">{step.mobileTitle}</span>
@@ -856,3 +859,4 @@ function ToolsIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+

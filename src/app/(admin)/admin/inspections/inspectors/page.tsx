@@ -23,26 +23,27 @@ export default function AdminInspectorsPage() {
         />
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {inspectorsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading inspectors...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading inspectors...</Card>
           ) : null}
           {inspectorsQuery.data?.map((inspector) => (
             <Card className="p-5" key={inspector.id}>
-              <p className="font-heading text-2xl font-semibold text-brand-text">
+              <p className="font-display text-2xl font-semibold text-reality-text-primary">
                 {inspector.display_name || inspector.user.full_name}
               </p>
-              <p className="mt-1 text-sm text-brand-muted">{inspector.professional_title}</p>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide text-brand-secondary">
+              <p className="mt-1 text-sm text-reality-text-secondary">{inspector.professional_title}</p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide text-reality-brand-600">
                 <span>{inspector.verification_status}</span>
                 <span>{inspector.availability_status}</span>
               </div>
-              <p className="mt-4 text-sm leading-6 text-brand-muted">{inspector.bio}</p>
+              <p className="mt-4 text-sm leading-6 text-reality-text-secondary">{inspector.bio}</p>
             </Card>
           ))}
           {inspectorsQuery.data?.length === 0 ? (
-            <Card className="p-5 text-sm text-brand-muted">No inspector profiles configured yet.</Card>
+            <Card className="p-5 text-sm text-reality-text-secondary">No inspector profiles configured yet.</Card>
           ) : null}
         </div>
       </main>
     </ProtectedRoute>
   );
 }
+

@@ -65,13 +65,13 @@ export default function AdminServicesDashboardPage() {
             title="Provider marketplace control room"
             description="Monitor provider approvals, quote queues, review moderation, trust metrics, and category coverage from one place."
           />
-          <Link className={buttonClasses("secondary")} href="/admin/services/providers">
+          <Link className={buttonClasses("realitySecondary")} href="/admin/services/providers">
             Provider queue
           </Link>
         </div>
 
         {dashboardQuery.isLoading ? (
-          <Card className="mt-8 p-5 text-brand-muted">Loading services operations...</Card>
+          <Card className="mt-8 p-5 text-reality-text-secondary">Loading services operations...</Card>
         ) : null}
         {dashboardQuery.isError ? (
           <Card className="mt-8 p-5 text-red-200">Services operations could not be loaded.</Card>
@@ -98,16 +98,16 @@ export default function AdminServicesDashboardPage() {
                 <div className="space-y-3">
                   {dashboard.pending_providers.map((provider) => (
                     <Link
-                      className="block rounded-md border border-white/10 bg-white/5 p-4"
+                      className="block rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4"
                       href={`/admin/services/providers/${provider.id}`}
                       key={provider.id}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="font-semibold text-brand-text">
+                          <p className="font-semibold text-reality-text-primary">
                             {provider.business_name || "Untitled provider"}
                           </p>
-                          <p className="mt-1 text-sm text-brand-muted">
+                          <p className="mt-1 text-sm text-reality-text-secondary">
                             {provider.display_location || `${provider.city}, ${provider.state}`}
                           </p>
                         </div>
@@ -127,11 +127,11 @@ export default function AdminServicesDashboardPage() {
               >
                 <div className="space-y-3">
                   {dashboard.open_quote_requests.map((quote) => (
-                    <div className="rounded-md border border-white/10 bg-white/5 p-4" key={quote.id}>
+                    <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4" key={quote.id}>
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="font-semibold text-brand-text">{quote.project_title}</p>
-                          <p className="mt-1 text-sm text-brand-muted">
+                          <p className="font-semibold text-reality-text-primary">{quote.project_title}</p>
+                          <p className="mt-1 text-sm text-reality-text-secondary">
                             {quote.provider.business_name}
                           </p>
                         </div>
@@ -162,12 +162,12 @@ export default function AdminServicesDashboardPage() {
                 <div className="space-y-3">
                   {dashboard.flagged_reviews.map((review) => (
                     <Link
-                      className="block rounded-md border border-white/10 bg-white/5 p-4"
+                      className="block rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4"
                       href={`/admin/services/reviews/${review.id}`}
                       key={review.id}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
-                        <p className="font-semibold text-brand-text">{review.title}</p>
+                        <p className="font-semibold text-reality-text-primary">{review.title}</p>
                         {review.status ? <ReviewStatusBadge status={review.status} /> : null}
                       </div>
                     </Link>
@@ -193,3 +193,4 @@ export default function AdminServicesDashboardPage() {
     </ProtectedRoute>
   );
 }
+

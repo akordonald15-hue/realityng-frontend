@@ -41,7 +41,7 @@ export default function AdminServiceReviewsPage() {
         </Card>
         <div className="mt-6">
           {reviewsQuery.isLoading ? (
-            <Card className="p-5 text-brand-muted">Loading reviews...</Card>
+            <Card className="p-5 text-reality-text-secondary">Loading reviews...</Card>
           ) : (
             <ReviewModerationList reviews={reviewsQuery.data?.results ?? []} />
           )}
@@ -50,3 +50,4 @@ export default function AdminServiceReviewsPage() {
     </ProtectedRoute>
   );
 }
+
