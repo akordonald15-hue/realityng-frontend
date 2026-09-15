@@ -13,11 +13,12 @@ import { getApiErrorMessage } from "@/lib/api/errors";
 import { getProperty } from "@/lib/api/properties";
 
 export default function EditPropertyPage() {
+  // The shared dynamic segment is named propertyId for sibling routes; edit uses a slug.
   const params = useParams<{ propertyId: string }>();
-  const propertyId = decodeURIComponent(params.propertyId);
+  const propertySlug = decodeURIComponent(params.propertyId);
   const propertyQuery = useQuery({
-    queryKey: ["managed-property", propertyId],
-    queryFn: () => getProperty(propertyId),
+    queryKey: ["managed-property", propertySlug],
+    queryFn: () => getProperty(propertySlug),
   });
 
   if (propertyQuery.isLoading) {

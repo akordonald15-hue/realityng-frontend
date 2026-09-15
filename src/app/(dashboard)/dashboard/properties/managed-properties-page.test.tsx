@@ -115,6 +115,45 @@ describe("ManagedPropertiesPage", () => {
     expect(screen.queryByRole("link", { name: "Edit" })).not.toBeInTheDocument();
   });
 
+  it("continues owned drafts through their slug instead of their UUID", async () => {
+    mocks.currentUser = {
+      id: "landlord-1",
+      first_name: "Ada",
+      roles: [{ role: { name: "landlord" }, status: "approved" }],
+    };
+    mocks.listManagedProperties.mockResolvedValueOnce(
+      paginated([property({ id: "uuid-draft-1", slug: "qa-owned-draft", status: "draft" })]),
+    );
+
+    renderWithQueryClient(<ManagedPropertiesPage />);
+
+    expect(await screen.findByRole("link", { name: "Continue draft" })).toHaveAttribute(
+      "href",
+      "/dashboard/properties/qa-owned-draft/edit",
+    );
+  });
+
+  it("uses slugs for assigned rejected properties without owner-only gating", async () => {
+    mocks.listManagedProperties.mockResolvedValueOnce(
+      paginated([
+        property({
+          id: "uuid-assigned-1",
+          slug: "qa-assigned-rejected",
+          status: "rejected",
+          owner_id: "different-landlord",
+          can_manage_listing: true,
+        }),
+      ]),
+    );
+
+    renderWithQueryClient(<ManagedPropertiesPage />);
+
+    expect(await screen.findByRole("link", { name: "Edit" })).toHaveAttribute(
+      "href",
+      "/dashboard/properties/qa-assigned-rejected/edit",
+    );
+  });
+
   it("passes URL-backed filters to the management endpoint", async () => {
     mocks.currentSearchParams = new URLSearchParams(
       "status=pending_review&search=Lekki&property_type=house&listing_type=sale&ordering=price&page=2",
