@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
+import { LegalDocumentModal } from "@/components/auth/legal-document-modal";
 import { Button } from "@/components/ui/button";
 import { SuccessState } from "@/components/ui/success-state";
 import { getApiErrorMessage } from "@/lib/api/errors";
@@ -73,6 +74,7 @@ export function RealityAuthFlow({
   const [activeMode, setActiveMode] = useState<AuthMode>(mode);
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [legalDocument, setLegalDocument] = useState<"terms" | "privacy" | null>(null);
   const [signInStep, setSignInStep] = useState<"identifier" | "password" | "success">(
     "identifier",
   );
@@ -343,35 +345,51 @@ export function RealityAuthFlow({
               {showPassword ? "Hide password" : "Show password"}
             </button>
             <div className="space-y-3 rounded-reality border border-reality-border-secondary bg-reality-bg-subtle p-4 text-sm text-reality-text-secondary">
-              <label className="flex items-start gap-3">
-                <input className="mt-1" type="checkbox" {...signUpForm.register("accepts_terms")} />
+              <div className="flex items-start gap-3">
+                <input
+                  aria-label="I accept the Terms and Conditions"
+                  className="mt-1"
+                  id="accepts_terms"
+                  type="checkbox"
+                  {...signUpForm.register("accepts_terms")}
+                />
                 <span>
-                  I accept the{" "}
-                  <Link className="font-semibold text-reality-brand-600" href="/terms">
+                  <label htmlFor="accepts_terms">I accept the</label>{" "}
+                  <button
+                    className="font-semibold text-reality-brand-600 underline"
+                    onClick={() => setLegalDocument("terms")}
+                    type="button"
+                  >
                     Terms and Conditions
-                  </Link>
+                  </button>
                   .
                 </span>
-              </label>
+              </div>
               {signUpForm.formState.errors.accepts_terms ? (
                 <p className="text-red-700">
                   {signUpForm.formState.errors.accepts_terms.message}
                 </p>
               ) : null}
-              <label className="flex items-start gap-3">
+              <div className="flex items-start gap-3">
                 <input
+                  aria-label="I acknowledge the Privacy Notice"
                   className="mt-1"
+                  id="accepts_privacy"
                   type="checkbox"
                   {...signUpForm.register("accepts_privacy")}
                 />
                 <span>
-                  I acknowledge the{" "}
-                  <Link className="font-semibold text-reality-brand-600" href="/privacy">
+                  <label htmlFor="accepts_privacy">I acknowledge the</label>{" "}
+                  <button
+                    className="font-semibold text-reality-brand-600 underline"
+                    onClick={() => setLegalDocument("privacy")}
+                    type="button"
+                  >
                     Privacy Notice
-                  </Link>
+                  </button>
                   .
                 </span>
-              </label>
+              </div>
               {signUpForm.formState.errors.accepts_privacy ? (
                 <p className="text-red-700">
                   {signUpForm.formState.errors.accepts_privacy.message}
@@ -391,6 +409,12 @@ export function RealityAuthFlow({
             {signUpForm.formState.isSubmitting ? "Creating account..." : "Continue"}
           </Button>
         </form>
+        {legalDocument ? (
+          <LegalDocumentModal
+            document={legalDocument}
+            onClose={() => setLegalDocument(null)}
+          />
+        ) : null}
       </div>
     );
   }

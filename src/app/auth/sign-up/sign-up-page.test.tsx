@@ -96,5 +96,30 @@ describe("SignUpPage", () => {
     expect(await screen.findByText("Something went wrong. Please try again.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Complete sign up" })).toBeInTheDocument();
   });
+
+  it("opens Terms and Privacy in dismissible dialogs without leaving sign-up", async () => {
+    const user = userEvent.setup();
+    render(<SignUpPage />);
+
+    await user.type(screen.getByLabelText("Email address"), "ada@example.com");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await screen.findByRole("heading", { name: "Complete sign up" });
+
+    await user.click(screen.getByRole("button", { name: "Terms and Conditions" }));
+    expect(screen.getByRole("dialog", { name: "Terms and Conditions" })).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "I accept the Terms and Conditions" })).not.toBeChecked();
+    expect(screen.getByText("Using the marketplace")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Complete sign up" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByRole("dialog", { name: "Terms and Conditions" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Privacy Notice" }));
+    expect(screen.getByRole("dialog", { name: "Privacy Notice" })).toBeInTheDocument();
+    expect(screen.getByText("Information users provide")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "Privacy Notice" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Complete sign up" })).toBeInTheDocument();
+    expect(mocks.signUp).not.toHaveBeenCalled();
+  });
 });
 
