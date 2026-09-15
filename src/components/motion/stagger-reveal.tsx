@@ -63,7 +63,7 @@ export function StaggerReveal({
 
       gsap.fromTo(
         childrenToReveal,
-        { autoAlpha: 0, y: revealY },
+        { autoAlpha: trigger === "scroll" ? 1 : 0, y: revealY },
         {
           autoAlpha: 1,
           duration: revealDuration,

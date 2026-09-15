@@ -174,7 +174,7 @@ export default function LeadInboxPage() {
           </Card>
         ) : (
           <>
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-4 rounded-[28px] border border-reality-border-secondary bg-reality-surface p-5 shadow-reality-xs md:flex-row md:items-end md:justify-between sm:p-7">
               <div>
                 <p className="text-sm font-medium text-reality-brand-600">Dashboard &gt; Leads</p>
                 <h1 className="mt-3 font-display text-4xl font-semibold leading-tight text-reality-text-primary">
@@ -197,7 +197,7 @@ export default function LeadInboxPage() {
               </Button>
             </div>
 
-            <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <section className="mt-8 grid gap-4 rounded-[28px] bg-reality-surfaceMuted p-5 md:grid-cols-2 xl:grid-cols-4 sm:p-6">
               <MetricCard
                 detail="All enquiry-backed leads"
                 label="Total leads"
@@ -224,7 +224,7 @@ export default function LeadInboxPage() {
               />
             </section>
 
-            <Card className="mt-6 p-5" variant="reality">
+            <Card className="mt-6 bg-reality-surface p-5" variant="reality">
               <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_200px_auto]">
                 <label className="block">
                   <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.08em] text-reality-text-quaternary">
@@ -309,7 +309,7 @@ export default function LeadInboxPage() {
                   ))}
                 </div>
               ) : (
-                <Card className="p-8 text-center" variant="reality">
+                <Card className="border-dashed border-reality-brand-300 bg-reality-surfaceBrand p-8 text-center" variant="reality">
                   <h2 className="text-xl font-semibold text-reality-text-primary">
                     {hasActiveFilters ? "No leads match these filters." : "No enquiries yet."}
                   </h2>

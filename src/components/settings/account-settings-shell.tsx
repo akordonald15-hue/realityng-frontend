@@ -26,7 +26,7 @@ export function AccountSettingsShell({
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-white text-reality-text-primary">
+    <div className="min-h-screen bg-reality-canvas text-reality-text-primary">
       <Navbar variant="reality" />
       <main className="mx-auto w-full max-w-reality px-5 py-8 sm:px-6 lg:px-10 xl:py-12">
         <nav
@@ -58,10 +58,10 @@ export function AccountSettingsShell({
                   <Link
                     aria-current={active ? "page" : undefined}
                     className={clsx(
-                      "shrink-0 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500",
+                      "shrink-0 rounded-xl px-4 py-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500",
                       active
-                        ? "border border-reality-border-primary bg-white text-reality-text-primary shadow-reality-xs"
-                        : "text-reality-text-secondary hover:bg-reality-bg-subtle hover:text-reality-text-primary",
+                        ? "border border-reality-brand-300 bg-reality-surfaceBrand text-reality-brandEmphasis shadow-reality-xs"
+                        : "text-reality-text-secondary hover:bg-reality-surfaceMuted hover:text-reality-text-primary",
                     )}
                     href={item.href}
                     key={item.href}
@@ -73,7 +73,7 @@ export function AccountSettingsShell({
             </div>
           </aside>
 
-          <div>{children}</div>
+          <div className="min-w-0 rounded-[24px] border border-reality-border-secondary bg-reality-surface p-5 shadow-reality-xs sm:p-8">{children}</div>
         </div>
       </main>
     </div>

@@ -224,7 +224,7 @@ export default function LeadDetailPage() {
           </Card>
         ) : (
           <>
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="flex flex-col gap-4 rounded-[28px] border border-reality-border-secondary bg-reality-surface p-5 shadow-reality-xs md:flex-row md:items-start md:justify-between sm:p-7">
               <div>
                 <Link className="text-sm font-medium text-reality-brand-600" href="/dashboard/leads">
                   Dashboard &gt; Leads
@@ -289,7 +289,7 @@ export default function LeadDetailPage() {
                   </dl>
                 </Card>
 
-                <Card className="p-6" variant="reality">
+                <Card className="bg-reality-surfaceMuted p-6" variant="reality">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-xl font-semibold text-reality-text-primary">Activity timeline</h2>
@@ -316,7 +316,7 @@ export default function LeadDetailPage() {
               </div>
 
               <aside className="space-y-6">
-                <Card className="p-6" variant="reality">
+                <Card className="bg-reality-surfaceBrand p-6" variant="reality">
                   <h2 className="text-xl font-semibold text-reality-text-primary">Move pipeline stage</h2>
                   <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
                     Stage changes are validated by the backend transition rules.

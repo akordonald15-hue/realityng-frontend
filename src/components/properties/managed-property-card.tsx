@@ -38,10 +38,10 @@ export function ManagedPropertyCard({
 
   return (
     <Card
-      className="group overflow-hidden rounded-[28px] border-reality-border-secondary bg-white shadow-reality-xs transition duration-200 hover:-translate-y-0.5 hover:border-reality-brand-300 hover:shadow-reality-sm"
+      className="group overflow-hidden rounded-[24px] border-reality-border-secondary bg-reality-surface shadow-reality-xs transition duration-200 hover:border-reality-brand-300 hover:shadow-reality-sm"
       variant="realityElevated"
     >
-      <div className="grid gap-4 p-4 sm:grid-cols-[180px_1fr]">
+      <div className="grid gap-5 p-4 sm:grid-cols-[180px_1fr] sm:p-5">
         <div className="relative aspect-[4/3] overflow-hidden rounded-[22px] bg-reality-bg-muted">
           {property.cover_image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -70,7 +70,7 @@ export function ManagedPropertyCard({
             {status ? <StatusChip tone={status.tone}>{status.label}</StatusChip> : null}
           </div>
 
-          <p className="mt-4 text-2xl font-semibold leading-8 text-reality-text-primary">
+          <p className="mt-4 text-xl font-semibold leading-8 text-reality-text-primary">
             {formatPrice(property)}
           </p>
           <p className="mt-2 text-sm leading-5 text-reality-text-secondary">
@@ -86,14 +86,14 @@ export function ManagedPropertyCard({
           <div className="mt-5 flex flex-wrap gap-3">
             {canViewPublic ? (
               <Link
-                className={buttonClasses("reality", "h-10 px-5")}
+                className={buttonClasses("realitySecondary", "h-10 px-5")}
                 href={`/properties/${property.slug}`}
               >
                 View listing
               </Link>
             ) : null}
             {editHref ? (
-              <Link className={buttonClasses("realitySecondary", "h-10 px-5")} href={editHref}>
+              <Link className={buttonClasses("reality", "h-10 px-5")} href={editHref}>
                 {property.status === "draft" ? "Continue draft" : "Edit"}
               </Link>
             ) : null}

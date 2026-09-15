@@ -177,7 +177,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <dl className="mt-8 grid gap-6 text-sm sm:grid-cols-2">
+              <dl className="mt-8 grid gap-6 rounded-[20px] bg-reality-surfaceMuted p-5 text-sm sm:grid-cols-2">
                 <div>
                   <dt className="font-semibold text-reality-text-primary">Email address</dt>
                   <dd className="mt-1 break-words text-reality-text-secondary">
@@ -212,7 +212,7 @@ export default function ProfilePage() {
 
               <form
                 aria-label="Edit personal information"
-                className="mt-10 space-y-5"
+                className="mt-10 space-y-5 border-t border-reality-border-secondary pt-8"
                 onSubmit={handleSubmit(onSubmit)}
               >
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -239,7 +239,7 @@ export default function ProfilePage() {
                   {...register("phone_number")}
                 />
                 <TextField label="Professional bio" error={errors.bio} variant="reality" {...register("bio")} />
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 rounded-[20px] bg-reality-surfaceMuted p-4 sm:grid-cols-3">
                   <TextField label="Country" error={errors.country} variant="reality" {...register("country")} />
                   <TextField label="State" error={errors.state} variant="reality" {...register("state")} />
                   <TextField label="City" error={errors.city} variant="reality" {...register("city")} />

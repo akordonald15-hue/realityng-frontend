@@ -47,7 +47,7 @@ describe("PropertyMapPanel", () => {
   it("shows a graceful fallback when the Google Maps key is unavailable", async () => {
     renderWithQueryClient(<PropertyMapPanel properties={[property]} />);
 
-    expect(await screen.findByText("Map preview is ready.")).toBeInTheDocument();
+    expect(await screen.findByText("Interactive map unavailable")).toBeInTheDocument();
     expect(screen.getByText("Approved Lekki Apartment")).toBeInTheDocument();
   });
 

@@ -6,6 +6,12 @@ const config: Config = {
     extend: {
       colors: {
         reality: {
+          canvas: "#F7F8F5",
+          surface: "#FFFFFF",
+          surfaceMuted: "#F1F4F0",
+          surfaceBrand: "#EAF5EF",
+          brandEmphasis: "#0B5F46",
+          surfaceDark: "#063D2D",
           brand: {
             50: "#ECFDF6",
             100: "#D1FAE8",
@@ -24,9 +30,9 @@ const config: Config = {
             primary: "#171717",
             secondary: "#404040",
             tertiary: "#525252",
-            quaternary: "#737373",
+            quaternary: "#525252",
             inverse: "#FFFFFF",
-            brand: "#118A64",
+            brand: "#0B5F46",
           },
           border: {
             primary: "#D4D4D4",
@@ -68,8 +74,8 @@ const config: Config = {
       },
       fontFamily: {
         display: ["var(--font-display-stack)", "var(--font-display)", "serif"],
-        heading: ["var(--font-heading)", "serif"],
-        body: ["var(--font-body)", '"General Sans"', "sans-serif"],
+        heading: ["var(--font-heading-legacy)", "serif"],
+        body: ["var(--font-body)", "sans-serif"],
       },
       borderRadius: {
         reality: "12px",

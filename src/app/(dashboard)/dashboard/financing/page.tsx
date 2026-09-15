@@ -25,7 +25,7 @@ export default function FinancingDashboardPage() {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-reality-bg-muted py-8 text-reality-text-primary sm:py-16">
+      <main className="min-h-screen bg-reality-canvas py-8 text-reality-text-primary sm:py-12">
         <PageContainer>
           <FinanceOptionSelector
             error={productsQuery.isError ? getApiErrorMessage(productsQuery.error) : undefined}
@@ -35,7 +35,7 @@ export default function FinancingDashboardPage() {
             selectedProductId={selectedProductId}
           />
 
-          <section className="mx-auto mt-8 grid w-full max-w-[620px] gap-3">
+          <section className="mx-auto mt-8 grid w-full max-w-[620px] gap-4 rounded-[28px] border border-reality-border-secondary bg-reality-surface p-5 shadow-reality-xs sm:p-7">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-lg font-semibold text-reality-text-primary">Your applications</h2>
               <Link
@@ -46,7 +46,7 @@ export default function FinancingDashboardPage() {
               </Link>
             </div>
             {applicationsQuery.isLoading ? (
-              <p className="text-sm text-reality-text-quaternary">Loading applications...</p>
+              <div className="h-20 animate-pulse rounded-[18px] bg-reality-surfaceMuted" aria-label="Loading applications" />
             ) : applicationsQuery.data?.length ? (
               <div className="grid gap-3">
                 {applicationsQuery.data.map((application) => (
@@ -56,10 +56,8 @@ export default function FinancingDashboardPage() {
                 ))}
               </div>
             ) : (
-              <Card className="rounded-[16px] p-4" variant="reality">
-                <p className="text-sm text-reality-text-quaternary">
-                  You do not have a financing application yet.
-                </p>
+              <Card className="rounded-[18px] border-dashed bg-reality-surfaceMuted p-5" variant="reality">
+                <p className="text-sm text-reality-text-secondary">Your financing applications will appear here after you choose a partner product and start a draft.</p>
               </Card>
             )}
           </section>

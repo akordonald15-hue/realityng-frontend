@@ -101,7 +101,7 @@ export default function ManagedPropertiesPage() {
 
   if (!isAllowed) {
     return (
-      <main className="min-h-screen bg-white py-10 text-reality-text-primary [color-scheme:light]">
+      <main className="min-h-screen bg-reality-canvas py-10 text-reality-text-primary [color-scheme:light]">
         <PageContainer>
           <Card className="p-8" variant="realityElevated">
             <h1 className="text-2xl font-semibold">My Properties</h1>
@@ -129,7 +129,7 @@ export default function ManagedPropertiesPage() {
 
   return (
     <main
-      className="min-h-screen bg-white pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10"
+      className="min-h-screen bg-reality-canvas pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10"
     >
       <PageContainer>
         <nav
@@ -145,7 +145,7 @@ export default function ManagedPropertiesPage() {
           </span>
         </nav>
 
-        <header className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <header className="mt-8 flex flex-col gap-5 rounded-[28px] border border-reality-border-secondary bg-reality-surface px-5 py-6 shadow-reality-xs sm:flex-row sm:items-end sm:justify-between sm:px-8">
           <div>
             <h1 className="text-4xl font-medium leading-[44px] text-reality-text-primary">
               My Properties
@@ -159,7 +159,7 @@ export default function ManagedPropertiesPage() {
           </Link>
         </header>
 
-        <div className="mt-8 overflow-x-auto pb-2">
+        <div className="mt-8 overflow-x-auto rounded-[22px] bg-reality-surfaceMuted p-2">
           <div className="flex min-w-max gap-2" role="tablist" aria-label="Property status filters">
             {statusTabs.map((tab) => {
               const selected = currentStatus === tab.value;
@@ -169,7 +169,7 @@ export default function ManagedPropertiesPage() {
                   className={`h-10 rounded-full px-5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 ${
                     selected
                       ? "bg-reality-brand-500 text-white shadow-reality-xs"
-                      : "border border-reality-border-secondary bg-white text-reality-text-secondary hover:bg-reality-bg-subtle"
+                      : "border border-transparent bg-transparent text-reality-text-secondary hover:bg-reality-surface"
                   }`}
                   key={tab.value}
                   onClick={() => updateParam("status", tab.value === "all" ? "" : tab.value)}
@@ -184,7 +184,7 @@ export default function ManagedPropertiesPage() {
         </div>
 
         <Card
-          className="mt-6 grid gap-4 rounded-[28px] p-4 md:grid-cols-2 xl:grid-cols-4"
+          className="mt-6 grid gap-4 rounded-[28px] bg-reality-surface p-5 md:grid-cols-2 xl:grid-cols-4"
           variant="realityElevated"
         >
           <label className="space-y-2">
@@ -269,7 +269,7 @@ export default function ManagedPropertiesPage() {
             </Card>
           ) : null}
           {isEmpty ? (
-            <Card className="p-8 text-center" variant="realityElevated">
+            <Card className="border-dashed border-reality-brand-300 bg-reality-surfaceBrand p-8 text-center" variant="realityElevated">
               <h2 className="text-2xl font-semibold text-reality-text-primary">{emptyCopy}</h2>
               {!hasSearch && !hasStatus ? (
                 <Link className={buttonClasses("reality", "mt-6 h-11 px-6")} href="/properties/new">

@@ -7,7 +7,7 @@ export function DashboardChrome({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar variant="reality" />
-      <div className="min-h-screen bg-white [color-scheme:light]">{children}</div>
+      <div className="min-h-screen bg-reality-canvas [color-scheme:light]">{children}</div>
       <AssistantWidget />
     </>
   );

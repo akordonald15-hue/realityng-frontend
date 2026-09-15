@@ -91,7 +91,7 @@ export default function NotificationSettingsPage() {
             authenticated account.
           </p>
 
-          <Card className="mt-8 divide-y divide-reality-border-secondary p-2" variant="reality">
+          <Card className="mt-8 divide-y divide-reality-border-secondary bg-reality-surfaceMuted p-2" variant="reality">
           {preferencesQuery.isLoading ? (
             <p className="p-4 text-sm text-reality-text-secondary">Loading preferences...</p>
           ) : preferences ? (

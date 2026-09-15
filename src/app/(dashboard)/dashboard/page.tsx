@@ -1390,7 +1390,7 @@ function BuyerDashboard({
   const showActivity = activeTab === "overview" || activeTab === "activity";
 
   return (
-    <main className="min-h-screen bg-white pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
+    <main className="min-h-screen bg-reality-canvas pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
       <PageContainer>
         <div className="flex items-center justify-between gap-4">
           <Link
@@ -1404,7 +1404,7 @@ function BuyerDashboard({
           </Link>
         </div>
 
-        <section className="mt-8">
+        <section className="mt-8 rounded-[28px] border border-reality-border-secondary bg-reality-surface px-5 py-6 shadow-reality-xs sm:px-8">
           <h1 className="text-4xl font-medium leading-[44px] text-reality-text-primary">
             Hi, {user?.first_name || "there"}
           </h1>
@@ -1413,7 +1413,7 @@ function BuyerDashboard({
 
         <div className="mt-10 overflow-x-auto pb-1">
           <SegmentedTabs
-            className="min-w-max border border-reality-border-secondary bg-reality-bg-muted p-1.5 shadow-reality-xs"
+            className="min-w-max border border-reality-border-secondary bg-reality-surfaceMuted p-1.5 shadow-reality-xs"
             items={buyerDashboardTabs}
             label="Buyer dashboard sections"
             onChange={setActiveTab}
@@ -1429,7 +1429,7 @@ function BuyerDashboard({
 
         <div className="reality-reveal">
           {showOverview ? (
-            <section className="mt-8">
+            <section className="mt-8 rounded-[28px] bg-reality-surfaceMuted p-5 sm:p-7">
               <BuyerSectionHeader description="Your dashboard Summary" title="Overview" />
               <div className="mt-6">
                 <BuyerMetricGrid isLoading={dashboardQuery.isLoading} overview={overview} />
@@ -1439,7 +1439,7 @@ function BuyerDashboard({
         </div>
 
         {showRequests ? (
-          <section className="mt-16">
+          <section className="mt-10 rounded-[28px] border border-reality-border-secondary bg-reality-surface p-5 shadow-reality-xs sm:p-7">
             <BuyerSectionHeader title="Applications & Requests" />
             <div className="mt-8">
               <BuyerApplicationsAndRequests overview={overview} />
@@ -1765,24 +1765,24 @@ function SupplyDashboardBody({
         </FormMessage>
       ) : null}
 
-      <section className="mt-8">
+      <section className="mt-8 rounded-[28px] bg-reality-surfaceMuted p-5 sm:p-7">
         <BuyerSectionHeader description="Your dashboard Summary" title="Overview" />
         <div className="mt-6">
           <SupplyMetricGrid isLoading={dashboardQuery.isLoading} overview={overview} />
         </div>
       </section>
 
-      <section className="mt-16">
+      <section className="mt-10 rounded-[28px] border border-reality-border-secondary bg-reality-surface p-5 shadow-reality-xs sm:p-7">
         <BuyerSectionHeader title="Applications & Requests" />
         <div className="mt-8">
           <SupplyApplicationsAndRequests overview={overview} />
         </div>
       </section>
 
-      <section className="mt-16">
+      <section className="mt-10">
         <BuyerSectionHeader
           action={
-            <Link className={buttonClasses("reality", "h-10 px-5")} href="/dashboard/properties">
+            <Link className={buttonClasses("realitySecondary", "h-10 px-5")} href="/dashboard/properties">
               View all
             </Link>
           }
@@ -1803,7 +1803,7 @@ function SupplyDashboardBody({
         </div>
       </section>
 
-      <section className="mt-16">
+      <section className="mt-10 rounded-[28px] bg-reality-surfaceMuted p-5 sm:p-7">
         <BuyerSectionHeader
           action={
             <Link className={buttonClasses("realitySecondary", "h-10 px-5")} href="/dashboard/messages">
@@ -1823,7 +1823,7 @@ function SupplyDashboardBody({
         ) : null}
       </section>
 
-      <section className="mt-16">
+      <section className="mt-14">
         <BuyerSectionHeader
           action={
             <Link className={buttonClasses("realitySecondary", "h-10 px-5")} href="/saved-properties">
@@ -1841,7 +1841,7 @@ function SupplyDashboardBody({
         </div>
       </section>
 
-      <section className="mt-16">
+      <section className="mt-14">
         <BuyerSectionHeader
           description="Property you view recently"
           title="Recently viewed property"
@@ -1878,7 +1878,7 @@ function SupplyDashboardShell({
   const showProfile = activeTab === "overview" || activeTab === "profile";
 
   return (
-    <main className="min-h-screen bg-white pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
+    <main className="min-h-screen bg-reality-canvas pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
       <PageContainer>
         <div className="flex items-center justify-between gap-4">
           <Link
@@ -1892,7 +1892,7 @@ function SupplyDashboardShell({
           </Link>
         </div>
 
-        <section className="mt-8">
+        <section className="mt-8 rounded-[28px] border border-reality-border-secondary bg-reality-surface px-5 py-6 shadow-reality-xs sm:px-8">
           <h1 className="text-4xl font-medium leading-[44px] text-reality-text-primary">
             Hi, {firstName || "there"}
           </h1>
@@ -1903,7 +1903,7 @@ function SupplyDashboardShell({
 
         <div className="mt-10 overflow-x-auto pb-1">
           <SegmentedTabs
-            className="min-w-max border border-reality-border-secondary bg-reality-bg-muted p-1.5 shadow-reality-xs"
+            className="min-w-max border border-reality-border-secondary bg-reality-surfaceMuted p-1.5 shadow-reality-xs"
             items={supplyDashboardTabs}
             label="Agent and landlord dashboard sections"
             onChange={setActiveTab}

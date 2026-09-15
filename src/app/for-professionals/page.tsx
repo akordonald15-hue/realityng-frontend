@@ -80,7 +80,7 @@ const trustFeatures = [
 
 export default function ForProfessionalsPage() {
   return (
-    <div className="bg-white text-reality-text-primary">
+    <div className="bg-reality-canvas text-reality-text-primary">
       <PublicShell transparentHeader variant="reality">
         <main>
           <section className="relative min-h-[720px] overflow-hidden bg-reality-brand-900 text-white lg:min-h-[790px]">
@@ -124,10 +124,10 @@ export default function ForProfessionalsPage() {
             </div>
           </section>
 
-          <div className="mx-auto grid w-full max-w-reality gap-24 px-5 py-20 sm:px-6 lg:px-6 lg:py-28 2xl:px-0">
-            <StaggerReveal as="section" stagger={0.08} y={30}>
+          <div className="mx-auto grid w-full max-w-reality gap-16 px-5 py-16 sm:px-6 lg:px-6 lg:py-24 2xl:px-0">
+            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16" stagger={0.08} y={30}>
               <div className="mx-auto max-w-[520px] text-center" data-motion-child>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-brand-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-text-brand">
                   How it works
                 </p>
                 <h2 className="mt-3 font-display text-4xl font-medium leading-tight md:text-5xl">
@@ -141,12 +141,12 @@ export default function ForProfessionalsPage() {
               <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {steps.map((step, index) => (
                   <article
-                    className="rounded-[18px] border border-reality-border-secondary bg-reality-bg-subtle p-5 shadow-reality-xs transition hover:-translate-y-1 hover:shadow-reality-sm"
+                    className="rounded-[18px] border border-reality-border-secondary bg-reality-surfaceMuted p-5 shadow-reality-xs transition hover:-translate-y-1 hover:shadow-reality-sm"
                     data-motion-child
                     key={step.title}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-reality-brand-500 text-[11px] font-bold text-white">
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-reality-brand-600 text-[11px] font-bold text-white">
                         {index + 1}
                       </span>
                       <ArrowUpRightIcon className="h-4 w-4 text-reality-text-tertiary" />
@@ -184,7 +184,7 @@ export default function ForProfessionalsPage() {
               reliable professionals.
             </SplitSection>
 
-            <StaggerReveal as="section" stagger={0.1} y={30}>
+            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16" stagger={0.1} y={30}>
               <div className="mx-auto max-w-[560px] text-center" data-motion-child>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-reality-brand-600">
                   Trust
@@ -200,7 +200,7 @@ export default function ForProfessionalsPage() {
               <div className="mt-12 grid gap-5 md:grid-cols-3">
                 {trustFeatures.map((feature) => (
                   <article
-                    className="rounded-[18px] border border-reality-border-secondary bg-reality-bg-subtle p-6"
+                    className="rounded-[18px] border border-reality-border-secondary bg-reality-surfaceMuted p-6"
                     data-motion-child
                     key={feature.title}
                   >
@@ -249,7 +249,7 @@ export default function ForProfessionalsPage() {
 
             <StaggerReveal
               as="section"
-              className="relative min-h-[390px] overflow-hidden rounded-[2rem] bg-[#12906f] px-8 py-12 text-white md:min-h-[430px] md:rounded-[2.25rem] md:px-16"
+              className="relative min-h-[390px] overflow-hidden rounded-[2rem] bg-reality-brandEmphasis px-8 py-12 text-white md:min-h-[430px] md:rounded-[2.25rem] md:px-16"
               stagger={0.1}
               y={30}
             >
@@ -260,7 +260,8 @@ export default function ForProfessionalsPage() {
                 sizes="(min-width: 1280px) 1216px, 100vw"
                 src="/home/cta-businessman.webp"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#12906f]/96 via-[#12906f]/72 to-[#12906f]/8" />
+              <div className="absolute inset-0 bg-gradient-to-r from-reality-surfaceDark/95 via-reality-surfaceDark/85 to-reality-surfaceDark/30" />
+              <div className="absolute inset-0 bg-gradient-to-b from-reality-surfaceDark/25 via-transparent to-reality-surfaceDark/35" />
               <div className="relative flex min-h-[300px] max-w-[390px] flex-col justify-center" data-motion-child>
                 <h2 className="font-display text-4xl font-medium leading-tight md:text-5xl">
                   Ready to get started as a Professional?
@@ -308,7 +309,7 @@ function SplitSection({
 
   const copy = (
     <div className="flex flex-col justify-center">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-brand-500">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-text-brand">
         For {eyebrow}
       </p>
       <h2 className="mt-3 max-w-[470px] font-display text-3xl font-medium leading-tight md:text-4xl">
@@ -371,7 +372,7 @@ function ProfileRail({
       stagger={0.08}
       y={24}
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-brand-500" data-motion-child>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-text-brand" data-motion-child>
         {eyebrow}
       </p>
       <h2

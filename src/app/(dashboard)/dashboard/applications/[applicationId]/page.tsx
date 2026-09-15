@@ -348,7 +348,7 @@ function SupplyDecisionActions({
           className="h-12 w-full"
           disabled={isSubmitting}
           onClick={() => onDecision("rejected")}
-          variant="realitySecondary"
+          variant="realityDestructive"
         >
           Reject application
         </Button>
@@ -357,7 +357,7 @@ function SupplyDecisionActions({
   }
 
   return (
-    <p className="rounded-[20px] border border-reality-border-secondary bg-reality-bg-subtle px-4 py-3 text-sm leading-6 text-reality-text-secondary">
+    <p className="rounded-[20px] border border-reality-border-secondary bg-reality-surfaceMuted px-4 py-3 text-sm leading-6 text-reality-text-secondary">
       This application is {formatApplicationStatus(application.status).toLowerCase()} and has no
       available decision actions.
     </p>
@@ -502,7 +502,7 @@ function SupplyApplicationDetail({ application }: { application: RentalApplicati
         </StatusChip>
       </div>
 
-      <Card className="p-5 sm:p-6" variant="realityElevated">
+      <Card className="border-reality-brand-300 bg-reality-surfaceBrand p-5 sm:p-6" variant="realityElevated">
         <PropertySummary application={application} />
         <Link className={buttonClasses("realityGhost", "mt-5 h-11 w-full")} href={propertyHref}>
           View property
@@ -528,7 +528,7 @@ function SupplyApplicationDetail({ application }: { application: RentalApplicati
           </h2>
           <DetailRows rows={employmentRows} />
         </Card>
-        <Card className="p-5 sm:p-6" variant="reality">
+        <Card className="bg-reality-surfaceMuted p-5 sm:p-6" variant="reality">
           <h2 className="mb-4 text-base font-semibold text-reality-text-primary">Decision</h2>
           <SupplyDecisionActions
             application={application}
@@ -543,7 +543,7 @@ function SupplyApplicationDetail({ application }: { application: RentalApplicati
         </Card>
       </div>
 
-      <Card className="p-5 sm:p-6" variant="realityElevated">
+      <Card className="bg-reality-surface p-5 sm:p-6" variant="realityElevated">
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -624,7 +624,7 @@ export default function ApplicationDetailPage() {
   const viewerCanReviewApplication = Boolean(application?.can_manage_application);
 
   return (
-    <main className="min-h-screen bg-reality-bg-primary pb-20 pt-6 text-reality-text-primary lg:pt-10">
+    <main className="min-h-screen bg-reality-canvas pb-20 pt-6 text-reality-text-primary lg:pt-10">
       <PageContainer size="reality">
         <Link
           aria-label="Back to dashboard requests"

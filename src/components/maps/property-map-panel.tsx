@@ -119,7 +119,7 @@ function FallbackMapState({
     <Card
       className={
         isReality
-          ? "flex min-h-[420px] flex-col justify-between rounded-[2rem] border-reality-border-secondary bg-reality-bg-muted p-5 text-reality-text-primary md:min-h-[620px]"
+          ? "flex flex-col justify-between rounded-[2rem] border-reality-border-secondary bg-reality-surfaceBrand p-6 text-reality-text-primary"
           : "flex min-h-[420px] flex-col justify-between p-5"
       }
     >
@@ -132,7 +132,7 @@ function FallbackMapState({
               : "mt-4 font-display text-2xl font-semibold text-reality-text-primary"
           }
         >
-          Map preview is ready.
+          Interactive map unavailable
         </h2>
         <p
           className={
@@ -141,8 +141,7 @@ function FallbackMapState({
               : "mt-3 text-sm leading-6 text-reality-text-secondary"
           }
         >
-          Google Maps needs a restricted browser key before the interactive map can load. The list
-          remains fully usable while maps are unavailable.
+          The interactive map cannot load right now. Public location details and the listing remain available without revealing a more precise pin.
         </p>
       </div>
       <div className="mt-6 space-y-2">
@@ -293,7 +292,7 @@ export function PropertyMapPanel({
       <Card
         className={
           isReality
-            ? "flex min-h-[420px] items-center justify-center rounded-[2rem] border-reality-border-secondary bg-reality-bg-muted p-6 text-center md:min-h-[620px]"
+            ? "flex items-center justify-center rounded-[2rem] border-reality-border-secondary bg-reality-surfaceBrand p-6 text-center"
             : "flex min-h-[420px] items-center justify-center p-6 text-center"
         }
       >

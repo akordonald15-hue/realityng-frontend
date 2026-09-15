@@ -162,7 +162,7 @@ describe("PropertyDetailPage", () => {
       screen.getByRole("button", { name: "Add to comparison: Approved Lekki Apartment" }),
     ).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Save property" })).not.toHaveLength(0);
-    expect(await screen.findByText("Map preview is ready.")).toBeInTheDocument();
+    expect(await screen.findByText("Interactive map unavailable")).toBeInTheDocument();
     expect(await screen.findByText("Inspection walkthrough")).toBeInTheDocument();
     expect(await screen.findByText("Similar properties")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View Ikoyi Apartment" })).toBeInTheDocument();
@@ -192,8 +192,9 @@ describe("PropertyDetailPage", () => {
 
     expect(await screen.findAllByText("RealityNG")).not.toHaveLength(0);
     expect(screen.getByText("Contact us through inquiry")).toBeInTheDocument();
-    expect(screen.getByText("No map-ready listings yet.")).toBeInTheDocument();
+    expect(screen.getByText("Map location unavailable")).toBeInTheDocument();
     expect(screen.getByText("No moderated video yet")).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "Browse properties" })).toHaveAttribute("href", "/properties");
   });
 
   it("copies the property URL when share is used without native share support", async () => {

@@ -149,13 +149,13 @@ function SectionHeading({
       }
     >
       {eyebrow ? (
-        <p className="mb-4 text-lg font-medium leading-7 text-reality-brand-500">{eyebrow}</p>
+        <p className="mb-4 text-lg font-medium leading-7 text-reality-text-brand">{eyebrow}</p>
       ) : null}
       <h2 className="font-display text-[2rem] font-medium leading-none tracking-normal text-black md:text-[3.75rem] md:leading-[1.2]">
         {title}
       </h2>
       {subtitle ? (
-        <p className="mt-4 text-base leading-7 text-reality-text-muted md:text-lg">{subtitle}</p>
+        <p className="mt-4 text-base leading-7 text-reality-text-tertiary md:text-lg">{subtitle}</p>
       ) : null}
     </div>
   );
@@ -283,16 +283,24 @@ function PropertyRail({
         </div>
       </div>
       {properties.length > 0 ? (
-        <div className="flex snap-x gap-6 overflow-x-auto pb-3 2xl:grid 2xl:grid-cols-4 2xl:overflow-visible 2xl:pb-0">
+        <div className={properties.length < 3 ? "flex snap-x justify-start gap-6 overflow-x-auto pb-3 md:justify-center" : "flex snap-x gap-6 overflow-x-auto pb-3 2xl:grid 2xl:grid-cols-4 2xl:overflow-visible 2xl:pb-0"}>
           {properties.map((property) => (
-            <div className="snap-start" data-motion-child key={property.id}>
+            <div className="w-[min(314px,82vw)] shrink-0 snap-start" data-motion-child key={property.id}>
               <PropertyCard property={property} variant="reality" />
             </div>
           ))}
+          {properties.length < 3 ? (
+            <div className="flex min-h-[340px] w-[min(314px,82vw)] shrink-0 snap-start flex-col justify-center rounded-[2rem] border border-reality-border-secondary bg-reality-surfaceBrand p-7 md:max-w-[520px] md:flex-1" data-motion-child>
+              <p className="font-display text-2xl font-medium leading-tight text-reality-brandEmphasis">Looking for more options?</p>
+              <p className="mt-3 text-sm leading-6 text-reality-text-secondary">Browse the full marketplace and refine your search by location, type, or price.</p>
+              <Link className={buttonClasses("reality", "mt-6 w-fit")} href="/properties">Browse properties</Link>
+            </div>
+          ) : null}
         </div>
       ) : (
-        <div className="rounded-[2rem] bg-reality-bg-muted p-8 text-reality-text-muted" data-motion-child>
-          Approved public listings will appear here when inventory is available.
+        <div className="rounded-[2rem] bg-reality-surfaceBrand p-8 text-reality-text-secondary" data-motion-child>
+          <p>Approved public listings will appear here when inventory is available.</p>
+          <Link className={buttonClasses("reality", "mt-5 w-fit")} href="/properties">Browse properties</Link>
         </div>
       )}
       {ctaLabel ? (
@@ -335,13 +343,13 @@ function CityCard({
           style={{ filter: `hue-rotate(${index * 18}deg)` }}
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70" />
-      <span className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/60 text-black backdrop-blur">
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/85" />
+      <span className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-black backdrop-blur">
         <ArrowUpRightIcon className="h-6 w-6" />
       </span>
       <div className="absolute inset-x-6 bottom-6 text-center text-white">
         <h3 className="text-xl font-semibold leading-7">{city}</h3>
-        <p className="mt-0.5 text-base leading-6 text-white/80">{areas}</p>
+        <p className="mt-0.5 text-base leading-6 text-white">{areas}</p>
       </div>
     </Link>
   );
@@ -401,10 +409,12 @@ export default function HomePage() {
     () => featuredQuery.data?.results.slice(0, 4) ?? [],
     [featuredQuery.data],
   );
-  const latest = useMemo(
-    () => (latestQuery.data?.results ?? featuredQuery.data?.results ?? []).slice(0, 4),
-    [featuredQuery.data, latestQuery.data],
-  );
+  const latest = useMemo(() => {
+    const candidates = (latestQuery.data?.results ?? featuredQuery.data?.results ?? []).slice(0, 4);
+    if (featured.length >= 3) return candidates;
+    const featuredIds = new Set(featured.map((property) => property.id));
+    return candidates.filter((property) => !featuredIds.has(property.id));
+  }, [featured, featuredQuery.data, latestQuery.data]);
 
   useGSAP(
     () => {
@@ -448,7 +458,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-white font-body text-reality-text-primary">
+    <div className="min-h-screen bg-reality-canvas font-body text-reality-text-primary">
       <JsonLd data={organizationJsonLd()} id="realityng-organization-jsonld" />
       <JsonLd data={websiteSearchJsonLd()} id="realityng-website-jsonld" />
       <PublicShell transparentHeader variant="reality">
@@ -502,8 +512,8 @@ export default function HomePage() {
             </div>
           </section>
 
-          <div className="reality-reveal mx-auto flex max-w-reality flex-col gap-12 px-6 py-12 md:gap-16 md:py-16 xl:gap-20 xl:px-0">
-            <StaggerReveal as="section" stagger={0.1} y={34}>
+          <div className="reality-reveal mx-auto flex max-w-reality flex-col gap-8 px-6 py-12 md:gap-12 md:py-16 xl:px-0">
+            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16" stagger={0.1} y={34}>
               <div data-motion-child>
                 <SectionHeading
                   align="center"
@@ -552,6 +562,12 @@ export default function HomePage() {
 
             {latestQuery.isLoading ? (
               <RailSkeleton title="Newly added properties" />
+            ) : latest.length === 0 ? (
+              <section className="rounded-[2rem] bg-reality-surfaceBrand p-7 md:p-10">
+                <h2 className="font-display text-3xl font-medium text-reality-brandEmphasis md:text-4xl">Newly added properties</h2>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-reality-text-secondary">New approved listings will appear here as public inventory grows. Explore the marketplace for everything currently available.</p>
+                <Link className={buttonClasses("realitySecondary", "mt-5 w-fit")} href="/properties">Browse properties</Link>
+              </section>
             ) : (
               <PropertyRail
                 properties={latest}
@@ -560,7 +576,7 @@ export default function HomePage() {
               />
             )}
 
-            <StaggerReveal as="section" stagger={0.11} y={36}>
+            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16" stagger={0.11} y={36}>
               <div data-motion-child>
                 <SectionHeading
                   align="center"
@@ -582,7 +598,7 @@ export default function HomePage() {
               </div>
             </StaggerReveal>
 
-            <StaggerReveal as="section" stagger={0.11} y={36}>
+            <StaggerReveal as="section" className="py-10 md:py-14" stagger={0.11} y={36}>
               <div data-motion-child>
                 <SectionHeading
                   align="center"

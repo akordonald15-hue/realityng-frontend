@@ -78,7 +78,7 @@ describe("HomePage", () => {
     expect(
       screen.getByRole("heading", { name: "Everything you need to make property easier" }),
     ).toBeInTheDocument();
-    expect(await screen.findAllByText("Approved Lekki Apartment")).toHaveLength(2);
+    await waitFor(() => expect(screen.getAllByText("Approved Lekki Apartment")).toHaveLength(1));
     expect(screen.getByRole("heading", { name: "Featured properties" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Newly added properties" })).toBeInTheDocument();
     expect(screen.queryByText("Timothy Exodus")).not.toBeInTheDocument();
@@ -119,6 +119,20 @@ describe("HomePage", () => {
     renderWithQueryClient(<HomePage />);
 
     expect(screen.getByRole("button", { name: "Toggle navigation" })).toBeInTheDocument();
+  });
+
+  it("keeps sparse approved inventory intentional without inventing listings", async () => {
+    renderWithQueryClient(<HomePage />);
+    await waitFor(() => expect(screen.getAllByText("Approved Lekki Apartment")).toHaveLength(1));
+    expect(screen.getAllByRole("link", { name: "Browse properties" })).toHaveLength(2);
+    expect(screen.queryByText("Timothy Exodus")).not.toBeInTheDocument();
+  });
+
+  it("offers a marketplace action when no approved listings are available", async () => {
+    mocks.getPublicProperties.mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
+    renderWithQueryClient(<HomePage />);
+    expect(await screen.findAllByText(/Approved public listings will appear here/)).toHaveLength(1);
+    expect(screen.getAllByRole("link", { name: "Browse properties" })).toHaveLength(2);
   });
 
   it("links homepage role CTAs into the redesigned sign-up flow", () => {

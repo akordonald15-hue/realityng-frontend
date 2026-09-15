@@ -33,7 +33,7 @@ export function Footer({ variant = "reality" }: FooterProps = {}) {
   void variant;
 
   return (
-    <footer className="border-t border-reality-border-secondary bg-white font-body text-reality-text-secondary">
+    <footer className="border-t border-reality-border-secondary bg-reality-surfaceMuted font-body text-reality-text-secondary">
       <PageContainer className="py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-[1.5fr_0.72fr_0.72fr_0.72fr]">
           <div>
@@ -44,7 +44,7 @@ export function Footer({ variant = "reality" }: FooterProps = {}) {
           <FooterColumn links={legalLinks} title="Legal" />
         </div>
 
-        <div className="relative mt-12 h-[240px] w-full overflow-hidden rounded-[22px] bg-white md:mt-16 md:h-auto md:aspect-[2.48] md:min-h-[240px]">
+        <div className="relative mt-12 h-[240px] w-full overflow-hidden rounded-[22px] bg-reality-surfaceMuted md:mt-16 md:h-auto md:aspect-[2.48] md:min-h-[240px]">
           <Image
             alt="Modern city skyline with green residential spaces"
             className="object-cover object-bottom"
@@ -52,8 +52,8 @@ export function Footer({ variant = "reality" }: FooterProps = {}) {
             sizes="(min-width: 1280px) 1216px, 100vw"
             src="/professionals/footer-cityscape.webp"
           />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[58%] bg-gradient-to-b from-white via-white/82 to-white/0" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[32%] bg-white/30 backdrop-blur-[1px]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[58%] bg-gradient-to-b from-reality-surfaceMuted via-reality-surfaceMuted/80 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[32%] bg-reality-surfaceMuted/30 backdrop-blur-[1px]" />
         </div>
       </PageContainer>
       <div className="border-t border-reality-border-secondary">
@@ -78,7 +78,7 @@ function FooterColumn({
       <p className="text-sm font-semibold text-reality-text-primary">{title}</p>
       <div className="mt-4 grid gap-3 text-sm text-reality-text-tertiary">
         {links.map((link) => (
-          <Link className="transition hover:text-reality-brand-500" href={link.href} key={`${link.href}-${link.label}`}>
+          <Link className="transition hover:text-reality-brandEmphasis" href={link.href} key={`${link.href}-${link.label}`}>
             {link.label}
           </Link>
         ))}

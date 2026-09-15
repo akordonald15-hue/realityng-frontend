@@ -81,25 +81,24 @@ export default function FinancingApplyPage() {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-reality-bg-muted py-8 text-reality-text-primary sm:py-14">
+      <main className="min-h-screen bg-reality-canvas py-8 text-reality-text-primary sm:py-14">
         <PageContainer className="max-w-5xl">
           <SectionHeader
             title="Apply for financing"
             description="Choose a partner product and create a private application draft."
           />
 
-          <section className="mt-6 grid gap-3">
+          <section className="mt-6 grid gap-3 rounded-[28px] bg-reality-surfaceMuted p-4 sm:p-6" aria-label="Available financing products">
             {productsQuery.data?.map((product) => (
-              <FinancingProductCard
-                key={product.id}
-                product={product}
-                onSelect={() => setSelectedProduct(product)}
-              />
+              <div className={selectedProduct?.id === product.id ? "rounded-[18px] ring-2 ring-reality-brand-500 ring-offset-2 ring-offset-reality-surfaceMuted" : "rounded-[18px]"} key={product.id}>
+                <FinancingProductCard product={product} onSelect={() => setSelectedProduct(product)} />
+              </div>
             ))}
           </section>
 
-          <Card className="mt-6 rounded-[24px] p-5 sm:p-6" variant="reality">
+          <Card className="mt-6 rounded-[24px] bg-reality-surface p-5 sm:p-7" variant="reality">
             <h2 className="text-lg font-semibold text-reality-text-primary">Application details</h2>
+            <p className="mt-2 text-sm text-reality-text-secondary">The selected product and your request details will be saved in a private draft.</p>
             <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
               <label className="grid gap-2 text-sm font-medium text-reality-text-secondary">
               Amount requested

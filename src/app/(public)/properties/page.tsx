@@ -196,7 +196,7 @@ function PropertiesContent() {
         <div
           className={clsx(
             "grid gap-6",
-            compact ? "md:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-4",
+          compact ? "md:grid-cols-2" : properties.length < 3 ? "sm:grid-cols-2 xl:grid-cols-3" : "sm:grid-cols-2 xl:grid-cols-4",
           )}
         >
           {[1, 2, 3, 4, 5, 6, 7, 8].slice(0, compact ? 4 : 8).map((item) => (
@@ -217,7 +217,7 @@ function PropertiesContent() {
       <StaggerReveal
         className={clsx(
           "grid gap-x-6 gap-y-10",
-          compact ? "md:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-4",
+          compact ? "md:grid-cols-2" : properties.length < 3 ? "sm:grid-cols-2 xl:grid-cols-3" : "sm:grid-cols-2 xl:grid-cols-4",
         )}
         stagger={0.035}
         y={12}
@@ -234,16 +234,23 @@ function PropertiesContent() {
             key={property.id}
             onFocus={() => setSelectedPropertyId(property.id)}
           >
-            <PropertyCard className="w-full md:w-[314px]" property={property} variant="reality" />
+            <PropertyCard className="w-full" property={property} variant="reality" />
           </div>
         ))}
+        {!compact && properties.length < 3 ? (
+          <div className="flex min-h-[340px] flex-col justify-center rounded-[2rem] bg-reality-surfaceBrand p-7" data-motion-child>
+            <h2 className="font-display text-2xl font-medium leading-tight text-reality-brandEmphasis">Explore with confidence</h2>
+            <p className="mt-3 text-sm leading-6 text-reality-text-secondary">Public inventory is growing. Use the filters above to find the right location, listing type, and price for you.</p>
+            <Link className={buttonClasses("realitySecondary", "mt-6 w-fit")} href="/verification-standards">Verification standards</Link>
+          </div>
+        ) : null}
       </StaggerReveal>
     );
   }
 
   return (
     <PublicShell variant="reality">
-      <main className="bg-white text-reality-text-primary">
+      <main className="bg-reality-canvas text-reality-text-primary">
         <section className="mx-auto max-w-reality-wide px-4 pb-12 pt-24 text-center sm:px-6 md:pb-16 md:pt-44">
           <h1 className="font-display text-[30px] font-medium leading-tight tracking-normal text-black md:text-7xl">
             Explore Properties
@@ -254,6 +261,7 @@ function PropertiesContent() {
         </section>
 
         <section className="mx-auto max-w-reality-wide px-4 pb-20 sm:px-6">
+          <div className="rounded-[2rem] bg-reality-surface px-4 py-8 sm:px-6 md:px-8">
           <div className="reality-reveal mb-10 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="grid w-full gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,299px)_174px_174px_174px_auto] xl:items-end">
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
@@ -427,6 +435,7 @@ function PropertiesContent() {
               </div>
             </Card>
           ) : null}
+          </div>
         </section>
       </main>
     </PublicShell>

@@ -13,7 +13,7 @@ const inter = Inter({
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-heading-legacy",
 });
 
 const sourceSerif = Source_Serif_4({

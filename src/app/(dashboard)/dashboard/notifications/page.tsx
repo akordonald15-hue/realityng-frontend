@@ -67,7 +67,7 @@ export default function NotificationsPage() {
 
   return (
     <ProtectedRoute>
-      <main className="min-h-screen bg-reality-bg-muted py-8 text-reality-text-primary sm:py-14">
+      <main className="min-h-screen bg-reality-canvas py-8 text-reality-text-primary sm:py-14">
         <PageContainer className="max-w-3xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <SectionHeader

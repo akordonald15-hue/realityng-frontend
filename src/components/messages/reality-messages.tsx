@@ -235,7 +235,7 @@ export function MessageThreadPageContent() {
   return (
     <ProtectedRoute>
       <MessagesShell>
-        <section className="mt-10 grid gap-8 lg:grid-cols-[526px_minmax(0,1fr)]">
+        <section className="mt-8 grid min-w-0 gap-5 lg:grid-cols-[minmax(280px,0.4fr)_minmax(0,0.6fr)]">
           <div className="hidden lg:block">
             {threadsQuery.isLoading ? (
               <ThreadListSkeleton compact />
@@ -282,7 +282,7 @@ export function MessageThreadPageContent() {
 
 function MessagesShell({ children }: { children: ReactNode }) {
   return (
-    <main className="min-h-screen bg-white pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
+    <main className="min-h-screen bg-reality-canvas pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
       <PageContainer>
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm font-semibold">
           <Link
@@ -336,8 +336,8 @@ function ThreadRow({
     <Link
       aria-current={active ? "page" : undefined}
       className={clsx(
-        "group flex min-h-[88px] items-center gap-4 rounded-[24px] border bg-white px-5 py-4 shadow-reality-xs transition duration-200 hover:-translate-y-0.5 hover:border-reality-brand-300 hover:shadow-reality-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500",
-        active ? "border-reality-brand-300" : "border-reality-border-secondary",
+        "group flex min-h-[88px] items-center gap-4 rounded-[20px] border bg-reality-surface px-4 py-4 transition duration-200 hover:border-reality-brand-300 hover:bg-reality-surfaceBrand focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500",
+        active ? "border-reality-brand-300 bg-reality-surfaceBrand shadow-reality-xs" : "border-reality-border-secondary",
       )}
       href={`/dashboard/messages/${thread.id}`}
     >
@@ -432,10 +432,10 @@ function ConversationPanel({
 
   return (
     <Card
-      className="flex min-h-[679px] flex-col overflow-hidden rounded-[28px] border-reality-border-secondary"
+      className="flex min-h-[min(679px,75vh)] min-w-0 flex-col overflow-hidden rounded-[24px] border-reality-border-secondary bg-reality-surface"
       variant="reality"
     >
-      <header className="flex items-center gap-4 border-b border-reality-border-secondary px-5 py-5">
+      <header className="flex items-center gap-4 border-b border-reality-border-secondary bg-reality-surfaceMuted px-5 py-5">
         <AvatarInitials label={title} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-base font-semibold text-reality-text-primary">{title}</p>
@@ -449,7 +449,7 @@ function ConversationPanel({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 py-6">
+      <div className="min-h-[280px] flex-1 overflow-y-auto px-5 py-6">
         {hasMoreMessages ? (
           <Button className="mx-auto mb-5 flex" onClick={onLoadMore} variant="realitySecondary">
             Load more messages

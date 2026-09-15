@@ -349,7 +349,7 @@ export function PropertyForm({
   }
 
   return (
-    <main className="min-h-screen bg-white pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
+    <main className="min-h-screen bg-reality-canvas pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
       <div className="mx-auto w-full max-w-reality px-5 sm:px-6 lg:px-0">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-reality-text-tertiary">
@@ -381,17 +381,18 @@ export function PropertyForm({
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr]">
           <aside className="lg:sticky lg:top-28 lg:self-start">
+            <p className="mb-3 hidden text-xs font-semibold uppercase tracking-[0.12em] text-reality-text-tertiary lg:block">Listing progress</p>
             <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:space-y-4 lg:overflow-visible">
               {steps.map((item, index) => (
                 <button
                   aria-current={step === item.id ? "step" : undefined}
                   aria-disabled={index > maxUnlockedStepIndex}
-                  className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 lg:w-full lg:text-left ${
+                  className={`shrink-0 rounded-xl px-5 py-3 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 lg:w-full lg:text-left ${
                     step === item.id
                       ? "bg-reality-brand-500 text-white shadow-reality-xs"
                       : index > maxUnlockedStepIndex
-                        ? "cursor-not-allowed bg-reality-bg-muted text-reality-text-quaternary opacity-60"
-                      : "bg-reality-bg-muted text-reality-text-secondary hover:bg-reality-brand-50"
+                        ? "cursor-not-allowed bg-reality-surfaceMuted text-reality-text-quaternary opacity-60"
+                      : "bg-reality-surface text-reality-text-secondary hover:bg-reality-surfaceBrand"
                   }`}
                   disabled={index > maxUnlockedStepIndex}
                   key={item.id}
@@ -413,8 +414,9 @@ export function PropertyForm({
             </FormMessage>
 
             {step === "details" ? (
-              <Card className="grid gap-5 rounded-[32px] p-6" variant="realityElevated">
+              <Card className="grid gap-5 rounded-[28px] p-5 sm:p-7" variant="realityElevated">
                 <h2 className="text-2xl font-semibold">Property details</h2>
+                <p className="-mt-3 text-sm text-reality-text-secondary">Start with the essentials buyers will use to understand this listing.</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block text-sm font-medium text-reality-text-primary" htmlFor="property_type">
                     <span>Property type</span>
@@ -454,7 +456,7 @@ export function PropertyForm({
                   />
                   {errors.description ? <span className="mt-1 block text-sm text-red-600">{errors.description.message}</span> : null}
                 </label>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 rounded-[20px] bg-reality-surfaceMuted p-4 sm:grid-cols-2" aria-label="Pricing">
                   <TextField error={errors.price} label="Price" min="1" type="number" variant="reality" {...register("price")} />
                   <TextField error={errors.currency} label="Currency" variant="reality" {...register("currency")} />
                 </div>
@@ -462,8 +464,9 @@ export function PropertyForm({
             ) : null}
 
             {step === "location" ? (
-              <Card className="grid gap-5 rounded-[32px] p-6" variant="realityElevated">
+              <Card className="grid gap-5 rounded-[28px] p-5 sm:p-7" variant="realityElevated">
                 <h2 className="text-2xl font-semibold">Location</h2>
+                <p className="-mt-3 text-sm text-reality-text-secondary">Provide the searchable area first, then the exact address and map visibility.</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <TextField error={errors.country} label="Country" variant="reality" {...register("country")} />
                   <TextField error={errors.state} label="State" variant="reality" {...register("state")} />
@@ -486,8 +489,9 @@ export function PropertyForm({
             ) : null}
 
             {step === "features" ? (
-              <Card className="grid gap-5 rounded-[32px] p-6" variant="realityElevated">
+              <Card className="grid gap-5 rounded-[28px] p-5 sm:p-7" variant="realityElevated">
                 <h2 className="text-2xl font-semibold">Features</h2>
+                <p className="-mt-3 text-sm text-reality-text-secondary">Describe the spaces and dimensions relevant to this property.</p>
                 <CounterField label="Bedrooms" name="bedrooms" setValue={setValue} value={values.bedrooms ?? ""} />
                 <CounterField label="Bathrooms" name="bathrooms" setValue={setValue} value={values.bathrooms ?? ""} />
                 <CounterField label="Parking spaces" name="parking_spaces" setValue={setValue} value={values.parking_spaces ?? ""} />
@@ -499,7 +503,7 @@ export function PropertyForm({
             ) : null}
 
             {step === "media" ? (
-              <Card className="rounded-[32px] p-6" variant="realityElevated">
+              <Card className="rounded-[28px] p-5 sm:p-7" variant="realityElevated">
                 <h2 className="text-2xl font-semibold">Media</h2>
                 <p className="mt-2 text-sm text-reality-text-secondary">
                   Save the draft first, then upload JPEG, PNG, or WebP images. The first image becomes the cover automatically.
@@ -517,7 +521,7 @@ export function PropertyForm({
             ) : null}
 
             {step === "review" ? (
-              <Card className="rounded-[32px] p-6" variant="realityElevated">
+              <Card className="rounded-[28px] border-reality-brand-300 bg-reality-surfaceBrand p-5 sm:p-7" variant="realityElevated">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-semibold">Review listing</h2>
@@ -538,7 +542,7 @@ export function PropertyForm({
                     ["Location", [previewProperty.city, previewProperty.state].filter(Boolean).join(", ") || "Not supplied"],
                     ["Size", previewProperty.property_type === "land" ? `${previewProperty.land_size ?? "-"} sqm` : `${previewProperty.floor_area ?? "-"} sqm`],
                   ].map(([label, value]) => (
-                    <div className="rounded-[20px] border border-reality-border-secondary bg-reality-bg-subtle p-4" key={label}>
+                    <div className="rounded-[20px] border border-reality-border-secondary bg-reality-surface p-4" key={label}>
                       <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-reality-text-tertiary">{label}</dt>
                       <dd className="mt-1 text-sm font-semibold text-reality-text-primary">{value}</dd>
                     </div>
@@ -547,7 +551,7 @@ export function PropertyForm({
               </Card>
             ) : null}
 
-            <Card className="flex flex-col gap-3 rounded-[28px] p-4 sm:flex-row sm:justify-between" variant="realityElevated">
+            <Card className="flex flex-col gap-3 rounded-[24px] border-reality-border-secondary bg-reality-surface p-4 shadow-reality-sm sm:flex-row sm:justify-between" variant="realityElevated">
               <Button
                 disabled={step === "details"}
                 onClick={() => {

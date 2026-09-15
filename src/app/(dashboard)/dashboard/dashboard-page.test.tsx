@@ -209,7 +209,7 @@ describe("DashboardPage", () => {
 
     expect(await screen.findByRole("heading", { name: "Hi, Ify" })).toBeInTheDocument();
     expect(screen.getByText("Welcome back!")).toBeInTheDocument();
-    expect(container.querySelector("main")).toHaveClass("bg-white", "text-reality-text-primary");
+    expect(container.querySelector("main")).toHaveClass("bg-reality-canvas", "text-reality-text-primary");
     expect(screen.getByRole("tablist", { name: "Buyer dashboard sections" })).toBeInTheDocument();
     expect(screen.getByText("Your dashboard Summary")).toBeInTheDocument();
     expect(screen.getByText("My application")).toBeInTheDocument();

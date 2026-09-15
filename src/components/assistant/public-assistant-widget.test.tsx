@@ -45,6 +45,19 @@ describe("PublicAssistantWidget", () => {
     expect(screen.getByText("Browse properties")).toHaveAttribute("href", "/properties");
   });
 
+  it("keeps the closed overlay pointer-transparent and provides an accessible close control", () => {
+    render(<PublicAssistantWidget />);
+    revealAssistant();
+    const launcher = screen.getByRole("button", { name: "Open RealityNG AI" });
+    expect(launcher.parentElement).toHaveClass("pointer-events-none");
+    expect(launcher).toHaveClass("pointer-events-auto");
+    fireEvent.click(launcher);
+    const close = screen.getByRole("button", { name: "Close RealityNG AI" });
+    expect(close.querySelector("svg")).toBeInTheDocument();
+    fireEvent.click(close);
+    expect(screen.getByRole("button", { name: "Open RealityNG AI" })).toBeInTheDocument();
+  });
+
   it("answers supported walkthrough questions locally", () => {
     render(<PublicAssistantWidget />);
     openAssistant();

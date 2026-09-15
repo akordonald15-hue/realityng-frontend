@@ -159,7 +159,7 @@ describe("PropertiesPage", () => {
     renderWithQueryClient(<PropertiesPage />);
 
     expect(await screen.findByText("Approved Lekki Apartment")).toBeInTheDocument();
-    expect(await screen.findByText("Map preview is ready.")).toBeInTheDocument();
+    expect(await screen.findByText("Interactive map unavailable")).toBeInTheDocument();
   });
 
   it("renders the empty state and can clear filters", async () => {

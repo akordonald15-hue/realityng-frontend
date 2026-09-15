@@ -166,19 +166,19 @@ export function PublicAssistantWidget() {
         }
       >
         {showGreeting ? (
-          <div className="assistant-fade-scale assistant-glass-panel pointer-events-none max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-reality-text-primary shadow-2xl sm:max-w-xs">
-            <p className="font-semibold text-cyan-50">RealityNG AI</p>
+          <div className="assistant-fade-scale assistant-glass-panel pointer-events-none max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-reality-text-primary sm:max-w-xs">
+            <p className="font-semibold text-reality-brandEmphasis">RealityNG AI</p>
             <p className="mt-2 text-reality-text-secondary">{messages[0].content}</p>
           </div>
         ) : null}
         <button
           aria-label="Open RealityNG AI"
-          className="assistant-fade-scale pointer-events-auto group relative flex h-16 w-16 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820] sm:h-[4.5rem] sm:w-[4.5rem]"
+          className="assistant-fade-scale pointer-events-auto group relative flex h-16 w-16 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brandEmphasis focus-visible:ring-offset-2 sm:h-[4.5rem] sm:w-[4.5rem]"
           onClick={openAssistant}
           type="button"
         >
           <AssistantOrb state={orbState} size="md" />
-          <span className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-full border border-cyan-100/20 bg-[#062820]/88 px-3 py-1.5 text-xs font-semibold text-cyan-50 opacity-0 shadow-reality-sm backdrop-blur-md transition group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
+          <span className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-full bg-reality-surfaceDark px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-reality-sm backdrop-blur-md transition group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
             Ask Reality AI
           </span>
           <span className="sr-only">RealityNG AI</span>
@@ -188,8 +188,8 @@ export function PublicAssistantWidget() {
   }
 
   return (
-    <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex max-h-[min(35rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-2xl p-0 shadow-2xl sm:left-auto sm:right-6 sm:w-[24rem]">
-      <div className="flex items-start justify-between gap-3 border-b border-brand-secondary/20 bg-reality-bg-subtle px-4 py-3">
+    <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex max-h-[min(35rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-2xl p-0 sm:left-auto sm:right-6 sm:w-[24rem]">
+      <div className="flex items-start justify-between gap-3 border-b border-reality-border-secondary bg-reality-surfaceBrand px-4 py-3">
         <div className="flex items-center gap-3">
           <AssistantOrb state={orbState} size="sm" />
           <div>
@@ -201,15 +201,15 @@ export function PublicAssistantWidget() {
         </div>
         <button
           aria-label="Close RealityNG AI"
-          className="rounded-md px-2 py-1 text-reality-text-secondary transition hover:bg-reality-bg-muted hover:text-reality-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-reality-text-primary transition hover:bg-reality-surfaceMuted focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brandEmphasis"
           onClick={() => setIsOpen(false)}
           type="button"
         >
-          x
+          <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" /></svg>
         </button>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+      <div className="flex-1 space-y-3 overflow-y-auto bg-reality-canvas px-4 py-3">
         {messages.map((message) => (
           <div
             className={message.role === "user" ? "flex justify-end" : "flex justify-start"}
@@ -218,8 +218,8 @@ export function PublicAssistantWidget() {
             <p
               className={
                 message.role === "user"
-                  ? "max-w-[86%] rounded-md bg-brand-secondary px-3 py-2 text-sm leading-6 text-reality-text-primary"
-                  : "max-w-[92%] rounded-md border border-brand-secondary/20 bg-reality-bg-subtle px-3 py-2 text-sm leading-6 text-reality-text-secondary"
+                  ? "max-w-[86%] rounded-xl bg-reality-surfaceBrand px-3 py-2 text-sm leading-6 text-reality-text-primary"
+                  : "max-w-[92%] rounded-xl border border-reality-border-secondary bg-reality-surface px-3 py-2 text-sm leading-6 text-reality-text-secondary"
               }
             >
               {message.content}
@@ -230,7 +230,7 @@ export function PublicAssistantWidget() {
         <div className="flex flex-wrap gap-2">
           {suggestions.map((suggestion) => (
             <button
-              className="rounded-md border border-brand-secondary/60 px-3 py-1.5 text-xs font-semibold text-reality-brand-600 transition hover:bg-brand-secondary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+              className="rounded-xl border border-reality-border-primary bg-reality-surface px-3 py-1.5 text-xs font-semibold text-reality-brandEmphasis transition hover:bg-reality-surfaceBrand focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brandEmphasis"
               key={suggestion}
               onClick={() => submitMessage(suggestion)}
               type="button"
@@ -243,7 +243,7 @@ export function PublicAssistantWidget() {
         <div className="grid grid-cols-2 gap-2">
           {navLinks.map((link) => (
             <Link
-              className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 py-2 text-center text-xs font-semibold text-reality-text-primary transition hover:border-brand-secondary/60"
+              className="rounded-xl border border-reality-border-secondary bg-reality-surface px-3 py-2 text-center text-xs font-semibold text-reality-text-primary transition hover:border-reality-brandEmphasis"
               href={link.href}
               key={link.href}
             >
@@ -254,7 +254,7 @@ export function PublicAssistantWidget() {
       </div>
 
       <form
-        className="flex items-center gap-2 border-t border-reality-border-secondary p-3"
+        className="flex items-center gap-2 border-t border-reality-border-secondary bg-reality-surface p-3"
         onSubmit={(event) => {
           event.preventDefault();
           submitMessage(draft);

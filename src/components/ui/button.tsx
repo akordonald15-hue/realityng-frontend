@@ -8,7 +8,8 @@ type ButtonVariant =
   | "ghost"
   | "reality"
   | "realitySecondary"
-  | "realityGhost";
+  | "realityGhost"
+  | "realityDestructive";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -21,11 +22,13 @@ const variantClasses: Record<ButtonVariant, string> = {
     "border border-brand-secondary/70 bg-transparent text-reality-brand-600 hover:bg-brand-secondary/10 focus-visible:ring-reality-brand-500",
   ghost: "bg-transparent text-reality-text-primary hover:bg-reality-bg-muted focus-visible:ring-reality-brand-500",
   reality:
-    "rounded-full border-2 border-reality-border-secondary bg-reality-brand-500 text-white shadow-reality-xs hover:bg-reality-brand-600 focus-visible:ring-reality-brand-500 focus-visible:ring-offset-white",
+    "rounded-full border-2 border-reality-border-secondary bg-reality-brand-600 text-white shadow-reality-xs hover:bg-reality-brand-700 focus-visible:ring-reality-brand-600 focus-visible:ring-offset-white",
   realitySecondary:
     "rounded-full border border-reality-border-primary bg-white text-reality-text-secondary shadow-reality-xs hover:bg-reality-bg-subtle focus-visible:ring-reality-brand-500 focus-visible:ring-offset-white",
   realityGhost:
     "rounded-full bg-transparent text-reality-text-primary hover:bg-reality-bg-muted focus-visible:ring-reality-brand-500 focus-visible:ring-offset-white",
+  realityDestructive:
+    "rounded-full border border-red-300 bg-red-50 text-red-800 shadow-reality-xs hover:bg-red-100 focus-visible:ring-red-700 focus-visible:ring-offset-white",
 };
 
 export function buttonClasses(variant: ButtonVariant = "reality", className?: string) {

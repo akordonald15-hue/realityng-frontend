@@ -38,7 +38,7 @@ function FallbackImage({ className }: { className?: string }) {
   return (
     <div
       className={clsx(
-        "flex h-full min-h-[220px] w-full items-center justify-center bg-[linear-gradient(135deg,#eefaf5,#d9f5ea)] px-8 text-center font-display text-3xl font-medium text-reality-brand-700",
+        "flex h-full min-h-[220px] w-full items-center justify-center bg-reality-surfaceBrand px-8 text-center font-display text-3xl font-medium text-reality-brandEmphasis",
         className,
       )}
     >
@@ -79,6 +79,17 @@ export function PropertyDetailGallery({ property }: PropertyDetailGalleryProps) 
   const [activeIndex, setActiveIndex] = useState(0);
   const activeImage = images[activeIndex] ?? images[0];
   const imageCount = property.image_count ?? images.length;
+
+  if (images.length === 0) {
+    return (
+      <section aria-label="Property photos unavailable">
+        <div className="overflow-hidden rounded-[2rem] bg-reality-surfaceBrand">
+          <div className="flex min-h-[320px] items-center justify-center px-8 font-display text-4xl font-medium text-reality-brandEmphasis md:min-h-[460px]">RealityNG</div>
+          <p className="border-t border-reality-border-secondary px-6 py-4 text-sm leading-6 text-reality-text-secondary">Photos have not been added to this listing yet. Review the verified property details below or request an inspection.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section aria-label="Property photos">

@@ -294,11 +294,7 @@ function PropertyShowcase({
               </span>
             </div>
           </div>
-        ) : (
-          <div className="flex aspect-[16/9] items-center justify-center px-8 text-center font-display text-3xl font-medium text-reality-brand-700">
-            RealityNG
-          </div>
-        )}
+        ) : null}
         <div className="p-5">
           <p className="font-medium text-black">{featured?.title ?? "No moderated video yet"}</p>
           <p className="mt-2 text-sm leading-6 text-reality-text-muted">
@@ -395,7 +391,13 @@ function SimilarProperties({ currentProperty }: { currentProperty: Property }) {
     (primarySimilarQuery.isError && fallbackSimilarQuery.isError && broadSimilarQuery.isError) ||
     similar.length === 0
   ) {
-    return null;
+    return (
+      <section className="rounded-[1.5rem] bg-reality-surfaceBrand p-6">
+        <h2 className="font-display text-2xl font-medium text-reality-brandEmphasis">Continue exploring</h2>
+        <p className="mt-2 text-sm leading-6 text-reality-text-secondary">More similar listings will appear as approved inventory grows.</p>
+        <Link className={buttonClasses("realitySecondary", "mt-5 w-fit")} href="/properties">Browse properties</Link>
+      </section>
+    );
   }
 
   return (
@@ -451,7 +453,7 @@ export default function PropertyDetailPage() {
   return (
     <PublicShell variant="reality">
       <JsonLd data={propertyJsonLd(property)} id="realityng-property-jsonld" />
-      <main className="bg-white pb-20 text-reality-text-primary">
+      <main className="bg-reality-canvas pb-20 text-reality-text-primary">
         <PageContainer className="hidden py-8 lg:block">
           <div className="flex items-center justify-between">
             <Link
@@ -569,13 +571,16 @@ export default function PropertyDetailPage() {
 
             <section data-motion-child>
               <h2 className="text-lg font-medium text-black">Location</h2>
-              <div className="mt-5 overflow-hidden rounded-[24px]">
-                <PropertyMapPanel
-                  properties={[property]}
-                  selectedPropertyId={property.id}
-                  variant="reality"
-                />
-              </div>
+              {property.latitude && property.longitude ? (
+                <div className="mt-5 overflow-hidden rounded-[24px]">
+                  <PropertyMapPanel properties={[property]} selectedPropertyId={property.id} variant="reality" />
+                </div>
+              ) : (
+                <div className="mt-5 rounded-[1.5rem] bg-reality-surfaceBrand p-6">
+                  <p className="text-sm font-semibold text-reality-brandEmphasis">Map location unavailable</p>
+                  <p className="mt-2 text-sm leading-6 text-reality-text-secondary">The public listing shares {displayLocation(property)} without a map pin. Exact location details remain subject to the listing’s privacy setting.</p>
+                </div>
+              )}
             </section>
 
             <section data-motion-child>
