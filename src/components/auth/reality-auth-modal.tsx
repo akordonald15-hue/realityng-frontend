@@ -76,6 +76,9 @@ export function RealityAuthModalProvider({ children }: Readonly<{ children: Reac
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        if (document.querySelector("[data-legal-dialog]")) {
+          return;
+        }
         event.preventDefault();
         closeModal(false);
         return;
