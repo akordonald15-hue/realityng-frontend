@@ -62,6 +62,7 @@ export function FavoriteButton({
   function invalidateFavoriteQueries() {
     void queryClient.invalidateQueries({ queryKey: ["public-properties"] });
     void queryClient.invalidateQueries({ queryKey: ["favorites"] });
+    void queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
     void queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
     if (propertySlug) {
       void queryClient.invalidateQueries({ queryKey: ["public-property", propertySlug] });

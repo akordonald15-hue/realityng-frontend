@@ -154,9 +154,12 @@ export type PaginatedProperties = {
 
 export type Favorite = {
   id: string;
-  property: Property;
+  property_id: string;
   created_at: string;
-};
+} & (
+  | { is_publicly_available: true; property: Property }
+  | { is_publicly_available: false; property: { id: string; title: string } }
+);
 
 export type PaginatedFavorites = {
   count: number;

@@ -906,6 +906,8 @@ export async function mockCreateFavorite(propertyId: string): Promise<Favorite> 
     withFavoriteState(mockProperties).find((item) => item.id === propertyId) ?? mockProperties[0];
   return {
     id: `favorite-${propertyId}`,
+    property_id: propertyId,
+    is_publicly_available: true,
     property: { ...property, is_favorited: true },
     created_at: new Date().toISOString(),
   };
@@ -921,6 +923,8 @@ export async function mockListFavorites(page = 1): Promise<PaginatedFavorites> {
     .filter((property) => favoriteSet.has(property.id))
     .map((property) => ({
       id: `favorite-${property.id}`,
+      property_id: property.id,
+      is_publicly_available: true as const,
       property: { ...property, is_favorited: true },
       created_at: "2026-06-22T09:00:00Z",
     }));
