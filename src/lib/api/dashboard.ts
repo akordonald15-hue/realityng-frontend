@@ -1,6 +1,6 @@
 import { USE_MOCKS } from "@/lib/demo-mode";
 import { listMyApplications, listReceivedApplications } from "@/lib/api/applications";
-import { getDashboardSummary } from "@/lib/api/properties";
+import { getDashboardSummary, listFavorites, type Favorite } from "@/lib/api/properties";
 import { listMyInquiries, listReceivedInquiries } from "@/lib/api/inquiries";
 import { listMyViewings, listReceivedViewings } from "@/lib/api/viewings";
 import { getActivityFeed, getTransactionCenter } from "@/lib/api/workflow";
@@ -11,7 +11,7 @@ import {
   type MockMetric,
 } from "@/mocks/mock-dashboard";
 
-export type DashboardOverview = MockDashboardOverview;
+export type DashboardOverview = MockDashboardOverview & { savedFavorites?: Favorite[] };
 
 export async function getDashboardOverview(user: User | null): Promise<DashboardOverview> {
   if (USE_MOCKS) {
@@ -28,6 +28,7 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
     receivedApplications,
     transactions,
     activity,
+    favorites,
   ] = await Promise.all([
     listMyInquiries(),
     listReceivedInquiries(),
@@ -37,6 +38,7 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
     listReceivedApplications(),
     getTransactionCenter(),
     getActivityFeed(),
+    listFavorites(1),
   ]);
   const roles = user?.roles.map((role) => role.role.name) ?? [];
   const role = roles.includes("agent") || roles.includes("landlord") ? "agent" : "buyer";
@@ -92,6 +94,7 @@ export async function getDashboardOverview(user: User | null): Promise<Dashboard
     role,
     metrics: fallbackMetrics,
     savedProperties: [],
+    savedFavorites: favorites.results,
     recentlyViewed: [],
     recommendedProperties: [],
     inquiries: myInquiries.results,

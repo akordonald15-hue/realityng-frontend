@@ -2,11 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import Link from "next/link";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
-import { PropertyCard } from "@/components/properties/property-card";
+import { SavedPropertyCard } from "@/components/properties/saved-property-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -42,20 +43,17 @@ function SavedPropertiesContent() {
         {favoritesQuery.isError ? (
           <Card className="p-6 text-sm text-red-700">Saved properties could not be loaded.</Card>
         ) : null}
-        {!favoritesQuery.isLoading && favorites.length === 0 ? (
+        {!favoritesQuery.isLoading && !favoritesQuery.isError && favorites.length === 0 ? (
           <Card className="p-8 text-reality-text-secondary">
-            You have not saved any properties yet. Browse approved listings and save the ones you
-            want to revisit.
+            <p>You have not saved any properties yet. Browse listings and save the ones you want to revisit.</p>
+            <Link className="mt-4 inline-flex font-semibold text-reality-brand-700 underline underline-offset-4 focus-visible:outline focus-visible:outline-2" href="/properties">Browse properties</Link>
           </Card>
         ) : null}
         {favorites.length > 0 ? (
           <>
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {favorites.map((favorite) => (
-                <PropertyCard
-                  key={favorite.id}
-                  property={{ ...favorite.property, is_favorited: true }}
-                />
+                <SavedPropertyCard favorite={favorite} key={favorite.id} />
               ))}
             </div>
             <div className="mt-8 flex items-center justify-between gap-3">

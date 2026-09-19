@@ -34,6 +34,8 @@ const favoriteResponse = {
   results: [
     {
       id: "favorite-1",
+      property_id: "property-1",
+      is_publicly_available: true,
       created_at: "2026-06-18T00:00:00Z",
       property: {
         id: "property-1",
@@ -74,6 +76,55 @@ describe("SavedPropertiesPage", () => {
     await user.click(screen.getByRole("button", { name: "Remove saved property" }));
 
     await waitFor(() => expect(mocks.deleteFavorite).toHaveBeenCalledWith("property-1"));
+  });
+
+  it("shows a non-navigable unavailable item and removes it by property ID", async () => {
+    const user = userEvent.setup();
+    mocks.listFavorites.mockResolvedValue({
+      ...favoriteResponse,
+      results: [{
+        id: "favorite-old",
+        property_id: "property-old",
+        is_publicly_available: false,
+        created_at: "2026-06-18T00:00:00Z",
+        property: { id: "property-old", title: "Property no longer available" },
+      }],
+    });
+    mocks.deleteFavorite.mockResolvedValueOnce(undefined);
+
+    renderWithQueryClient(<SavedPropertiesPage />);
+
+    expect(await screen.findByText("No longer available")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /View property/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Remove unavailable property from Saved" }));
+    await waitFor(() => expect(mocks.deleteFavorite).toHaveBeenCalledWith("property-old"));
+  });
+
+  it("keeps active navigation distinct in a mixed saved list", async () => {
+    mocks.listFavorites.mockResolvedValue({
+      ...favoriteResponse,
+      count: 2,
+      results: [
+        favoriteResponse.results[0],
+        { id: "favorite-old", property_id: "property-old", is_publicly_available: false,
+          created_at: "2026-06-18T00:00:00Z", property: { id: "property-old", title: "Property no longer available" } },
+      ],
+    });
+
+    renderWithQueryClient(<SavedPropertiesPage />);
+
+    expect(await screen.findByText("Approved Lekki Apartment")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View Approved Lekki Apartment" })).toHaveAttribute("href", "/properties/approved-lekki-apartment");
+    expect(screen.getByText("No longer available")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /View Property no longer available/i })).not.toBeInTheDocument();
+  });
+
+  it("offers browsing when Saved is empty", async () => {
+    mocks.listFavorites.mockResolvedValue({ ...favoriteResponse, count: 0, results: [] });
+
+    renderWithQueryClient(<SavedPropertiesPage />);
+
+    expect(await screen.findByRole("link", { name: "Browse properties" })).toHaveAttribute("href", "/properties");
   });
 });
 

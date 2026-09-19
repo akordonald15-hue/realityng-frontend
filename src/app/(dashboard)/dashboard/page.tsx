@@ -9,6 +9,7 @@ import { FormMessage } from "@/components/forms/form-message";
 import { PageContainer } from "@/components/layout/page-container";
 import { ManagedPropertyCard } from "@/components/properties/managed-property-card";
 import { PropertyCard } from "@/components/properties/property-card";
+import { SavedPropertyCard } from "@/components/properties/saved-property-card";
 import { ViewingRequestButton } from "@/components/properties/viewing-request-button";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -1274,6 +1275,24 @@ function DashboardPropertyRail({
   );
 }
 
+function SavedFavoriteRail({ favorites }: { favorites: NonNullable<DashboardOverview["savedFavorites"]> }) {
+  if (favorites.length === 0) {
+    return <EmptyDashboardState>Nothing saved yet. <Link className="font-semibold text-reality-brand-700 underline" href="/properties">Browse properties</Link> to start your shortlist.</EmptyDashboardState>;
+  }
+
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="flex gap-6">
+        {favorites.slice(0, 4).map((favorite) => (
+          <div className="w-[314px] shrink-0" key={favorite.id}>
+            <SavedPropertyCard favorite={favorite} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SupplyManagedPropertyRail({
   empty,
   isError,
@@ -1473,10 +1492,10 @@ function BuyerDashboard({
               }
             />
             <div className="mt-8">
-              <DashboardPropertyRail
+              {overview?.savedFavorites ? <SavedFavoriteRail favorites={overview.savedFavorites} /> : <DashboardPropertyRail
                 empty="Saved properties will appear here after you shortlist homes from the marketplace."
                 properties={overview?.savedProperties ?? []}
-              />
+              />}
             </div>
           </section>
         ) : null}
@@ -1845,10 +1864,10 @@ function SupplyDashboardBody({
           title="Saved Property"
         />
         <div className="mt-8">
-          <DashboardPropertyRail
+          {overview?.savedFavorites ? <SavedFavoriteRail favorites={overview.savedFavorites} /> : <DashboardPropertyRail
             empty="Saved properties will appear here if this supply account saves marketplace listings."
             properties={overview?.savedProperties ?? []}
-          />
+          />}
         </div>
       </section>
 
