@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PropertyCard } from "@/components/properties/property-card";
 import type { Property } from "@/lib/api/properties";
 import { clearTokens, setTokens } from "@/lib/auth/token-storage";
+import { ANONYMOUS_SHORTLIST_KEY } from "@/lib/anonymous-shortlist";
 import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
@@ -62,6 +63,7 @@ describe("PropertyCard favorites", () => {
     mocks.deleteFavorite.mockReset();
     mocks.requireAuth.mockReset();
     mocks.isAuthenticated = false;
+    localStorage.removeItem(ANONYMOUS_SHORTLIST_KEY);
   });
 
   it("saves and removes a property with optimistic button state", async () => {
@@ -86,22 +88,21 @@ describe("PropertyCard favorites", () => {
     await waitFor(() => expect(mocks.deleteFavorite).toHaveBeenCalledWith("property-1"));
   });
 
-  it("opens the Reality auth modal before saving for anonymous users", async () => {
+  it("saves and unsaves on this device without authentication", async () => {
     const user = userEvent.setup();
-    mocks.requireAuth.mockResolvedValueOnce(false);
 
-    renderWithQueryClient(<PropertyCard property={property} variant="reality" />);
+    const view = renderWithQueryClient(<PropertyCard property={property} variant="reality" />);
 
     await user.click(screen.getByRole("button", { name: "Save property" }));
-
-    expect(mocks.requireAuth).toHaveBeenCalledWith({
-      actionLabel: "Save property",
-      nextPath: "/properties/approved-lekki-apartment",
-      onAuthenticated: expect.any(Function),
-      role: "buyer",
-    });
-    expect(screen.queryByText("CREATE AN ACCOUNT TO CONTINUE")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove saved property" })).toBeInTheDocument();
+    expect(localStorage.getItem(ANONYMOUS_SHORTLIST_KEY)).toContain("property-1");
+    expect(mocks.requireAuth).not.toHaveBeenCalled();
     expect(mocks.createFavorite).not.toHaveBeenCalled();
+    view.unmount();
+    renderWithQueryClient(<PropertyCard property={property} variant="reality" />);
+    expect(screen.getByRole("button", { name: "Remove saved property" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Remove saved property" }));
+    expect(screen.getByRole("button", { name: "Save property" })).toBeInTheDocument();
   });
 });
 

@@ -23,7 +23,8 @@ describe("Navbar", () => {
     authMocks.signOut.mockClear();
   });
 
-  it("shows task-based marketplace navigation on desktop", () => {
+  it("shows task-based marketplace navigation on desktop", async () => {
+    const user = userEvent.setup();
     render(<Navbar />);
 
     expect(screen.getAllByRole("link", { name: "RealityNG home" })).toHaveLength(1);
@@ -37,8 +38,9 @@ describe("Navbar", () => {
       "href",
       "/services",
     );
-    expect(screen.getAllByText("Verification standards").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Safety").length).toBeGreaterThan(0);
+    await user.hover(screen.getByRole("button", { name: /Company/i }));
+    expect(screen.getByRole("menuitem", { name: "Verification standards" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Safety" })).toBeInTheDocument();
   });
 
   it("opens the compact mobile navigation without showing the tagline there", async () => {
@@ -48,6 +50,10 @@ describe("Navbar", () => {
     await user.click(screen.getByRole("button", { name: "Toggle navigation" }));
 
     expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Explore Properties" })).toHaveAttribute("href", "/properties");
+    expect(document.body.style.overflow).toBe("hidden");
+    await user.click(screen.getByRole("button", { name: "Close menu" }));
+    expect(document.body.style.overflow).toBe("");
     expect(screen.queryByText("Where Dreams Find an Address")).not.toBeInTheDocument();
   });
 
@@ -72,10 +78,7 @@ describe("Navbar", () => {
     await user.click(screen.getByRole("button", { name: "Toggle navigation" }));
 
     expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "Homes for rent" })[0]).toHaveAttribute(
-      "href",
-      "/properties?listing_type=rent",
-    );
+    expect(screen.getByRole("link", { name: "Explore Properties" })).toHaveAttribute("href", "/properties");
   });
 
   it("keeps only one desktop Reality dropdown open while switching menus", async () => {

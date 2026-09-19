@@ -106,6 +106,23 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
     href: isAuthenticated ? link.href : `/auth/sign-up?next=${encodeURIComponent(link.href)}`,
   }));
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isOpen]);
+
   function isActive(href: string) {
     const targetPath = href.split("?")[0].split("#")[0];
     return pathname === targetPath;
@@ -169,7 +186,8 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
   return (
     <header
       className={clsx(
-        "z-40 font-body backdrop-blur",
+        "z-40 font-body",
+        !isOpen && "backdrop-blur",
         transparent
           ? "absolute inset-x-0 top-0 text-white"
           : "sticky top-0 border-b border-reality-border-secondary bg-white/95 text-reality-text-primary",
@@ -309,6 +327,15 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
               </>
             )}
           </div>
+          <div className="ml-auto flex items-center gap-2 lg:hidden">
+            <ProtectedActionLink
+              actionLabel="List property"
+              className={buttonClasses("realitySecondary", "min-h-10 px-3 text-xs sm:px-4 sm:text-sm")}
+              href="/properties/new"
+              role="landlord"
+            >
+              List Property
+            </ProtectedActionLink>
           <Button
             aria-controls="mobile-navigation"
             aria-expanded={isOpen}
@@ -334,14 +361,28 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
               />
             </span>
           </Button>
+          </div>
         </nav>
-        <div
+        {isOpen ? <div
           className={clsx(
-            "reality-menu border-t border-reality-border-secondary bg-white px-5 py-4 shadow-reality-sm sm:px-6 lg:hidden",
-            !isOpen && "hidden",
+            "fixed inset-0 z-[100] lg:hidden",
           )}
           id="mobile-navigation"
         >
+          <button
+            aria-label="Close navigation"
+            className="absolute inset-0 bg-reality-surfaceDark/55"
+            onClick={() => setIsOpen(false)}
+            type="button"
+          />
+          <div className={clsx(
+            "absolute inset-y-0 right-0 w-1/2 min-w-[230px] max-w-[420px] overflow-y-auto overscroll-contain bg-white px-4 pb-8 pt-5 text-reality-text-primary shadow-2xl sm:px-6",
+            isOpen && "reality-mobile-drawer",
+          )}>
+          <div className="mb-4 flex items-center justify-between border-b border-reality-border-secondary pb-4">
+            <span className="font-display text-xl font-semibold">Menu</span>
+            <button aria-label="Close menu" className="rounded-full border border-reality-border-secondary px-3 py-2 text-sm" onClick={() => setIsOpen(false)} type="button">Close</button>
+          </div>
           <div className="grid gap-1 text-sm font-medium">
             <Link
               className="rounded-[10px] px-3 py-3 text-reality-text-secondary hover:bg-reality-bg-muted"
@@ -350,7 +391,14 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
             >
               Home
             </Link>
-            {realityGroups.map((group) => (
+            <Link
+              className="rounded-[10px] px-3 py-3 text-reality-text-secondary hover:bg-reality-bg-muted"
+              href="/properties"
+              onClick={() => setIsOpen(false)}
+            >
+              Explore Properties
+            </Link>
+            {realityGroups.filter((group) => group.id !== "rent" && group.id !== "sale").map((group) => (
               <div key={group.label}>
                 <Link
                   className="flex rounded-[10px] px-3 py-3 text-reality-text-secondary hover:bg-reality-bg-muted"
@@ -433,7 +481,8 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
               </div>
             )}
           </div>
-        </div>
+          </div>
+        </div> : null}
     </header>
   );
 }

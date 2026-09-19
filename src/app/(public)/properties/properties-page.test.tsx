@@ -7,8 +7,13 @@ import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   getPublicProperties: vi.fn(),
+  getAvailablePropertyLocations: vi.fn(),
   replace: vi.fn(),
   search: "",
+}));
+
+vi.mock("@/lib/api/available-property-locations", () => ({
+  getAvailablePropertyLocations: () => mocks.getAvailablePropertyLocations(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -86,10 +91,11 @@ describe("PropertiesPage", () => {
     mocks.search = "";
     mocks.replace.mockReset();
     mocks.getPublicProperties.mockReset();
+    mocks.getAvailablePropertyLocations.mockResolvedValue([{ name: "Lagos", state: "Lagos", count: 1 }]);
   });
 
   it("renders Reality property results with URL-backed filters", async () => {
-    mocks.search = "city=Lagos&listing_type=rent&property_type=apartment&max_price=5000000";
+    mocks.search = "city=Lagos&state=Lagos&listing_type=rent&property_type=apartment&max_price=5000000";
     mockResults();
 
     renderWithQueryClient(<PropertiesPage />);
@@ -99,7 +105,7 @@ describe("PropertiesPage", () => {
     expect(
       screen.getByRole("link", { name: "View Approved Lekki Apartment" }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Location")).toHaveValue("Lagos");
+    expect(screen.getByLabelText("Location")).toHaveTextContent("Lagos");
     expect(screen.getByLabelText("Listing type")).toHaveTextContent("For rent");
     expect(screen.getByLabelText("Property type")).toHaveTextContent("Apartment");
     expect(screen.getByLabelText("Maximum price")).toHaveTextContent("Up to ₦5m");
@@ -123,7 +129,8 @@ describe("PropertiesPage", () => {
 
     renderWithQueryClient(<PropertiesPage />);
 
-    fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Abuja" } });
+    await user.click(screen.getByLabelText("Location"));
+    await user.click(screen.getByRole("option", { name: "Lagos, Lagos · 1" }));
     await user.click(screen.getByLabelText("Listing type"));
     await user.click(screen.getByRole("option", { name: "For sale" }));
     await user.click(screen.getByLabelText("Property type"));
@@ -133,9 +140,43 @@ describe("PropertiesPage", () => {
     await user.click(screen.getByRole("button", { name: "Search" }));
 
     expect(mocks.replace).toHaveBeenLastCalledWith(
-      "/properties?city=Abuja&property_type=duplex&listing_type=sale&max_price=10000000",
+      "/properties?state=Lagos&city=Lagos&property_type=duplex&listing_type=sale&max_price=10000000",
       { scroll: false },
     );
+  });
+
+  it("keeps results and other filters usable if locations fail", async () => {
+    mockResults();
+    mocks.getAvailablePropertyLocations.mockRejectedValueOnce(new Error("network"));
+    renderWithQueryClient(<PropertiesPage />);
+
+    expect(await screen.findByRole("link", { name: "View Approved Lekki Apartment" })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText("Location")).toBeDisabled());
+    expect(screen.getByRole("status", { name: "" })).toHaveTextContent("Locations are temporarily unavailable");
+    const user = userEvent.setup();
+    await user.click(screen.getByLabelText("Property type"));
+    await user.click(screen.getByRole("option", { name: "Duplex" }));
+    await user.click(screen.getByRole("button", { name: "Search" }));
+    expect(mocks.replace).toHaveBeenCalledWith("/properties?property_type=duplex", { scroll: false });
+  });
+
+  it("selects a city and state with the keyboard", async () => {
+    mockResults();
+    mocks.getAvailablePropertyLocations.mockResolvedValueOnce([
+      { name: "Lagos", state: "Lagos", count: 1 },
+      { name: "Lagos", state: "Ogun", count: 2 },
+    ]);
+    renderWithQueryClient(<PropertiesPage />);
+    const location = screen.getByLabelText("Location");
+    await waitFor(() => expect(location).not.toBeDisabled());
+    location.focus();
+    fireEvent.keyDown(location, { key: "ArrowDown" });
+    fireEvent.keyDown(location, { key: "ArrowDown" });
+    fireEvent.keyDown(location, { key: "ArrowDown" });
+    fireEvent.keyDown(location, { key: "Enter" });
+    expect(location).toHaveTextContent("Lagos, Ogun");
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+    expect(mocks.replace).toHaveBeenCalledWith("/properties?state=Ogun&city=Lagos", { scroll: false });
   });
 
   it("preserves filters while switching to map view", async () => {
@@ -184,4 +225,3 @@ describe("PropertiesPage", () => {
     expect(mocks.replace).not.toHaveBeenCalled();
   });
 });
-

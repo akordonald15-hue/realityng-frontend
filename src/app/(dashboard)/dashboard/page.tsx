@@ -1421,6 +1421,17 @@ function BuyerDashboard({
           />
         </div>
 
+        {showOverview ? (
+          <section className="mt-8 flex flex-col gap-5 rounded-[28px] border border-reality-brand-200 bg-reality-surfaceBrand px-5 py-6 sm:px-8 lg:flex-row lg:items-center lg:justify-between" aria-label="Discover properties">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-reality-brand-700">Your next move</p>
+              <h2 className="mt-2 font-display text-3xl font-medium text-reality-text-primary sm:text-4xl">Find a place that fits</h2>
+              <p className="mt-2 max-w-xl text-base text-reality-text-secondary">Search verified homes, shortlets, and land, then keep the ones you love close by.</p>
+            </div>
+            <Link className={buttonClasses("reality", "min-h-12 w-full shrink-0 justify-center px-7 sm:w-auto")} href="/properties">Browse properties <span aria-hidden="true">↗</span></Link>
+          </section>
+        ) : null}
+
         {dashboardQuery.isError ? (
           <FormMessage className="mt-6" tone="error" variant="reality">
             Dashboard stats could not be loaded.
@@ -2366,4 +2377,3 @@ function DashboardContent() {
 export default function DashboardPage() {
   return <DashboardContent />;
 }
-

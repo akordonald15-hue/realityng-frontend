@@ -7,25 +7,26 @@ import { useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
 
 import { PropertyMapPanel } from "@/components/maps/property-map-panel";
+import { getAvailablePropertyLocations } from "@/lib/api/available-property-locations";
 import { PropertyCard } from "@/components/properties/property-card";
 import { PublicShell } from "@/components/layout/public-shell";
 import { StaggerReveal } from "@/components/motion/stagger-reveal";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { ListboxSelect } from "@/components/ui/listbox-select";
 import {
   getPublicProperties,
   propertyTypeOptions,
   type PropertyFilters,
 } from "@/lib/api/properties";
+import { USE_MOCKS } from "@/lib/demo-mode";
 
 type ViewMode = "grid" | "map";
 
 const defaultOrdering = "-featured";
 
 const listingTypeOptions = [
-  { label: "Any listing", value: "" },
+  { label: "Listing", value: "" },
   { label: "For rent", value: "rent" },
   { label: "For sale", value: "sale" },
   { label: "Shortlet", value: "shortlet" },
@@ -104,6 +105,10 @@ function resultCountLabel(count?: number) {
   return `${count} ${count === 1 ? "property" : "properties"} found`;
 }
 
+function locationValue(city: string, state: string) {
+  return JSON.stringify([city.trim().toLocaleLowerCase(), state.trim().toLocaleLowerCase()]);
+}
+
 function PropertiesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -139,6 +144,24 @@ function PropertiesContent() {
     queryKey: ["public-properties", queryFilters],
     queryFn: () => getPublicProperties(queryFilters),
   });
+  const locationsQuery = useQuery({
+    queryKey: ["available-property-locations"],
+    queryFn: getAvailablePropertyLocations,
+    staleTime: 5 * 60 * 1000,
+  });
+  const locationOptions = [
+    { label: "All locations", value: "" },
+    ...(locationsQuery.data ?? []).map((location) => ({
+      label: `${location.name}, ${location.state} · ${location.count}`,
+      value: locationValue(location.name, location.state),
+    })),
+  ];
+  const selectedLocationValue = draftFilters.city
+    ? locationValue(draftFilters.city, draftFilters.state ?? "")
+    : "";
+  if (selectedLocationValue && !locationOptions.some((option) => option.value === selectedLocationValue)) {
+    locationOptions.push({ label: [draftFilters.city, draftFilters.state].filter(Boolean).join(", "), value: selectedLocationValue });
+  }
 
   const properties = propertiesQuery.data?.results ?? [];
   const mapReadyCount = properties.filter(
@@ -167,6 +190,7 @@ function PropertiesContent() {
     replaceRoute({
       ...urlFilters,
       city: draftFilters.city ?? "",
+      state: draftFilters.state ?? "",
       listing_type: draftFilters.listing_type ?? "",
       property_type: draftFilters.property_type ?? "",
       max_price: draftFilters.max_price ?? "",
@@ -256,7 +280,9 @@ function PropertiesContent() {
             Explore Properties
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-reality-text-muted md:text-lg">
-            Search verified homes, shortlets, land, and commercial spaces.
+            {USE_MOCKS
+              ? "Explore sample homes, shortlets, land, and hotels in this local preview. These are not available to purchase or book."
+              : "Search verified homes, shortlets, land, and commercial spaces."}
           </p>
         </section>
 
@@ -265,21 +291,28 @@ function PropertiesContent() {
           <div className="reality-reveal mb-10 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="grid w-full gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,299px)_174px_174px_174px_auto] xl:items-end">
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
-                <span>Location</span>
-                <Input
-                  onChange={(event) => updateDraft("city", event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      applySearch();
-                    }
+                <span className="hidden sm:inline">Location</span>
+                <ListboxSelect
+                  aria-label="Location"
+                  disabled={locationsQuery.isLoading || locationsQuery.isError}
+                  onChange={(value) => {
+                    const selected = (locationsQuery.data ?? []).find(
+                      (location) => locationValue(location.name, location.state) === value,
+                    );
+                    setDraftFilters((current) => ({
+                      ...current,
+                      city: selected?.name ?? "",
+                      state: selected?.state ?? "",
+                    }));
                   }}
-                  placeholder="Where"
-                  value={draftFilters.city ?? ""}
+                  options={locationOptions}
+                  value={selectedLocationValue}
                   variant="reality"
                 />
+                {locationsQuery.isError ? <span className="sr-only" role="status">Locations are temporarily unavailable. Other filters still work.</span> : null}
               </label>
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
-                <span>Type</span>
+                <span className="hidden sm:inline">Type</span>
                 <ListboxSelect
                   aria-label="Property type"
                   onChange={(value) => updateDraft("property_type", value)}
@@ -289,7 +322,7 @@ function PropertiesContent() {
                 />
               </label>
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
-                <span>Listing</span>
+                <span className="hidden sm:inline">Listing</span>
                 <ListboxSelect
                   aria-label="Listing type"
                   onChange={(value) => updateDraft("listing_type", value)}
@@ -299,7 +332,7 @@ function PropertiesContent() {
                 />
               </label>
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">
-                <span>Price range</span>
+                <span className="hidden sm:inline">Price range</span>
                 <ListboxSelect
                   aria-label="Maximum price"
                   onChange={(value) => updateDraft("max_price", value)}
@@ -465,4 +498,3 @@ export default function PropertiesPage() {
     </Suspense>
   );
 }
-

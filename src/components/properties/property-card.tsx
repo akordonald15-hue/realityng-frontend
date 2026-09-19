@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { clsx } from "clsx";
 
 import { CompareButton } from "@/components/properties/compare-button";
@@ -6,6 +7,7 @@ import { FavoriteButton } from "@/components/properties/favorite-button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { Property } from "@/lib/api/properties";
+import { USE_MOCKS } from "@/lib/demo-mode";
 import {
   formatListingType,
   formatPrice,
@@ -55,7 +57,15 @@ export function PropertyCard({ property, variant = "grid", className }: Property
           href={`/properties/${property.slug}`}
         />
         <div className="relative h-[286px] overflow-hidden rounded-[2rem] bg-reality-bg-muted">
-          {property.cover_image_url ? (
+          {USE_MOCKS && property.cover_image_url?.startsWith("/") ? (
+            <Image
+              alt={property.title}
+              className="object-cover transition duration-500 motion-safe:group-hover:scale-105"
+              fill
+              sizes="(min-width: 1280px) 314px, 82vw"
+              src={property.cover_image_url}
+            />
+          ) : property.cover_image_url ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               alt={property.title}
@@ -72,6 +82,11 @@ export function PropertyCard({ property, variant = "grid", className }: Property
           <div className="absolute right-4 top-4 z-20 rounded-full bg-white/70 px-3 py-1.5 text-sm font-medium text-black/70 backdrop-blur">
             {formatPropertyType(property.property_type)}
           </div>
+          {USE_MOCKS ? (
+            <span className="absolute bottom-4 right-4 z-20 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-reality-brandEmphasis">
+              Sample listing
+            </span>
+          ) : null}
           <div className="absolute left-4 top-4 z-20">
             <FavoriteButton
               compact
@@ -155,7 +170,15 @@ export function PropertyCard({ property, variant = "grid", className }: Property
             : "relative aspect-[4/3] overflow-hidden bg-white"
         }
       >
-        {property.cover_image_url ? (
+        {USE_MOCKS && property.cover_image_url?.startsWith("/") ? (
+          <Image
+            alt={property.title}
+            className="object-cover transition duration-500 motion-safe:group-hover:scale-105"
+            fill
+            sizes={variant === "list" ? "(min-width: 768px) 260px, 100vw" : "(min-width: 1280px) 314px, 50vw"}
+            src={property.cover_image_url}
+          />
+        ) : property.cover_image_url ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             alt={property.title}
@@ -178,7 +201,7 @@ export function PropertyCard({ property, variant = "grid", className }: Property
       <div className="pointer-events-none relative z-20 flex flex-col p-4">
         <div className="flex flex-wrap items-center gap-2 pr-12">
           {property.featured ? <Badge>Featured</Badge> : null}
-          <Badge variant="green">Approved listing</Badge>
+          <Badge variant="green">{USE_MOCKS ? "Sample listing" : "Approved listing"}</Badge>
           <Badge variant="muted">{formatListingType(property.listing_type)}</Badge>
           <Badge variant="muted">{formatPropertyType(property.property_type)}</Badge>
         </div>

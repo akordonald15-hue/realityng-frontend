@@ -4,9 +4,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import { useEffect, useState } from "react";
 
-import { useRealityAuthModal } from "@/components/auth/reality-auth-modal";
 import { Button } from "@/components/ui/button";
 import { createFavorite, deleteFavorite } from "@/lib/api/properties";
+import { isAnonymousSaved, toggleAnonymousSave } from "@/lib/anonymous-shortlist";
 import { getAccessToken } from "@/lib/auth/token-storage";
 import { useOptionalAuth } from "@/providers/auth-provider";
 
@@ -45,13 +45,19 @@ export function FavoriteButton({
   variant = "reality",
 }: FavoriteButtonProps) {
   const auth = useOptionalAuth();
-  const { requireAuth } = useRealityAuthModal();
   const queryClient = useQueryClient();
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
 
   useEffect(() => {
-    setIsFavorited(initialFavorited);
-  }, [initialFavorited]);
+    const sync = () => setIsFavorited(auth?.isAuthenticated || getAccessToken() ? initialFavorited : isAnonymousSaved(propertyId));
+    sync();
+    window.addEventListener("realityng:shortlist-change", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("realityng:shortlist-change", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [auth?.isAuthenticated, initialFavorited, propertyId]);
 
   function invalidateFavoriteQueries() {
     void queryClient.invalidateQueries({ queryKey: ["public-properties"] });
@@ -81,13 +87,7 @@ export function FavoriteButton({
 
   function toggleFavorite() {
     if (!auth?.isAuthenticated && !getAccessToken()) {
-      const nextPath = propertySlug ? `/properties/${propertySlug}` : "/properties";
-      void requireAuth({
-        actionLabel: "Save property",
-        nextPath,
-        onAuthenticated: () => mutation.mutate(true),
-        role: "buyer",
-      });
+      setIsFavorited(toggleAnonymousSave(propertyId));
       return;
     }
     mutation.mutate(!isFavorited);
@@ -107,6 +107,7 @@ export function FavoriteButton({
     <Button
       aria-busy={mutation.isPending}
       aria-label={label}
+      title={!auth?.isAuthenticated && isFavorited ? "Saved on this device" : undefined}
       aria-pressed={isFavorited}
       className={clsx(
         compact ? "h-10 w-10 gap-0 p-0" : "gap-2",

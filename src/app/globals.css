@@ -34,6 +34,12 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -65,6 +71,30 @@ a {
   transform-origin: top;
 }
 
+.reality-mobile-drawer {
+  animation: reality-mobile-drawer-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes reality-mobile-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.reality-no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.reality-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reality-mobile-drawer {
+    animation: none;
+  }
+}
+
 .reality-pressable {
   transition:
     transform 160ms ease,
@@ -89,6 +119,106 @@ a {
 
 .reality-card-hover:hover {
   transform: translateY(-2px);
+}
+
+.reality-hero-invite {
+  animation: reality-hero-invite 3.8s ease-in-out infinite;
+  box-shadow: 0 10px 25px rgba(3, 37, 31, 0.22);
+}
+
+.reality-hero-invite-delayed {
+  animation-delay: -1.9s;
+}
+
+@keyframes reality-hero-invite {
+  0%, 100% { transform: translateY(0); box-shadow: 0 10px 25px rgba(3, 37, 31, 0.22); }
+  50% { transform: translateY(-5px); box-shadow: 0 16px 32px rgba(3, 37, 31, 0.3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reality-hero-invite { animation: none; }
+}
+
+/* The feature artwork floats independently; there are no card surfaces. */
+.feature-visual::before {
+  position: absolute;
+  inset: 24% 11% 8%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(17, 138, 100, 0.16), transparent 70%);
+  content: "";
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.feature-visual-float {
+  animation: feature-object-float 4.2s ease-in-out infinite;
+  filter: drop-shadow(0 14px 16px rgba(6, 61, 45, 0.12));
+}
+
+.feature-visual-image {
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 520ms ease;
+}
+
+.feature-visual-title {
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), color 300ms ease;
+}
+
+@keyframes feature-object-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-9px) rotate(1deg); }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .feature-visual:hover .feature-visual-image {
+    filter: brightness(1.06) saturate(1.08);
+  }
+
+  .feature-visual:hover .feature-visual-title {
+    transform: translateY(-4px);
+    color: var(--reality-brand-emphasis);
+  }
+
+  .feature-visual[data-feature="search"]:hover .feature-visual-image {
+    transform: scale(1.14) rotate(-5deg) translateY(-5px);
+  }
+
+  .feature-visual[data-feature="inspection"]:hover .feature-visual-image {
+    transform: scale(1.12) rotate(5deg) translateY(-7px);
+  }
+
+  .feature-visual[data-feature="apply"]:hover .feature-visual-image {
+    transform: scale(1.12) translateY(-12px);
+  }
+
+  .feature-visual[data-feature="payment"]:hover .feature-visual-image {
+    transform: scale(1.1) rotate(-3deg) translateY(-6px);
+  }
+}
+
+@media (max-width: 767px) {
+  .feature-visual-float {
+    animation-name: feature-object-float-mobile;
+  }
+}
+
+@keyframes feature-object-float-mobile {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-visual-float {
+    animation: none;
+  }
+
+  .feature-visual-image {
+    transition: none;
+  }
+
+  .feature-visual-title {
+    transition: none;
+  }
 }
 
 ::selection {

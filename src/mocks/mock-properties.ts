@@ -29,6 +29,15 @@ const galleryPool = [
   "https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=1400&q=80",
 ];
 
+const generatedDemoCovers: Record<string, string> = {
+  "jabi-lake-view-shortlet-penthouse": "/demo/properties/shortlet-lake.webp",
+  "oniru-beachfront-shortlet-apartment": "/demo/properties/shortlet-beach.webp",
+  "asokoro-hillside-residential-land": "/demo/properties/land-residential.webp",
+  "uyo-ring-road-commercial-plot": "/demo/properties/land-commercial.webp",
+  "gra-phase-two-port-harcourt-hotel": "/demo/properties/hotel-port-harcourt.webp",
+  "wuse-two-boutique-hotel": "/demo/properties/hotel-abuja.webp",
+};
+
 type PropertySeed = {
   title: string;
   slug: string;
@@ -580,6 +589,10 @@ export const mockProperties: Property[] = propertySeeds.map((seed, index) => {
   const id = `property-${index + 1}`;
   const agent = mockAgents[seed.agentIndex % mockAgents.length];
   const gallery = galleryFor(id, seed.imageOffset);
+  const generatedCover = generatedDemoCovers[seed.slug];
+  if (generatedCover) {
+    gallery[0] = { ...gallery[0], image_url: generatedCover };
+  }
   const coordinates = coordinatesFor(seed, index);
   const displayLocation = seed.neighborhood
     ? `${seed.neighborhood}, ${seed.city}`
@@ -726,7 +739,7 @@ function paginate<T>(items: T[], page = 1, pageSize = 20) {
 export async function mockGetPublicProperties(
   filters: PropertyFilters = {},
 ): Promise<PaginatedProperties> {
-  return paginate(withFavoriteState(applyFilters(mockProperties, filters)));
+  return paginate(withFavoriteState(applyFilters(mockProperties, filters)), Number(filters.page ?? 1));
 }
 
 export async function mockGetPublicProperty(propertySlug: string): Promise<Property> {
