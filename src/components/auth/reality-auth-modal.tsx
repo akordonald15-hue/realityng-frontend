@@ -125,7 +125,7 @@ export function RealityAuthModalProvider({ children }: Readonly<{ children: Reac
         <div
           aria-labelledby="reality-auth-modal-title"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-end bg-black/45 px-4 py-5 backdrop-blur-sm sm:items-center sm:justify-center"
+          className="fixed inset-0 z-50 flex items-end overflow-y-auto bg-black/45 px-4 py-5 backdrop-blur-sm sm:items-center sm:justify-center"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               closeModal(false);
@@ -134,7 +134,7 @@ export function RealityAuthModalProvider({ children }: Readonly<{ children: Reac
           role="dialog"
         >
           <div
-            className="w-full max-w-reality-form rounded-[32px] border border-reality-border-secondary bg-white px-6 py-8 text-reality-text-primary shadow-reality-lg sm:px-12 sm:py-12"
+            className="max-h-[calc(100dvh-2.5rem)] w-full max-w-reality-form overflow-y-auto overscroll-contain rounded-[32px] border border-reality-border-secondary bg-white px-6 py-8 text-reality-text-primary shadow-reality-lg sm:px-12 sm:py-12"
             ref={dialogRef}
           >
             <p className="sr-only" id="reality-auth-modal-title">
@@ -171,4 +171,3 @@ export function useRealityAuthModal() {
   }
   return context;
 }
-

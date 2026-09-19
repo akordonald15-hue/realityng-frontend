@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { PublicAssistantWidget } from "@/components/assistant/public-assistant-widget";
 import { ProtectedActionLink } from "@/components/auth/protected-action-link";
@@ -16,7 +16,9 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { ListboxSelect } from "@/components/ui/listbox-select";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs";
 import { getPublicProperties, propertyTypeOptions } from "@/lib/api/properties";
+import { getAvailablePropertyLocations } from "@/lib/api/available-property-locations";
 import type { ListingType, Property, PropertyFilters } from "@/lib/api/properties";
+import { USE_MOCKS } from "@/lib/demo-mode";
 import { gsap, registerGsapPlugins, useGSAP } from "@/lib/motion/gsap";
 import { heroReveal, imageSettle } from "@/lib/motion/presets";
 import { organizationJsonLd, websiteSearchJsonLd } from "@/lib/seo";
@@ -43,50 +45,34 @@ const trustItems = [
 const steps = [
   {
     title: "Search",
-    mobileTitle: "Search",
-    description: "Explore properties by location, type, and price",
-    icon: CompassIcon,
+    description: "Explore homes, land, and stays by location, type, and price.",
+    imageSrc: "/home/features/search.png",
     href: "/properties",
   },
   {
     title: "Inspection",
-    mobileTitle: "Save",
-    description: "Found the right one? Get in touch and arrange a viewing.",
-    icon: SearchIcon,
+    description: "Take a closer look and arrange a viewing that works for you.",
+    imageSrc: "/home/features/inspection.png",
     href: "/properties",
   },
   {
     title: "Apply",
-    mobileTitle: "Book a viewing",
-    description: "Save the properties you like and come back to them later.",
-    icon: FileCheckIcon,
+    description: "Save a place you love and take the next step with confidence.",
+    imageSrc: "/home/features/apply.png",
     href: "/properties",
   },
   {
     title: "Payment",
-    mobileTitle: "Keep track",
-    description: "Keep your property activity organized in one place.",
-    icon: ChecklistIcon,
+    description: "Keep your property journey organized in one place.",
+    imageSrc: "/home/features/payment.png",
     href: "/dashboard",
   },
 ];
 
-const cities = [
-  { city: "Lagos", areas: "Lekki, Ikoyi, Victoria Island, Yaba, Ikeja" },
-  {
-    city: "Abuja",
-    areas: "Maitama, Wuse, Jabi, Gwarinpa, Asokoro",
-    imageSrc: "/home/city-abuja.webp",
-  },
-  {
-    city: "Port Harcourt",
-    areas: "Old GRA, Trans Amadi, Peter Odili Road",
-    imageSrc: "/home/city-port-harcourt.webp",
-  },
-  { city: "Uyo", areas: "Ewet Housing, Shelter Afrique, Ring Road" },
-  { city: "Enugu", areas: "Independence Layout, New Haven, GRA" },
-  { city: "Ibadan", areas: "Jericho, Bodija, Akobo, Oluyole" },
-];
+const cityImagery: Record<string, string> = {
+  abuja: "/home/city-abuja.webp",
+  "port harcourt": "/home/city-port-harcourt.webp",
+};
 
 const roleCards = [
   {
@@ -134,13 +120,17 @@ function buildPropertyUrl(filters: PropertyFilters) {
 function SectionHeading({
   align = "left",
   eyebrow,
+  motion = false,
   subtitle,
   title,
+  tone = "light",
 }: {
   align?: "left" | "center";
   eyebrow?: string;
+  motion?: boolean;
   subtitle?: string;
   title: string;
+  tone?: "light" | "dark";
 }) {
   return (
     <div
@@ -149,14 +139,97 @@ function SectionHeading({
       }
     >
       {eyebrow ? (
-        <p className="mb-4 text-lg font-medium leading-7 text-reality-text-brand">{eyebrow}</p>
+        <p className={tone === "dark" ? "mb-4 text-lg font-medium leading-7 text-reality-surfaceBrand" : "mb-4 text-lg font-medium leading-7 text-reality-text-brand"}>{eyebrow}</p>
       ) : null}
-      <h2 className="font-display text-[2rem] font-medium leading-none tracking-normal text-black md:text-[3.75rem] md:leading-[1.2]">
+      <h2 className={tone === "dark" ? "font-display text-[2rem] font-medium leading-none tracking-normal text-white md:text-[3.75rem] md:leading-[1.2]" : "font-display text-[2rem] font-medium leading-none tracking-normal text-reality-text-primary md:text-[3.75rem] md:leading-[1.2]"} data-motion-child={motion ? "" : undefined}>
         {title}
       </h2>
       {subtitle ? (
-        <p className="mt-4 text-base leading-7 text-reality-text-tertiary md:text-lg">{subtitle}</p>
+        <p className={tone === "dark" ? "mt-4 text-base leading-7 text-white/85 md:text-lg" : "mt-4 text-base leading-7 text-reality-text-secondary md:text-lg"} data-motion-child={motion ? "" : undefined}>{subtitle}</p>
       ) : null}
+    </div>
+  );
+}
+
+function AutoScrollRail({ children, className, label }: { children: React.ReactNode; className: string; label: string }) {
+  const railRef = useRef<HTMLDivElement>(null);
+  const interactingRef = useRef(false);
+  const [paused, setPaused] = useState(false);
+  const [canScroll, setCanScroll] = useState(false);
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const measure = () => setCanScroll(rail.scrollWidth > rail.clientWidth + 2);
+    measure();
+    const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    resizeObserver?.observe(rail);
+    window.addEventListener("resize", measure);
+
+    let direction = 1;
+    let position = rail.scrollLeft;
+    let lastTime = 0;
+    let frame = 0;
+    let visible = true;
+    const visibilityObserver = typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }, { threshold: 0.05 })
+      : null;
+    visibilityObserver?.observe(rail);
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    const tick = (time: number) => {
+      const elapsed = lastTime ? Math.min(time - lastTime, 50) : 0;
+      lastTime = time;
+      const maximum = rail.scrollWidth - rail.clientWidth;
+      if (visible && !paused && !interactingRef.current && !reducedMotion?.matches && maximum > 2) {
+        position = Math.max(0, Math.min(maximum, position + direction * elapsed * 0.025));
+        rail.scrollLeft = position;
+        if (position >= maximum - 1) direction = -1;
+        if (position <= 1) direction = 1;
+      } else {
+        position = rail.scrollLeft;
+      }
+      frame = window.requestAnimationFrame(tick);
+    };
+    frame = window.requestAnimationFrame(tick);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      resizeObserver?.disconnect();
+      visibilityObserver?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [paused]);
+
+  return (
+    <div className="relative">
+      {canScroll ? (
+        <button
+          aria-label={`${paused ? "Resume" : "Pause"} ${label} movement`}
+          className="absolute -top-10 right-0 rounded-full border border-reality-border-secondary bg-white/90 px-3 py-1 text-xs font-medium text-reality-text-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+          onClick={() => setPaused((current) => !current)}
+          type="button"
+        >
+          {paused ? "Play" : "Pause"}
+        </button>
+      ) : null}
+      <div
+        aria-label={label}
+        className={`reality-no-scrollbar ${className}`}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            interactingRef.current = false;
+          }
+        }}
+        onFocus={() => { interactingRef.current = true; }}
+        onMouseEnter={() => { interactingRef.current = true; }}
+        onMouseLeave={() => { interactingRef.current = false; }}
+        onPointerDown={() => { interactingRef.current = true; }}
+        onPointerUp={() => { window.setTimeout(() => { interactingRef.current = false; }, 3500); }}
+        ref={railRef}
+        role="region"
+        tabIndex={0}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -164,14 +237,30 @@ function SectionHeading({
 function HeroSearch({ onDropdownOpenChange }: { onDropdownOpenChange?: (isOpen: boolean) => void }) {
   const router = useRouter();
   const [mode, setMode] = useState<ListingType>("rent");
-  const [city, setCity] = useState("");
+  const [location, setLocation] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const locationsQuery = useQuery({
+    queryKey: ["available-property-locations"],
+    queryFn: getAvailablePropertyLocations,
+    staleTime: 5 * 60 * 1000,
+  });
+  const locationOptions = [
+    { label: "All locations", value: "" },
+    ...(locationsQuery.data ?? []).map((item) => ({
+      label: `${item.name}, ${item.state}`,
+      value: JSON.stringify([item.name, item.state]),
+    })),
+  ];
 
   function submitSearch() {
+    const selected = (locationsQuery.data ?? []).find(
+      (item) => JSON.stringify([item.name, item.state]) === location,
+    );
     router.push(
       buildPropertyUrl({
-        city: city.trim(),
+        city: selected?.name ?? "",
+        state: selected?.state ?? "",
         listing_type: mode,
         max_price: maxPrice,
         property_type: propertyType,
@@ -181,6 +270,24 @@ function HeroSearch({ onDropdownOpenChange }: { onDropdownOpenChange?: (isOpen: 
 
   return (
     <div className="flex w-full flex-col items-center gap-6" data-testid="hero-search">
+      <div className="grid w-full max-w-[340px] gap-3 md:hidden">
+        <ProtectedActionLink
+          actionLabel="List property"
+          className={buttonClasses("realitySecondary", "reality-hero-invite min-h-14 justify-center border-white bg-white text-base font-bold text-reality-brandEmphasis")}
+          href="/properties/new"
+          role="landlord"
+        >
+          List Property
+        </ProtectedActionLink>
+        <ProtectedActionLink
+          actionLabel="Get started"
+          className={buttonClasses("reality", "reality-hero-invite reality-hero-invite-delayed min-h-14 justify-center text-base font-bold")}
+          href="/dashboard"
+        >
+          Get Started
+        </ProtectedActionLink>
+      </div>
+      <div className="hidden w-full flex-col items-center gap-6 md:flex">
       <SegmentedTabs
         className="gap-4 bg-transparent p-0"
         items={propertyModes}
@@ -190,12 +297,13 @@ function HeroSearch({ onDropdownOpenChange }: { onDropdownOpenChange?: (isOpen: 
       />
       <div className="relative grid w-full overflow-visible rounded-[1.75rem] bg-[#062820]/95 p-1 shadow-[0_18px_45px_rgba(0,0,0,0.18)] ring-1 ring-white/10 backdrop-blur md:h-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_56px] md:rounded-full">
         <SearchField icon={MapPinIcon} label="Location">
-          <input
+          <ListboxSelect
             aria-label="Search location"
-            className="h-5 w-full min-w-0 border-0 bg-transparent p-0 text-sm font-medium text-white/75 outline-none placeholder:text-white/60 focus-visible:text-white"
-            onChange={(event) => setCity(event.target.value)}
-            placeholder="Where"
-            value={city}
+            disabled={locationsQuery.isLoading || locationsQuery.isError}
+            onChange={setLocation}
+            onOpenChange={onDropdownOpenChange}
+            options={locationOptions}
+            value={location}
           />
         </SearchField>
         <SearchField icon={BuildingsIcon} label="Type">
@@ -232,6 +340,7 @@ function HeroSearch({ onDropdownOpenChange }: { onDropdownOpenChange?: (isOpen: 
           <span className="ml-2 md:sr-only">Search</span>
         </Button>
       </div>
+      </div>
     </div>
   );
 }
@@ -259,19 +368,21 @@ function SearchField({
 function PropertyRail({
   ctaLabel,
   properties,
+  surface,
   subtitle,
   title,
 }: {
   ctaLabel?: string;
   properties: Property[];
+  surface: "muted" | "plain";
   subtitle: string;
   title: string;
 }) {
   return (
-    <StaggerReveal as="section" className="block" stagger={0.11} y={36}>
-      <div className="mb-8 flex items-start justify-between gap-5 md:mb-14" data-motion-child>
+    <StaggerReveal as="section" className={surface === "muted" ? "rounded-[2rem] bg-reality-surfaceMuted px-5 py-12 md:px-10 md:py-16" : "rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16"} duration={0.76} stagger={0.1} start="top 86%" visibleEntrance y={44}>
+      <div className="mb-8 flex items-start justify-between gap-5 md:mb-12">
         <div>
-          <h2 className="font-display text-[2rem] font-medium leading-none text-black md:text-[3.75rem] md:leading-none">
+          <h2 className="font-display text-[2rem] font-medium leading-none text-reality-text-primary md:text-[3.75rem] md:leading-none" data-motion-child>
             <Link className="group inline-flex items-center gap-3" href="/properties">
               {title}
               <span className="hidden h-10 w-10 items-center justify-center rounded-full bg-reality-bg-muted text-black transition group-hover:bg-reality-brand-50 md:inline-flex">
@@ -279,24 +390,24 @@ function PropertyRail({
               </span>
             </Link>
           </h2>
-          <p className="mt-3 text-base leading-7 text-reality-text-muted">{subtitle}</p>
+          <p className="mt-3 text-base leading-7 text-reality-text-secondary" data-motion-child>{subtitle}</p>
         </div>
       </div>
       {properties.length > 0 ? (
-        <div className={properties.length < 3 ? "flex snap-x justify-start gap-6 overflow-x-auto pb-3 md:justify-center" : "flex snap-x gap-6 overflow-x-auto pb-3 2xl:grid 2xl:grid-cols-4 2xl:overflow-visible 2xl:pb-0"}>
+        <AutoScrollRail className={properties.length < 3 ? "flex justify-start gap-6 overflow-x-auto pb-3 md:justify-center" : "flex gap-6 overflow-x-auto pb-3 2xl:grid 2xl:grid-cols-4 2xl:overflow-visible 2xl:pb-0"} label={title}>
           {properties.map((property) => (
-            <div className="w-[min(314px,82vw)] shrink-0 snap-start" data-motion-child key={property.id}>
+            <div className="w-[min(314px,82vw)] shrink-0" data-motion-child key={property.id}>
               <PropertyCard property={property} variant="reality" />
             </div>
           ))}
           {properties.length < 3 ? (
-            <div className="flex min-h-[340px] w-[min(314px,82vw)] shrink-0 snap-start flex-col justify-center rounded-[2rem] border border-reality-border-secondary bg-reality-surfaceBrand p-7 md:max-w-[520px] md:flex-1" data-motion-child>
+            <div className="flex min-h-[340px] w-[min(314px,82vw)] shrink-0 flex-col justify-center rounded-[2rem] border border-reality-border-secondary bg-reality-surfaceBrand p-7 md:max-w-[520px] md:flex-1" data-motion-child>
               <p className="font-display text-2xl font-medium leading-tight text-reality-brandEmphasis">Looking for more options?</p>
               <p className="mt-3 text-sm leading-6 text-reality-text-secondary">Browse the full marketplace and refine your search by location, type, or price.</p>
               <Link className={buttonClasses("reality", "mt-6 w-fit")} href="/properties">Browse properties</Link>
             </div>
           ) : null}
-        </div>
+        </AutoScrollRail>
       ) : (
         <div className="rounded-[2rem] bg-reality-surfaceBrand p-8 text-reality-text-secondary" data-motion-child>
           <p>Approved public listings will appear here when inventory is available.</p>
@@ -313,20 +424,22 @@ function PropertyRail({
 }
 
 function CityCard({
-  areas,
   city,
+  count,
   imageSrc,
   index,
+  state,
 }: {
-  areas: string;
   city: string;
+  count: number;
   imageSrc?: string;
   index: number;
+  state: string;
 }) {
   return (
     <Link
       className="group relative block h-[317px] w-[321px] shrink-0 snap-start overflow-hidden rounded-[2rem] bg-[#0a3b2e] focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 md:w-auto"
-      href={`/properties?city=${encodeURIComponent(city)}`}
+      href={`/properties?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`}
     >
       {imageSrc ? (
         <Image
@@ -349,7 +462,7 @@ function CityCard({
       </span>
       <div className="absolute inset-x-6 bottom-6 text-center text-white">
         <h3 className="text-xl font-semibold leading-7">{city}</h3>
-        <p className="mt-0.5 text-base leading-6 text-white">{areas}</p>
+        <p className="mt-0.5 text-base leading-6 text-white">{state} · {count} {count === 1 ? "listing" : "listings"}</p>
       </div>
     </Link>
   );
@@ -361,12 +474,7 @@ function RoleCard({
   card: (typeof roleCards)[number];
 }) {
   const Icon = card.icon;
-  const toneClass =
-    card.tone === "secondary"
-      ? "bg-[#f9f6ed]"
-      : card.tone === "primary"
-        ? "bg-[#edfcf5]"
-        : "bg-reality-bg-muted";
+  const toneClass = card.tone === "primary" ? "bg-reality-surface" : "bg-reality-surfaceMuted";
 
   return (
     <article
@@ -396,6 +504,11 @@ function RoleCard({
 export default function HomePage() {
   const heroScope = useRef<HTMLElement>(null);
   const [isHeroFilterOpen, setIsHeroFilterOpen] = useState(false);
+  const locationsQuery = useQuery({
+    queryKey: ["available-property-locations"],
+    queryFn: getAvailablePropertyLocations,
+    staleTime: 5 * 60 * 1000,
+  });
   const featuredQuery = useQuery({
     queryKey: ["homepage-featured-properties"],
     queryFn: () => getPublicProperties({ ordering: "-featured" }),
@@ -415,6 +528,15 @@ export default function HomePage() {
     const featuredIds = new Set(featured.map((property) => property.id));
     return candidates.filter((property) => !featuredIds.has(property.id));
   }, [featured, featuredQuery.data, latestQuery.data]);
+  const demoCategories = useMemo(() => {
+    if (!USE_MOCKS) return null;
+    const inventory = featuredQuery.data?.results ?? [];
+    return {
+      shortlets: inventory.filter((property) => property.property_type === "shortlet").slice(0, 3),
+      land: inventory.filter((property) => property.property_type === "land").slice(0, 2),
+      hotels: inventory.filter((property) => property.property_type === "hotel").slice(0, 2),
+    };
+  }, [featuredQuery.data]);
 
   useGSAP(
     () => {
@@ -464,7 +586,7 @@ export default function HomePage() {
       <PublicShell transparentHeader variant="reality">
         <main>
           <section
-            className="relative isolate flex min-h-[960px] items-start justify-center overflow-hidden bg-reality-brand-900 px-5 pb-16 pt-[118px] md:min-h-[820px] md:px-6 md:pt-[190px] xl:min-h-[900px] xl:px-0 xl:pt-[220px]"
+            className="relative isolate flex min-h-[700px] flex-col items-center justify-start gap-10 overflow-hidden bg-reality-brand-900 px-5 pb-12 pt-[135px] md:min-h-[820px] md:flex-row md:justify-center md:gap-0 md:px-6 md:pb-44 md:pt-[190px] xl:min-h-[900px] xl:px-0 xl:pt-[220px]"
             ref={heroScope}
           >
             <Image
@@ -477,7 +599,7 @@ export default function HomePage() {
               src="/home/hero-house.webp"
             />
             <div className="absolute inset-0 z-0 bg-[#0a3b2e]/60" />
-            <div className="relative z-10 flex w-full max-w-[1066px] flex-col items-center gap-7 text-center text-white md:gap-[35px]">
+            <div className="relative z-10 flex w-full max-w-[1066px] flex-col items-center gap-8 text-center text-white md:gap-[35px]">
               <div className="max-w-[725px]" data-hero-reveal>
                 <h1 className="font-display text-[3rem] font-semibold leading-[0.98] tracking-normal sm:text-[3.4rem] md:text-[4.5rem] md:leading-[90px]">
                   Find property in Nigeria with confidence.
@@ -491,7 +613,7 @@ export default function HomePage() {
               </div>
             </div>
             <div
-              className="pointer-events-none absolute bottom-9 left-1/2 grid w-[min(334px,calc(100%-2.5rem))] -translate-x-1/2 grid-cols-3 gap-3 text-left transition-[opacity,filter] duration-200 md:bottom-16 md:flex md:w-auto md:gap-8"
+              className="pointer-events-none relative z-10 grid w-full max-w-[340px] grid-cols-3 gap-3 text-left transition-[opacity,filter] duration-200 md:absolute md:bottom-10 md:left-1/2 md:flex md:w-auto md:max-w-none md:-translate-x-1/2 md:gap-8"
               data-hero-reveal
               style={{
                 filter: isHeroFilterOpen ? "blur(1.5px)" : "blur(0)",
@@ -502,8 +624,8 @@ export default function HomePage() {
                 const Icon = item.icon;
                 return (
                   <div className="flex flex-col gap-2.5 text-white" key={item.label}>
-                    <Icon className="h-5 w-5 md:h-6 md:w-6" />
-                    <p className="text-xs font-medium leading-[18px] md:w-[146px] md:text-base md:leading-6">
+                    <Icon className="h-6 w-6 md:h-6 md:w-6" />
+                    <p className="text-sm font-semibold leading-5 md:w-[146px] md:text-base md:leading-6">
                       {item.label}
                     </p>
                   </div>
@@ -512,40 +634,49 @@ export default function HomePage() {
             </div>
           </section>
 
-          <div className="reality-reveal mx-auto flex max-w-reality flex-col gap-8 px-6 py-12 md:gap-12 md:py-16 xl:px-0">
-            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16" stagger={0.1} y={34}>
-              <div data-motion-child>
-                <SectionHeading
-                  align="center"
-                  eyebrow="How it works"
-                  subtitle="Browse, save, book a viewing, and keep track of everything in one place."
-                  title="Find a property and take the next step"
-                />
+          <div className="reality-reveal mx-auto flex max-w-reality flex-col gap-8 px-6 pb-0 pt-10 md:gap-12 md:pt-16 xl:px-0">
+            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16" duration={0.76} stagger={0.1} start="top 86%" visibleEntrance y={44}>
+              <div>
+                <div className="mx-auto max-w-[870px] text-center">
+                  <h2 className="font-display text-4xl font-bold leading-tight text-reality-text-primary md:text-6xl" data-motion-child>
+                    How it works
+                  </h2>
+                  <p className="mt-4 text-base leading-7 text-reality-text-secondary md:text-lg" data-motion-child>
+                    Find a property and take the next step, from your first search to your next move.
+                  </p>
+                </div>
               </div>
-              <div className="mt-8 grid grid-cols-2 gap-4 md:mt-12 md:grid-cols-4 md:gap-6">
-                {steps.map((step) => {
-                  const Icon = step.icon;
-                  return (
-                    <Link
-                      className="group rounded-[2rem] bg-reality-bg-muted p-4 transition hover:bg-reality-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 md:p-8"
-                      data-motion-child
-                      href={step.href}
-                      key={step.title}
+              <div className="mt-8 grid grid-cols-2 items-start gap-x-3 gap-y-8 md:mt-12 md:grid-cols-4 md:gap-5">
+                {steps.map((step, index) => (
+                  <Link
+                    aria-label={step.title}
+                    className="feature-visual relative flex flex-col items-center rounded-[2rem] px-1 pb-2 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+                    data-feature={step.title.toLowerCase()}
+                    data-motion-child
+                    href={step.href}
+                    key={step.title}
+                  >
+                    <span
+                      className="feature-visual-float relative z-10 block h-36 w-36 sm:h-40 sm:w-40 md:h-52 md:w-52 xl:h-60 xl:w-60"
+                      style={{ animationDelay: `${index * -0.65}s` }}
                     >
-                      <div className="flex items-center justify-between">
-                        <Icon className="h-6 w-6 text-black" />
-                        <ArrowUpRightIcon className="hidden h-5 w-5 text-black transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 md:block" />
-                      </div>
-                      <h3 className="mt-4 text-base font-medium leading-6 text-black md:text-xl md:leading-7">
-                        <span className="md:hidden">{step.mobileTitle}</span>
-                        <span className="hidden md:inline">{step.title}</span>
-                      </h3>
-                      <p className="mt-1 text-xs leading-[18px] text-black md:mt-2 md:text-sm md:leading-5">
-                        {step.description}
-                      </p>
-                    </Link>
-                  );
-                })}
+                      <Image
+                        alt=""
+                        className="feature-visual-image h-full w-full object-contain"
+                        height={256}
+                        sizes="(min-width: 1280px) 240px, (min-width: 768px) 208px, 160px"
+                        src={step.imageSrc}
+                        width={256}
+                      />
+                    </span>
+                    <span className="feature-visual-title relative z-10 mt-2 block text-xl font-semibold text-reality-text-primary md:mt-3 md:text-2xl">
+                      {step.title}
+                    </span>
+                    <span className="relative z-10 mt-2 block max-w-[260px] text-sm leading-6 text-reality-text-secondary md:text-base">
+                      {step.description}
+                    </span>
+                  </Link>
+                ))}
               </div>
             </StaggerReveal>
 
@@ -555,6 +686,7 @@ export default function HomePage() {
               <PropertyRail
                 ctaLabel="View all properties"
                 properties={featured}
+                surface="muted"
                 subtitle="Explore reviewed homes, land, and commercial spaces."
                 title="Featured properties"
               />
@@ -563,7 +695,7 @@ export default function HomePage() {
             {latestQuery.isLoading ? (
               <RailSkeleton title="Newly added properties" />
             ) : latest.length === 0 ? (
-              <section className="rounded-[2rem] bg-reality-surfaceBrand p-7 md:p-10">
+              <section className="rounded-[2rem] bg-reality-surface p-7 md:p-10">
                 <h2 className="font-display text-3xl font-medium text-reality-brandEmphasis md:text-4xl">Newly added properties</h2>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-reality-text-secondary">New approved listings will appear here as public inventory grows. Explore the marketplace for everything currently available.</p>
                 <Link className={buttonClasses("realitySecondary", "mt-5 w-fit")} href="/properties">Browse properties</Link>
@@ -571,37 +703,65 @@ export default function HomePage() {
             ) : (
               <PropertyRail
                 properties={latest}
+                surface="plain"
                 subtitle="Fresh listings from the public RealityNG marketplace."
                 title="Newly added properties"
               />
             )}
 
-            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16" stagger={0.11} y={36}>
-              <div data-motion-child>
+            {demoCategories ? (
+              <div className="space-y-8" aria-label="Sample property collections">
+                <p className="px-2 text-sm font-medium text-reality-text-muted">
+                  Sample listings for this local preview — not available to purchase or book.
+                </p>
+                {demoCategories.shortlets.length >= 2 ? (
+                  <PropertyRail properties={demoCategories.shortlets} surface="muted" subtitle="Furnished stay examples in the demo inventory." title="Shortlet stays" />
+                ) : null}
+                {demoCategories.land.length >= 2 ? (
+                  <PropertyRail properties={demoCategories.land} surface="plain" subtitle="Residential and commercial land examples." title="Land opportunities" />
+                ) : null}
+                {demoCategories.hotels.length >= 2 ? (
+                  <PropertyRail properties={demoCategories.hotels} surface="muted" subtitle="Hospitality property examples across Nigeria." title="Hotels & hospitality" />
+                ) : null}
+              </div>
+            ) : null}
+
+            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surfaceDark px-5 py-12 md:px-10 md:py-16" duration={0.76} stagger={0.1} start="top 86%" visibleEntrance y={44}>
+              <div>
                 <SectionHeading
                   align="center"
+                  motion
                   subtitle="Explore popular locations across Nigeria and refine your search from there."
                   title="Browse by city"
+                  tone="dark"
                 />
               </div>
-              <div className="-mx-6 mt-8 flex snap-x gap-6 overflow-x-auto px-6 pb-3 md:mx-0 md:grid md:grid-cols-3 md:px-0">
-                {cities.map((city, index) => (
-                  <div data-motion-child key={city.city}>
-                    <CityCard
-                      areas={city.areas}
-                      city={city.city}
-                      imageSrc={city.imageSrc}
-                      index={index}
-                    />
-                  </div>
-                ))}
-              </div>
+              {locationsQuery.data?.length ? (
+                <AutoScrollRail className="-mx-6 mt-8 flex gap-6 overflow-x-auto px-6 pb-3 md:mx-0 md:grid md:grid-cols-3 md:px-0" label="Browse by city">
+                  {locationsQuery.data.map((location, index) => (
+                    <div data-motion-child key={`${location.state}:${location.name}`}>
+                      <CityCard
+                        city={location.name}
+                        count={location.count}
+                        imageSrc={cityImagery[location.name.toLocaleLowerCase()]}
+                        index={index}
+                        state={location.state}
+                      />
+                    </div>
+                  ))}
+                </AutoScrollRail>
+              ) : (
+                <p className="mt-8 text-center text-sm text-white/80">
+                  {locationsQuery.isLoading ? "Loading available locations…" : "Browse all verified properties as locations become available."}
+                </p>
+              )}
             </StaggerReveal>
 
-            <StaggerReveal as="section" className="py-10 md:py-14" stagger={0.11} y={36}>
-              <div data-motion-child>
+            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surfaceBrand px-5 py-12 md:px-10 md:py-16" duration={0.76} stagger={0.1} start="top 86%" visibleEntrance y={44}>
+              <div>
                 <SectionHeading
                   align="center"
+                  motion
                   subtitle="Whether you own properties, help people find them, or provide essential services, RealityNG gives you the tools to get things done with confidence."
                   title="Everything you need to make property easier"
                 />
@@ -617,8 +777,11 @@ export default function HomePage() {
 
             <StaggerReveal
               className="relative min-h-[520px] overflow-hidden rounded-[2rem] bg-reality-brand-600 px-8 py-12 md:min-h-[717px] md:rounded-[3.5rem] md:px-[130px]"
-              stagger={0.11}
-              y={34}
+              duration={0.8}
+              stagger={0.1}
+              start="top 86%"
+              visibleEntrance
+              y={44}
             >
               <Image
                 alt=""
@@ -630,17 +793,17 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-r from-reality-brand-600 via-reality-brand-600/70 to-transparent mix-blend-multiply" />
               <div
                 className="relative flex min-h-[420px] max-w-[374px] flex-col justify-center text-white md:min-h-[620px]"
-                data-motion-child
               >
-                <h2 className="font-display text-[3.5rem] font-medium leading-[1.05] tracking-normal md:text-[4.5rem] md:leading-[79px]">
+                <h2 className="font-display text-[3.5rem] font-medium leading-[1.05] tracking-normal md:text-[4.5rem] md:leading-[79px]" data-motion-child>
                   Found somewhere you like?
                 </h2>
-                <p className="mt-4 text-lg font-medium leading-7">
+                <p className="mt-4 text-lg font-medium leading-7" data-motion-child>
                   Create an account to save properties, book viewings, and keep track of the ones
                   you are interested in.
                 </p>
                 <Link
                   className={buttonClasses("realitySecondary", "mt-6 h-12 w-fit px-[18px]")}
+                  data-motion-child
                   href="/auth/sign-up?next=%2Fonboarding%2Frole-setup"
                 >
                   Get Started
@@ -659,7 +822,7 @@ function RailSkeleton({ title }: { title: string }) {
   return (
     <section aria-label={`${title} loading`}>
       <div className="h-20 max-w-lg animate-pulse rounded-[1rem] bg-reality-bg-muted" />
-      <div className="mt-8 flex snap-x gap-6 overflow-x-auto pb-3 md:mt-12 2xl:grid 2xl:grid-cols-4 2xl:overflow-hidden 2xl:pb-0">
+      <div className="reality-no-scrollbar mt-8 flex snap-x gap-6 overflow-x-auto pb-3 md:mt-12 2xl:grid 2xl:grid-cols-4 2xl:overflow-hidden 2xl:pb-0">
         {[1, 2, 3, 4].map((item) => (
           <div
             className="h-[392px] w-[314px] shrink-0 snap-start animate-pulse rounded-[2rem] bg-reality-bg-muted xl:w-auto"
@@ -763,44 +926,10 @@ function SearchIcon({ className }: { className?: string }) {
   );
 }
 
-function CompassIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24">
-      <path
-        d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="1.7"
-      />
-      <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
-  );
-}
-
-function FileCheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24">
-      <path
-        d="M14 3v5h5M8.5 14l2 2 4-4M6 21h12a1 1 0 0 0 1-1V8l-5-5H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.7"
-      />
-    </svg>
-  );
-}
-
 function ChecklistIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24">
-      <path
-        d="m5 7 1.5 1.5L9 6M11 7h8M5 12l1.5 1.5L9 11M11 12h8M5 17l1.5 1.5L9 16M11 17h8"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.7"
-      />
+      <path d="m5 7 1.5 1.5L9 6M11 7h8M5 12l1.5 1.5L9 11M11 12h8M5 17l1.5 1.5L9 16M11 17h8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
     </svg>
   );
 }
@@ -875,4 +1004,3 @@ function ToolsIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-

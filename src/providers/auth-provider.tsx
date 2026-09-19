@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { getCurrentUser, loginUser, logoutUser, registerUser } from "@/lib/api/auth";
 import { getRoleDashboardPath } from "@/lib/auth/permissions";
+import { mergeAnonymousShortlist } from "@/lib/anonymous-shortlist";
 import { clearTokens, getRefreshToken, setTokens } from "@/lib/auth/token-storage";
 import type { LoginPayload, RegisterPayload } from "@/lib/api/auth";
 import type { User } from "@/lib/auth/types";
@@ -24,20 +26,32 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const reconcileShortlist = useCallback(() => {
+    void mergeAnonymousShortlist().then(() => {
+      void queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+      void queryClient.invalidateQueries({ queryKey: ["public-properties"] });
+    }).catch(() => {
+      // A shortlist storage failure must never invalidate an authenticated session.
+    });
+  }, [queryClient]);
 
   const refreshSession = useCallback(async () => {
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      reconcileShortlist();
     } catch {
       clearTokens();
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [reconcileShortlist]);
 
   useEffect(() => {
     refreshSession();
@@ -48,11 +62,12 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
       const response = await loginUser(payload);
       setTokens(response.access, response.refresh);
       setUser(response.user);
+      reconcileShortlist();
       if (redirectTo !== null) {
         router.push(redirectTo || getRoleDashboardPath(response.user));
       }
     },
-    [router],
+    [reconcileShortlist, router],
   );
 
   const signUp = useCallback(async (payload: RegisterPayload) => registerUser(payload), []);

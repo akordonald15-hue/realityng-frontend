@@ -6,7 +6,12 @@ import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
   getPublicProperties: vi.fn(),
+  getAvailablePropertyLocations: vi.fn(),
   push: vi.fn(),
+}));
+
+vi.mock("@/lib/api/available-property-locations", () => ({
+  getAvailablePropertyLocations: () => mocks.getAvailablePropertyLocations(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -34,6 +39,7 @@ vi.mock("@/lib/api/properties", async () => {
 describe("HomePage", () => {
   beforeEach(() => {
     mocks.push.mockReset();
+    mocks.getAvailablePropertyLocations.mockResolvedValue([{ name: "Lagos", state: "Lagos", count: 1 }]);
     mocks.getPublicProperties.mockResolvedValue({
       count: 1,
       next: null,
@@ -71,13 +77,13 @@ describe("HomePage", () => {
       .toBeInTheDocument();
     expect(screen.getByLabelText("Property listing type")).toBeInTheDocument();
     expect(screen.getByRole("navigation")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Lagos/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /Lagos/i })).toHaveAttribute(
       "href",
-      "/properties?city=Lagos",
+      "/properties?city=Lagos&state=Lagos",
     );
-    expect(
-      screen.getByRole("heading", { name: "Everything you need to make property easier" }),
-    ).toBeInTheDocument();
+    expect(mocks.getAvailablePropertyLocations).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("heading", { name: "How it works" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Everything you need to make property easier" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getAllByText("Approved Lekki Apartment")).toHaveLength(1));
     expect(screen.getByRole("heading", { name: "Featured properties" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Newly added properties" })).toBeInTheDocument();
@@ -90,15 +96,16 @@ describe("HomePage", () => {
     renderWithQueryClient(<HomePage />);
 
     fireEvent.click(screen.getByRole("tab", { name: "For Rent" }));
-    fireEvent.change(screen.getByLabelText("Search location"), {
-      target: { value: "Lagos" },
-    });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Search location" })).not.toBeDisabled());
+    fireEvent.click(screen.getByRole("button", { name: "Search location" }));
+    fireEvent.click(screen.getByRole("option", { name: "Lagos, Lagos" }));
     fireEvent.click(screen.getByRole("button", { name: "Search properties" }));
 
     await waitFor(() => expect(mocks.push).toHaveBeenCalledTimes(1));
     const [url] = mocks.push.mock.calls[0] as [string];
     expect(url).toContain("/properties?");
     expect(url).toContain("city=Lagos");
+    expect(url).toContain("state=Lagos");
     expect(url).toContain("listing_type=rent");
   });
 
@@ -119,6 +126,25 @@ describe("HomePage", () => {
     renderWithQueryClient(<HomePage />);
 
     expect(screen.getByRole("button", { name: "Toggle navigation" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "List Property" })[0]).toHaveAttribute("href", "/properties/new");
+    expect(screen.getAllByRole("link", { name: "Get Started" }).length).toBeGreaterThan(0);
+  });
+
+  it("renders titled feature links with descriptions beneath the animated images", () => {
+    renderWithQueryClient(<HomePage />);
+
+    for (const [name, destination] of [
+      ["Search", "/properties"],
+      ["Inspection", "/properties"],
+      ["Apply", "/properties"],
+      ["Payment", "/dashboard"],
+    ]) {
+      const link = screen.getByRole("link", { name });
+      expect(link).toHaveAttribute("href", destination);
+      expect(link.querySelector("img")).toHaveAttribute("alt", "");
+      expect(link.textContent).toContain(name);
+      expect(link.querySelectorAll("span")).toHaveLength(3);
+    }
   });
 
   it("keeps sparse approved inventory intentional without inventing listings", async () => {
@@ -147,4 +173,3 @@ describe("HomePage", () => {
     ).toContain("/services");
   });
 });
-

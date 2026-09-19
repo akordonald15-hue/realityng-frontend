@@ -12,6 +12,7 @@ type StaggerRevealProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   disabled?: boolean;
   duration?: number;
+  visibleEntrance?: boolean;
   stagger?: number;
   start?: string;
   trigger?: "load" | "scroll";
@@ -24,6 +25,7 @@ export function StaggerReveal({
   children,
   disabled = false,
   duration = staggerChildren.duration,
+  visibleEntrance = false,
   stagger = staggerChildren.amount,
   start = "top 84%",
   trigger = "scroll",
@@ -63,7 +65,7 @@ export function StaggerReveal({
 
       gsap.fromTo(
         childrenToReveal,
-        { autoAlpha: trigger === "scroll" ? 1 : 0, y: revealY },
+        { autoAlpha: trigger === "scroll" && !visibleEntrance ? 1 : 0, y: revealY },
         {
           autoAlpha: 1,
           duration: revealDuration,
@@ -82,7 +84,7 @@ export function StaggerReveal({
         },
       );
     },
-    { dependencies: [childSelector, disabled, duration, stagger, start, trigger, y], scope },
+    { dependencies: [childSelector, disabled, duration, stagger, start, trigger, visibleEntrance, y], scope },
   );
 
   return (
@@ -91,4 +93,3 @@ export function StaggerReveal({
     </Component>
   );
 }
-

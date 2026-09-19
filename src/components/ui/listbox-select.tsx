@@ -2,7 +2,7 @@
 
 import { clsx } from "clsx";
 import { createPortal } from "react-dom";
-import { useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 type ListboxSelectOption = {
   label: string;
@@ -12,6 +12,7 @@ type ListboxSelectOption = {
 type ListboxSelectProps = {
   "aria-label"?: string;
   className?: string;
+  disabled?: boolean;
   label?: string;
   onChange: (value: string) => void;
   onOpenChange?: (isOpen: boolean) => void;
@@ -24,6 +25,7 @@ type ListboxSelectProps = {
 export function ListboxSelect({
   "aria-label": ariaLabel,
   className,
+  disabled = false,
   label,
   onChange,
   onOpenChange,
@@ -35,6 +37,12 @@ export function ListboxSelect({
   const id = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+  } | null>(null);
   const [activeIndex, setActiveIndex] = useState(() =>
     Math.max(
       0,
@@ -44,7 +52,35 @@ export function ListboxSelect({
   const selected = options.find((option) => option.value === value);
   const listboxId = `${id}-listbox`;
 
+  const positionMenu = useCallback(() => {
+    const trigger = buttonRef.current;
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const below = window.innerHeight - rect.bottom - 12;
+    const above = rect.top - 12;
+    const openBelow = below >= 180 || below >= above;
+    const maxHeight = Math.max(120, Math.min(320, openBelow ? below : above));
+    const width = Math.min(window.innerWidth - 24, Math.max(224, rect.width));
+    setMenuPosition({
+      top: openBelow ? rect.bottom + 8 : Math.max(12, rect.top - maxHeight - 8),
+      left: Math.min(Math.max(12, rect.left), window.innerWidth - width - 12),
+      width,
+      maxHeight,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen || variant !== "reality") return;
+    window.addEventListener("resize", positionMenu);
+    window.addEventListener("scroll", positionMenu, true);
+    return () => {
+      window.removeEventListener("resize", positionMenu);
+      window.removeEventListener("scroll", positionMenu, true);
+    };
+  }, [isOpen, positionMenu, variant]);
+
   function updateOpen(nextOpen: boolean) {
+    if (nextOpen && variant === "reality") positionMenu();
     setIsOpen(nextOpen);
     onOpenChange?.(nextOpen);
   }
@@ -82,8 +118,9 @@ export function ListboxSelect({
         "border border-reality-border-secondary bg-white text-reality-text-primary shadow-[0_20px_45px_rgba(3,37,31,0.22)] ring-1 ring-black/5",
         variant === "hero"
           ? "fixed left-1/2 top-[58%] z-50 w-[min(560px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-[24px] p-2.5 max-md:top-1/2 max-md:w-[calc(100vw-32px)]"
-          : "reality-menu absolute left-0 top-full z-50 mt-4 max-h-80 w-56 overflow-y-auto rounded-[16px] p-1.5",
+          : "fixed z-[100] overflow-y-auto rounded-[16px] p-1.5",
       )}
+      style={variant === "reality" ? menuPosition ?? { top: -9999, left: 0 } : undefined}
       onBlur={(event) => {
         if (!containsInteractiveTarget(event.relatedTarget)) {
           updateOpen(false);
@@ -136,11 +173,12 @@ export function ListboxSelect({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={ariaLabel ?? label}
+        disabled={disabled}
         className={clsx(
           "flex w-full min-w-0 items-center justify-between gap-2 bg-transparent text-left text-sm outline-none transition focus-visible:ring-2",
           variant === "hero"
             ? "h-5 rounded-[6px] p-0 text-white/75 hover:text-white focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820]"
-            : "h-14 rounded-[12px] border border-reality-border-secondary bg-white px-4 text-reality-text-primary shadow-reality-sm hover:border-reality-brand-500 focus-visible:ring-reality-brand-500/20",
+            : "h-14 rounded-[12px] border border-reality-border-secondary bg-white px-4 text-reality-text-primary shadow-reality-sm hover:border-reality-brand-500 focus-visible:ring-reality-brand-500/20 disabled:cursor-not-allowed disabled:opacity-60",
         )}
         onBlur={(event) => {
           if (!containsInteractiveTarget(event.relatedTarget)) {
@@ -189,7 +227,7 @@ export function ListboxSelect({
           v
         </span>
       </button>
-      {variant === "hero" && typeof document !== "undefined" ? createPortal(menu, document.body) : menu}
+      {typeof document !== "undefined" ? createPortal(menu, document.body) : menu}
     </div>
   );
 }

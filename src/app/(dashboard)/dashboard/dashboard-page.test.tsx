@@ -102,6 +102,9 @@ function application(overrides = {}) {
     employment_status: "Full-time",
     employer_name: "Reality",
     monthly_income: "900000",
+    gross_annual_income: null,
+    income_currency: "NGN",
+    additional_income_sources: [],
     move_in_date: "2026-07-10",
     message: "Ready to proceed.",
     status: "approved",
@@ -211,6 +214,9 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Welcome back!")).toBeInTheDocument();
     expect(container.querySelector("main")).toHaveClass("bg-reality-canvas", "text-reality-text-primary");
     expect(screen.getByRole("tablist", { name: "Buyer dashboard sections" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("region", { name: "Discover properties" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Browse properties/ })).toHaveAttribute("href", "/properties");
     expect(screen.getByText("Your dashboard Summary")).toBeInTheDocument();
     expect(screen.getByText("My application")).toBeInTheDocument();
     expect(screen.getByText("Saved property")).toBeInTheDocument();
@@ -576,4 +582,3 @@ describe("DashboardPage", () => {
     ).not.toBeInTheDocument();
   });
 });
-
