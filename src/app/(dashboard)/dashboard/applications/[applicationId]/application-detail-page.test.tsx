@@ -82,6 +82,9 @@ function application(overrides: Partial<RentalApplication> = {}): RentalApplicat
     employment_status: "Employed",
     employer_name: "Diaspora Tech Holdings",
     monthly_income: "950000",
+    gross_annual_income: null,
+    income_currency: "NGN",
+    additional_income_sources: [],
     move_in_date: "2026-09-15",
     message: "Ready to proceed.",
     status: "submitted",
@@ -101,6 +104,18 @@ describe("ApplicationDetailPage", () => {
       id: "buyer-1",
       roles: [{ role: { name: "buyer" }, status: "approved" }],
     };
+  });
+
+  it("shows annual income and source breakdown to the applicant", async () => {
+    mocks.getApplication.mockResolvedValueOnce(application({
+      monthly_income: null,
+      gross_annual_income: "7200000.00",
+      additional_income_sources: [{ source: "Consulting", annual_amount: "1200000.00" }],
+    }));
+    renderWithQueryClient(<ApplicationDetailPage />);
+    expect(await screen.findByText("Gross yearly income")).toBeInTheDocument();
+    expect(screen.getByText(/Consulting:/)).toBeInTheDocument();
+    expect(screen.queryByText("Monthly income")).not.toBeInTheDocument();
   });
 
   it("renders the pending application detail state with real metadata and actions", async () => {
@@ -175,7 +190,12 @@ describe("ApplicationDetailPage", () => {
       roles: [{ role: { name: "landlord" }, status: "approved" }],
     };
     mocks.getApplication.mockResolvedValueOnce(
-      application({ can_manage_application: true, owner_notes: "Check employment documents." }),
+      application({
+        can_manage_application: true,
+        owner_notes: "Check employment documents.",
+        gross_annual_income: "7200000.00",
+        additional_income_sources: [{ source: "Private consulting", annual_amount: "1200000.00" }],
+      }),
     );
 
     renderWithQueryClient(<ApplicationDetailPage />);
@@ -185,6 +205,8 @@ describe("ApplicationDetailPage", () => {
     expect(screen.getByText("Ify Madu")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Check employment documents.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Mark under review" })).toBeInTheDocument();
+    expect(screen.getByText("Gross yearly income")).toBeInTheDocument();
+    expect(screen.queryByText(/Private consulting/)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Withdraw application" })).not.toBeInTheDocument();
     expect(screen.queryByText("Payment summary")).not.toBeInTheDocument();
   });

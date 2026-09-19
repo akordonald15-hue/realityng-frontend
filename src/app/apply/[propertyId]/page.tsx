@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { SuccessState } from "@/components/ui/success-state";
-import { createApplication } from "@/lib/api/applications";
+import { createApplication, type AdditionalIncomeSource } from "@/lib/api/applications";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { getPublicProperty } from "@/lib/api/properties";
 import type { Property } from "@/lib/api/properties";
@@ -29,7 +29,8 @@ type FieldErrors = Partial<
     | "phone"
     | "employmentStatus"
     | "employerName"
-    | "monthlyIncome"
+    | "grossAnnualIncome"
+    | "additionalIncomeSources"
     | "moveInDate"
     | "message",
     string
@@ -37,14 +38,6 @@ type FieldErrors = Partial<
 >;
 
 const employmentOptions = ["Full-time", "Part-time", "Self-employed", "Contract", "Employed"];
-
-const incomeOptions = [
-  { label: "Select monthly income", value: "" },
-  { label: "Below N250,000 monthly", value: "250000" },
-  { label: "N250,000 - N500,000 monthly", value: "500000" },
-  { label: "N500,000 - N1,000,000 monthly", value: "900000" },
-  { label: "Above N1,000,000 monthly", value: "1200000" },
-];
 
 function ArrowLeftIcon() {
   return (
@@ -295,7 +288,8 @@ function ApplicationForm() {
   const [phone, setPhone] = useState(user?.phone_number ?? "");
   const [employmentStatus, setEmploymentStatus] = useState("Full-time");
   const [employerName, setEmployerName] = useState("");
-  const [monthlyIncome, setMonthlyIncome] = useState("");
+  const [grossAnnualIncome, setGrossAnnualIncome] = useState("");
+  const [additionalIncomeSources, setAdditionalIncomeSources] = useState<AdditionalIncomeSource[]>([]);
   const [moveInDate, setMoveInDate] = useState(() => defaultMoveInDate());
   const [message, setMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -311,7 +305,12 @@ function ApplicationForm() {
         phone: phone.trim(),
         employment_status: employmentStatus,
         employer_name: employerName.trim(),
-        monthly_income: monthlyIncome,
+        gross_annual_income: grossAnnualIncome,
+        income_currency: "NGN",
+        additional_income_sources: additionalIncomeSources.map((source) => ({
+          source: source.source.trim(),
+          annual_amount: source.annual_amount,
+        })),
         move_in_date: moveInDate,
         message: message.trim(),
       }),
@@ -338,8 +337,15 @@ function ApplicationForm() {
     if (!employerName.trim()) {
       nextErrors.employerName = "Enter your employer name.";
     }
-    if (!monthlyIncome) {
-      nextErrors.monthlyIncome = "Select your income range.";
+    if (!/^(?:\d+)(?:\.\d{1,2})?$/.test(grossAnnualIncome) || Number(grossAnnualIncome) <= 0) {
+      nextErrors.grossAnnualIncome = "Enter a positive gross yearly income (up to two decimal places).";
+    }
+    if (additionalIncomeSources.some((source) =>
+      !source.source.trim() || source.source.trim().length > 160 ||
+      !/^(?:\d+)(?:\.\d{1,2})?$/.test(source.annual_amount) ||
+      Number(source.annual_amount) <= 0
+    )) {
+      nextErrors.additionalIncomeSources = "Give each source a name and positive annual amount.";
     }
     if (!moveInDate) {
       nextErrors.moveInDate = "Select your preferred move-in date.";
@@ -519,30 +525,55 @@ function ApplicationForm() {
                     variant="reality"
                   />
                 </Field>
-                <Field
-                  error={fieldErrors.monthlyIncome}
-                  id="monthly-income"
-                  label="Monthly Income"
-                  required
-                >
-                  <Select
-                    aria-describedby={
-                      fieldErrors.monthlyIncome ? "monthly-income-error" : undefined
-                    }
-                    aria-invalid={Boolean(fieldErrors.monthlyIncome)}
-                    id="monthly-income"
-                    onChange={(event) => setMonthlyIncome(event.target.value)}
-                    value={monthlyIncome}
-                    variant="reality"
-                  >
-                    {incomeOptions.map((option) => (
-                      <option key={option.label} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
               </div>
+
+              <section aria-labelledby="income-heading" className="min-w-0 rounded-2xl bg-reality-surfaceMuted p-4 sm:p-5">
+                <h2 id="income-heading" className="text-lg font-semibold">Income</h2>
+                <p className="mt-1 text-sm text-reality-text-secondary">
+                  Enter your total gross yearly income before deductions, including any additional income below.
+                </p>
+                <div className="mt-4 max-w-sm">
+                  <Field error={fieldErrors.grossAnnualIncome} id="gross-annual-income" label="Gross yearly income (NGN)" required>
+                    <Input
+                      aria-describedby={fieldErrors.grossAnnualIncome ? "gross-annual-income-error" : undefined}
+                      aria-invalid={Boolean(fieldErrors.grossAnnualIncome)}
+                      id="gross-annual-income"
+                      inputMode="decimal"
+                      onChange={(event) => setGrossAnnualIncome(event.target.value)}
+                      placeholder="7200000.00"
+                      type="text"
+                      value={grossAnnualIncome}
+                      variant="reality"
+                    />
+                  </Field>
+                </div>
+                <div className="mt-5">
+                  <h3 className="text-sm font-semibold">Additional income sources (optional)</h3>
+                  <p className="mt-1 text-sm text-reality-text-secondary">These amounts are already included in the gross yearly income above. Do not add them twice.</p>
+                  <div className="mt-3 space-y-3">
+                    {additionalIncomeSources.map((source, index) => (
+                      <div className="grid min-w-0 gap-3 rounded-xl bg-white p-3 sm:grid-cols-[1fr_1fr_auto]" key={index}>
+                        <Field id={`income-source-${index}`} label={`Source ${index + 1}`}>
+                          <Input id={`income-source-${index}`} maxLength={160} onChange={(event) => setAdditionalIncomeSources((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, source: event.target.value } : item))} placeholder="Consulting" value={source.source} variant="reality" />
+                        </Field>
+                        <Field id={`income-amount-${index}`} label="Annual amount (NGN)">
+                          <Input id={`income-amount-${index}`} inputMode="decimal" onChange={(event) => setAdditionalIncomeSources((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, annual_amount: event.target.value } : item))} placeholder="1200000.00" value={source.annual_amount} variant="reality" />
+                        </Field>
+                        <Button aria-label={`Remove income source ${index + 1}`} className="self-end" onClick={() => {
+                          setAdditionalIncomeSources((current) => current.filter((_, itemIndex) => itemIndex !== index));
+                          requestAnimationFrame(() => document.getElementById("add-income-source")?.focus());
+                        }} type="button" variant="realityGhost">Remove</Button>
+                      </div>
+                    ))}
+                  </div>
+                  {fieldErrors.additionalIncomeSources ? <p className="mt-2 text-sm text-red-600" role="alert">{fieldErrors.additionalIncomeSources}</p> : null}
+                  {additionalIncomeSources.length < 5 ? <Button className="mt-3" onClick={() => {
+                    const nextIndex = additionalIncomeSources.length;
+                    setAdditionalIncomeSources((current) => [...current, { source: "", annual_amount: "" }]);
+                    requestAnimationFrame(() => document.getElementById(`income-source-${nextIndex}`)?.focus());
+                  }} id="add-income-source" type="button" variant="realitySecondary">Add income source</Button> : null}
+                </div>
+              </section>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
