@@ -384,10 +384,11 @@ function ApplicantApplicationDetail({
     { label: "Status", value: formatApplicationStatus(application.status) },
     { label: "Employment", value: application.employment_status },
     { label: "Employer", value: application.employer_name },
-    {
-      label: "Monthly income",
-      value: formatMoney(application.monthly_income, application.property.currency),
-    },
+    ...(application.gross_annual_income
+      ? [{ label: "Gross yearly income", value: formatMoney(application.gross_annual_income, application.income_currency) }]
+      : application.monthly_income
+        ? [{ label: "Monthly income", value: formatMoney(application.monthly_income, application.property.currency) }]
+        : []),
   ];
 
   return (
@@ -410,6 +411,16 @@ function ApplicantApplicationDetail({
           Application details
         </h2>
         <DetailRows rows={detailRows} />
+        {application.additional_income_sources?.length ? (
+          <div className="rounded-2xl bg-reality-surfaceMuted p-4">
+            <h3 className="text-sm font-semibold">Additional income sources included in your total</h3>
+            <ul className="mt-2 space-y-1 text-sm">
+              {application.additional_income_sources.map((source, index) => (
+                <li key={`${source.source}-${index}`}>{source.source}: {formatMoney(source.annual_amount, application.income_currency)}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </section>
       <PaymentSummary application={application} />
       {withdrawError ? (
@@ -480,10 +491,11 @@ function SupplyApplicationDetail({ application }: { application: RentalApplicati
   const employmentRows: DetailRow[] = [
     { label: "Employment", value: application.employment_status },
     { label: "Employer", value: application.employer_name },
-    {
-      label: "Monthly income",
-      value: formatMoney(application.monthly_income, application.property.currency),
-    },
+    ...(application.gross_annual_income
+      ? [{ label: "Gross yearly income", value: formatMoney(application.gross_annual_income, application.income_currency) }]
+      : application.monthly_income
+        ? [{ label: "Monthly income", value: formatMoney(application.monthly_income, application.property.currency) }]
+        : []),
   ];
 
   return (

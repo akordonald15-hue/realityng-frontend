@@ -20,6 +20,8 @@ export type RentalApplicationStatus =
   | "rejected"
   | "withdrawn";
 
+export type AdditionalIncomeSource = { source: string; annual_amount: string };
+
 export type RentalApplication = {
   id: string;
   property: InquiryPropertySummary;
@@ -32,7 +34,10 @@ export type RentalApplication = {
   phone: string;
   employment_status: string;
   employer_name: string;
-  monthly_income: string;
+  monthly_income: string | null;
+  gross_annual_income: string | null;
+  income_currency: string;
+  additional_income_sources?: AdditionalIncomeSource[];
   move_in_date: string;
   message: string;
   status: RentalApplicationStatus;
@@ -51,7 +56,9 @@ export type RentalApplicationPayload = {
   phone: string;
   employment_status: string;
   employer_name?: string;
-  monthly_income: string;
+  gross_annual_income: string;
+  income_currency: "NGN";
+  additional_income_sources: AdditionalIncomeSource[];
   move_in_date: string;
   message?: string;
 };

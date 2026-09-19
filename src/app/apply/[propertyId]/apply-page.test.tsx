@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -100,10 +100,16 @@ async function renderLoadedPage(overrides = {}) {
   await waitFor(() => expect(screen.getAllByText("₦18,000,000").length).toBeGreaterThan(0));
 }
 
-async function fillRequiredForm(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText("Employer name *"), "Diaspora Tech Holdings");
-  await user.selectOptions(screen.getByLabelText("Monthly Income *"), "900000");
-  await user.type(screen.getByLabelText("Message *"), "I can move in after review.");
+async function fillRequiredForm(_user: ReturnType<typeof userEvent.setup>) {
+  fireEvent.change(screen.getByLabelText("Employer name *"), {
+    target: { value: "Diaspora Tech Holdings" },
+  });
+  fireEvent.change(screen.getByLabelText("Gross yearly income (NGN) *"), {
+    target: { value: "7200000" },
+  });
+  fireEvent.change(screen.getByLabelText("Message *"), {
+    target: { value: "I can move in after review." },
+  });
 }
 
 describe("ApplyPage", () => {
@@ -137,7 +143,7 @@ describe("ApplyPage", () => {
     expect(screen.getByText("Enter your email address.")).toBeInTheDocument();
     expect(screen.getByText("Enter your phone number.")).toBeInTheDocument();
     expect(screen.getByText("Enter your employer name.")).toBeInTheDocument();
-    expect(screen.getByText("Select your income range.")).toBeInTheDocument();
+    expect(screen.getByText(/Enter a positive gross yearly income/)).toBeInTheDocument();
     expect(screen.getByText("Add a short message for the property owner.")).toBeInTheDocument();
     expect(mocks.createApplication).not.toHaveBeenCalled();
   });
@@ -163,7 +169,9 @@ describe("ApplyPage", () => {
         phone: "+1 832 555 0144",
         employment_status: "Full-time",
         employer_name: "Diaspora Tech Holdings",
-        monthly_income: "900000",
+        gross_annual_income: "7200000",
+        income_currency: "NGN",
+        additional_income_sources: [],
         move_in_date: expect.any(String),
         message: "I can move in after review.",
       }),
@@ -179,6 +187,28 @@ describe("ApplyPage", () => {
       "/properties/lekki-phase-one-serviced-apartment",
     );
   });
+
+  it("adds and removes optional income sources without double-counting the total", async () => {
+    const user = userEvent.setup();
+    await renderLoadedPage();
+    expect(screen.queryByLabelText("Monthly Income *")).not.toBeInTheDocument();
+    await fillRequiredForm(user);
+    await user.click(screen.getByRole("button", { name: "Add income source" }));
+    await user.type(screen.getByLabelText("Source 1"), "Consulting");
+    await user.type(screen.getByLabelText("Annual amount (NGN)"), "1200000");
+    await user.click(screen.getByRole("button", { name: "Remove income source 1" }));
+    expect(screen.queryByLabelText("Source 1")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add income source" }));
+    await user.type(screen.getByLabelText("Source 1"), "Consulting");
+    await user.type(screen.getByLabelText("Annual amount (NGN)"), "1200000");
+    await user.click(screen.getByRole("button", { name: "Submit application" }));
+    await waitFor(() => expect(mocks.createApplication).toHaveBeenCalledWith(
+      expect.objectContaining({
+        gross_annual_income: "7200000",
+        additional_income_sources: [{ source: "Consulting", annual_amount: "1200000" }],
+      }),
+    ));
+  }, 15000);
 
   it("disables the submit button while pending and only submits once", async () => {
     const user = userEvent.setup();
@@ -254,7 +284,7 @@ describe("ApplyPage", () => {
       "Phone *",
       "Employment status *",
       "Employer name *",
-      "Monthly Income *",
+      "Gross yearly income (NGN) *",
       "Preferred move-in date *",
       "Message *",
     ]);
