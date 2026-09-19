@@ -77,18 +77,24 @@ describe("HomePage", () => {
       .toBeInTheDocument();
     expect(screen.getByLabelText("Property listing type")).toBeInTheDocument();
     expect(screen.getByRole("navigation")).toBeInTheDocument();
-    expect(await screen.findByRole("link", { name: /Lagos/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /Lagos.*1 listing/i })).toHaveAttribute(
       "href",
       "/properties?city=Lagos&state=Lagos",
     );
     expect(mocks.getAvailablePropertyLocations).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("heading", { name: "How it works" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Explore property types" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Houses Explore houses/ })).toHaveAttribute("href", "/properties?property_type=house");
-    expect(screen.getByRole("link", { name: /Land Explore land/ })).toHaveAttribute("href", "/properties?property_type=land");
-    expect(screen.getByRole("link", { name: /Short stays Browse the marketplace/ })).toHaveAttribute("href", "/properties");
-    expect(screen.getByRole("link", { name: /Hospitality Browse the marketplace/ })).toHaveAttribute("href", "/properties");
-    expect(screen.getByText(/Illustrative category images, not current listings/)).toBeInTheDocument();
+    expect(screen.getByText(/Illustrative examples across different locations, not current listings/)).toBeInTheDocument();
+    for (const [category, href] of [
+      ["Houses", "/properties?property_type=house"],
+      ["Land", "/properties?property_type=land"],
+      ["Short stays", "/properties"],
+      ["Hotels", "/properties"],
+    ]) {
+      const group = screen.getByRole("heading", { name: category }).parentElement?.parentElement;
+      expect(group?.querySelectorAll("img")).toHaveLength(2);
+      expect(group?.querySelectorAll(`a[href="${href}"]`)).toHaveLength(3);
+    }
     expect(screen.getByRole("heading", { name: "Everything you need to make property easier" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getAllByText("Approved Lekki Apartment")).toHaveLength(1));
     expect(screen.getByRole("heading", { name: "Featured properties" })).toBeInTheDocument();
@@ -156,7 +162,7 @@ describe("HomePage", () => {
   it("keeps sparse approved inventory intentional without inventing listings", async () => {
     renderWithQueryClient(<HomePage />);
     await waitFor(() => expect(screen.getAllByText("Approved Lekki Apartment")).toHaveLength(1));
-    expect(screen.getAllByRole("link", { name: "Browse properties" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Browse properties" })).toHaveLength(6);
     expect(screen.queryByText("Timothy Exodus")).not.toBeInTheDocument();
   });
 
@@ -164,7 +170,7 @@ describe("HomePage", () => {
     mocks.getPublicProperties.mockResolvedValue({ count: 0, next: null, previous: null, results: [] });
     renderWithQueryClient(<HomePage />);
     expect(await screen.findAllByText(/Approved public listings will appear here/)).toHaveLength(1);
-    expect(screen.getAllByRole("link", { name: "Browse properties" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Browse properties" })).toHaveLength(6);
   });
 
   it("links homepage role CTAs into the redesigned sign-up flow", () => {

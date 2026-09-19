@@ -75,10 +75,38 @@ const cityImagery: Record<string, string> = {
 };
 
 const propertyTypeShowcase = [
-  { title: "Houses", imageSrc: "/home/hero-house.webp", href: "/properties?property_type=house", label: "Explore houses" },
-  { title: "Land", imageSrc: "/demo/properties/land-residential.webp", href: "/properties?property_type=land", label: "Explore land" },
-  { title: "Short stays", imageSrc: "/demo/properties/shortlet-beach.webp", href: "/properties", label: "Browse the marketplace" },
-  { title: "Hospitality", imageSrc: "/demo/properties/hotel-abuja.webp", href: "/properties", label: "Browse the marketplace" },
+  {
+    title: "Houses",
+    href: "/properties?property_type=house",
+    examples: [
+      { imageSrc: "/home/city-abuja.webp", location: "Abuja, FCT" },
+      { imageSrc: "/home/city-port-harcourt.webp", location: "Port Harcourt, Rivers" },
+    ],
+  },
+  {
+    title: "Land",
+    href: "/properties?property_type=land",
+    examples: [
+      { imageSrc: "/demo/properties/land-residential.webp", location: "Abuja, FCT" },
+      { imageSrc: "/demo/properties/land-commercial.webp", location: "Uyo, Akwa Ibom" },
+    ],
+  },
+  {
+    title: "Short stays",
+    href: "/properties",
+    examples: [
+      { imageSrc: "/demo/properties/shortlet-lake.webp", location: "Abuja, FCT" },
+      { imageSrc: "/demo/properties/shortlet-beach.webp", location: "Lagos, Lagos" },
+    ],
+  },
+  {
+    title: "Hotels",
+    href: "/properties",
+    examples: [
+      { imageSrc: "/demo/properties/hotel-port-harcourt.webp", location: "Port Harcourt, Rivers" },
+      { imageSrc: "/demo/properties/hotel-abuja.webp", location: "Abuja, FCT" },
+    ],
+  },
 ] as const;
 
 const roleCards = [
@@ -690,18 +718,30 @@ export default function HomePage() {
             <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surfaceMuted px-5 py-12 md:px-10 md:py-16" duration={0.76} stagger={0.1} start="top 86%" visibleEntrance y={36}>
               <div className="mb-8 max-w-3xl md:mb-10" data-motion-child>
                 <h2 className="font-display text-3xl font-semibold text-reality-brandEmphasis md:text-5xl">Explore property types</h2>
-                <p className="mt-3 text-sm leading-6 text-reality-text-secondary md:text-base">Illustrative category images, not current listings. Browse the marketplace for approved properties and availability.</p>
+                <p className="mt-3 text-sm leading-6 text-reality-text-secondary md:text-base">Illustrative examples across different locations, not current listings. Browse the marketplace for approved properties and availability.</p>
               </div>
-              <div className="grid grid-cols-2 gap-3 md:gap-5 xl:grid-cols-4">
+              <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
                 {propertyTypeShowcase.map((category) => (
-                  <Link className="group relative isolate flex aspect-[3/4] min-w-0 items-end overflow-hidden rounded-[1.5rem] bg-reality-surfaceDark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reality-brand-600 md:aspect-[4/5]" data-motion-child href={category.href} key={category.title}>
-                    <Image alt="" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.04]" fill sizes="(min-width: 1280px) 300px, (min-width: 768px) 45vw, 45vw" src={category.imageSrc} />
-                    <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                    <span className="relative z-10 block p-4 text-white md:p-6">
-                      <span className="block font-display text-2xl font-semibold leading-tight transition-transform duration-300 motion-safe:group-hover:-translate-y-1 md:text-3xl">{category.title}</span>
-                      <span className="mt-1 block text-xs font-medium text-white/90 md:text-sm">{category.label}</span>
-                    </span>
-                  </Link>
+                  <div data-motion-child key={category.title}>
+                    <div className="mb-3 flex items-end justify-between gap-3">
+                      <h3 className="font-display text-2xl font-semibold text-reality-text-primary md:text-3xl">{category.title}</h3>
+                      <Link className="text-xs font-semibold text-reality-brand-700 underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 md:text-sm" href={category.href}>
+                        Browse properties
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                      {category.examples.map((example) => (
+                        <Link className="group relative isolate flex aspect-[3/4] min-w-0 items-end overflow-hidden rounded-[1.5rem] bg-reality-surfaceDark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reality-brand-600 md:aspect-[4/5]" href={category.href} key={example.imageSrc}>
+                          <Image alt="" className="object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.04]" fill sizes="(min-width: 1280px) 300px, (min-width: 768px) 22vw, 45vw" src={example.imageSrc} />
+                          <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                          <span className="relative z-10 block p-3 text-white md:p-5">
+                            <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/85 md:text-xs">Illustrative location</span>
+                            <span className="mt-1 block text-sm font-semibold leading-tight transition-transform duration-300 motion-safe:group-hover:-translate-y-1 md:text-lg">{example.location}</span>
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </StaggerReveal>
