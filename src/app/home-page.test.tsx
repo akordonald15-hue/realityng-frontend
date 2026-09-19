@@ -83,6 +83,12 @@ describe("HomePage", () => {
     );
     expect(mocks.getAvailablePropertyLocations).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("heading", { name: "How it works" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Explore property types" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Houses Explore houses/ })).toHaveAttribute("href", "/properties?property_type=house");
+    expect(screen.getByRole("link", { name: /Land Explore land/ })).toHaveAttribute("href", "/properties?property_type=land");
+    expect(screen.getByRole("link", { name: /Short stays Browse the marketplace/ })).toHaveAttribute("href", "/properties");
+    expect(screen.getByRole("link", { name: /Hospitality Browse the marketplace/ })).toHaveAttribute("href", "/properties");
+    expect(screen.getByText(/Illustrative category images, not current listings/)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Everything you need to make property easier" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getAllByText("Approved Lekki Apartment")).toHaveLength(1));
     expect(screen.getByRole("heading", { name: "Featured properties" })).toBeInTheDocument();
