@@ -6,6 +6,7 @@ import { PublicAssistantWidget } from "@/components/assistant/public-assistant-w
 import { PublicShell } from "@/components/layout/public-shell";
 import { StaggerReveal } from "@/components/motion/stagger-reveal";
 import { ProfessionalCta } from "@/components/professionals/professional-cta";
+import { ProfessionalProcess } from "@/components/professionals/professional-process";
 import { buttonClasses } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -18,25 +19,6 @@ export const metadata: Metadata = {
 };
 
 const trustItems = ["Verified professionals", "Reviewed listings", "Secure private"];
-
-const steps = [
-  {
-    title: "Create your profile",
-    description: "Start with an owner or agent account that keeps your professional activity together.",
-  },
-  {
-    title: "Get verified",
-    description: "Use the existing verification flow so seekers can understand who they are working with.",
-  },
-  {
-    title: "List or manage",
-    description: "Create listings, edit assigned properties, and keep your portfolio accurate.",
-  },
-  {
-    title: "Connect",
-    description: "Manage leads, messages, applications, and viewings from one supply workspace.",
-  },
-];
 
 const ownerFeatures = [
   "List properties for sale or rent",
@@ -125,40 +107,7 @@ export default function ForProfessionalsPage() {
           </section>
 
           <div className="mx-auto grid w-full max-w-reality gap-16 px-5 py-16 sm:px-6 lg:px-6 lg:py-24 2xl:px-0">
-            <StaggerReveal as="section" className="rounded-[2rem] bg-reality-surface px-5 py-12 md:px-10 md:py-16" stagger={0.08} y={30}>
-              <div className="mx-auto max-w-[520px] text-center" data-motion-child>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-text-brand">
-                  How it works
-                </p>
-                <h2 className="mt-3 font-display text-4xl font-medium leading-tight md:text-5xl">
-                  Find a property seeker and take the next step
-                </h2>
-                <p className="mx-auto mt-3 max-w-[420px] text-xs leading-5 text-reality-text-tertiary md:text-sm">
-                  Move from public discovery into the authenticated workspace only when you are
-                  ready to act.
-                </p>
-              </div>
-              <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {steps.map((step, index) => (
-                  <article
-                    className="rounded-[18px] border border-reality-border-secondary bg-reality-surfaceMuted p-5 shadow-reality-xs transition hover:-translate-y-1 hover:shadow-reality-sm"
-                    data-motion-child
-                    key={step.title}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-reality-brand-600 text-[11px] font-bold text-white">
-                        {index + 1}
-                      </span>
-                      <ArrowUpRightIcon className="h-4 w-4 text-reality-text-tertiary" />
-                    </div>
-                    <h3 className="mt-5 text-sm font-semibold">{step.title}</h3>
-                    <p className="mt-2 text-xs leading-5 text-reality-text-tertiary">
-                      {step.description}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            </StaggerReveal>
+            <ProfessionalProcess />
 
             <SplitSection
               eyebrow="property owners/agents"
@@ -472,20 +421,6 @@ function CheckIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function ArrowUpRightIcon({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
-      <path
-        d="M7 17 17 7m0 0H9m8 0v8"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
       />
     </svg>
   );

@@ -110,7 +110,11 @@ export function PublicAssistantWidget() {
   useEffect(() => {
     const appearTimer = setTimeout(() => {
       setHasAppeared(true);
-      setShowGreeting(true);
+      // The greeting panel overlays page content on small screens, so phones get
+      // the collapsed launcher only and open the assistant by tapping it.
+      if (window.matchMedia("(min-width: 640px)").matches) {
+        setShowGreeting(true);
+      }
     }, 1400);
     const minimizeTimer = setTimeout(() => {
       if (!hasInteractedRef.current) {

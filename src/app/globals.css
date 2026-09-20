@@ -221,6 +221,159 @@ a {
   }
 }
 
+/* B2B professional process — icon-led motion, sibling of the homepage feature artwork.
+   Resting state is the complete icon; the retracted state below is scoped to pointer
+   devices, so touch and reduced-motion users always see a finished icon. */
+.process-step-card {
+  transition:
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 360ms ease;
+}
+
+.process-step-icon {
+  transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.process-step-title {
+  transition:
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 300ms ease;
+}
+
+.process-step-float {
+  animation: process-step-float 4.6s ease-in-out infinite;
+}
+
+.process-step-draw,
+.process-step-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    stroke-dashoffset 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms ease,
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.process-step-knockout {
+  /* Sits on the medallion ground so the badge reads as a separate layer. */
+  fill: var(--reality-surface-brand);
+}
+
+.process-step-pulse {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes process-step-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes process-step-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  45% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .process-step-draw {
+    stroke-dasharray: var(--process-draw);
+    stroke-dashoffset: var(--process-draw);
+  }
+
+  .process-step-pop {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+
+  .process-step-card:hover,
+  .process-step-card:focus-within {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px rgba(6, 61, 45, 0.1);
+  }
+
+  .process-step-card:hover .process-step-icon,
+  .process-step-card:focus-within .process-step-icon {
+    transform: scale(1.07);
+  }
+
+  .process-step-card:hover .process-step-title,
+  .process-step-card:focus-within .process-step-title {
+    transform: translateY(-3px);
+    color: var(--reality-brand-emphasis);
+  }
+
+  .process-step-card:hover .process-step-draw,
+  .process-step-card:focus-within .process-step-draw {
+    stroke-dashoffset: 0;
+  }
+
+  .process-step-card:hover .process-step-pop,
+  .process-step-card:focus-within .process-step-pop {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .process-step-card:hover .process-step-delay-1,
+  .process-step-card:focus-within .process-step-delay-1 {
+    transition-delay: 120ms;
+  }
+
+  .process-step-card:hover .process-step-delay-2,
+  .process-step-card:focus-within .process-step-delay-2 {
+    transition-delay: 240ms;
+  }
+
+  .process-step-card:hover .process-step-pulse,
+  .process-step-card:focus-within .process-step-pulse {
+    animation: process-step-pulse 900ms ease-out 260ms 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .process-step-float {
+    animation-name: process-step-float-mobile;
+  }
+}
+
+@keyframes process-step-float-mobile {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .process-step-card,
+  .process-step-icon,
+  .process-step-title,
+  .process-step-draw,
+  .process-step-pop {
+    transition: none;
+  }
+
+  .process-step-float {
+    animation: none;
+  }
+}
+
 ::selection {
   background: #d4a017;
   color: #081c15;

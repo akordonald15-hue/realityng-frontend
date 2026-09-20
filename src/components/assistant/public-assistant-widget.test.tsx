@@ -9,9 +9,29 @@ vi.mock("@/providers/auth-provider", () => ({
   }),
 }));
 
+function setViewportWidth(width: number) {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    value: vi.fn().mockImplementation((query: string) => {
+      const minWidth = /\(min-width:\s*(\d+)px\)/.exec(query);
+      return {
+        addEventListener: vi.fn(),
+        addListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+        matches: minWidth ? width >= Number(minWidth[1]) : false,
+        media: query,
+        onchange: null,
+        removeEventListener: vi.fn(),
+        removeListener: vi.fn(),
+      };
+    }),
+  });
+}
+
 describe("PublicAssistantWidget", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    setViewportWidth(1280);
   });
 
   afterEach(() => {
@@ -56,6 +76,25 @@ describe("PublicAssistantWidget", () => {
     expect(close.querySelector("svg")).toBeInTheDocument();
     fireEvent.click(close);
     expect(screen.getByRole("button", { name: "Open RealityNG AI" })).toBeInTheDocument();
+  });
+
+  it("does not auto-expand a greeting panel over page content on phones", () => {
+    setViewportWidth(390);
+    render(<PublicAssistantWidget />);
+    revealAssistant();
+
+    // The launcher still appears, but nothing overlays the page until it is tapped.
+    expect(screen.getByRole("button", { name: "Open RealityNG AI" })).toBeInTheDocument();
+    expect(screen.queryByText(/Welcome to RealityNG/i)).not.toBeInTheDocument();
+  });
+
+  it("still opens on an explicit tap at phone width", () => {
+    setViewportWidth(390);
+    render(<PublicAssistantWidget />);
+    openAssistant();
+
+    expect(screen.getByRole("heading", { name: "RealityNG AI" })).toBeInTheDocument();
+    expect(screen.getByText(/I'm your AI property assistant/i)).toBeInTheDocument();
   });
 
   it("answers supported walkthrough questions locally", () => {
