@@ -66,6 +66,38 @@ describe("ForProfessionalsPage", () => {
     );
   });
 
+  it("describes the professional journey in the How it works section", () => {
+    render(<ForProfessionalsPage />);
+
+    expect(screen.getByRole("heading", { name: /List, manage, and grow in one workspace/i })).toBeInTheDocument();
+
+    for (const step of [
+      "Join & Verify",
+      "List Your Property",
+      "Manage Leads & Requests",
+      "Close & Grow",
+    ]) {
+      expect(screen.getByRole("heading", { level: 3, name: step })).toBeInTheDocument();
+    }
+
+    // The B2C buyer journey must not leak into the professional page.
+    expect(screen.queryByRole("heading", { level: 3, name: "Search" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 3, name: "Inspection" })).not.toBeInTheDocument();
+  });
+
+  it("keeps process step icons decorative for screen readers", () => {
+    const { container } = render(<ForProfessionalsPage />);
+
+    const cards = container.querySelectorAll(".process-step-card");
+    expect(cards).toHaveLength(4);
+
+    for (const card of Array.from(cards)) {
+      const svg = card.querySelector("svg");
+      expect(svg).not.toBeNull();
+      expect(svg).toHaveAttribute("aria-hidden", "true");
+    }
+  });
+
   it("routes unauthenticated role CTAs into the existing sign-up continuation flow", () => {
     render(<ForProfessionalsPage />);
 
