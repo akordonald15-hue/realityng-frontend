@@ -77,7 +77,7 @@ export function ProfessionalProcess() {
                 width={768}
               />
             </span>
-            <h3 className="process-step-title mt-4 text-lg font-semibold text-reality-text-primary md:mt-5 md:text-2xl">
+            <h3 className="process-step-title mt-4 min-h-[3.5rem] text-lg font-semibold text-reality-text-primary md:mt-5 md:min-h-[4rem] md:text-2xl lg:min-h-0 xl:min-h-[4rem]">
               {step.title}
             </h3>
             <p className="mt-2 max-w-[280px] text-sm leading-6 text-reality-text-secondary md:text-base md:leading-7">
