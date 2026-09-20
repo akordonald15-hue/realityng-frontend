@@ -69,7 +69,8 @@ describe("ForProfessionalsPage", () => {
   it("describes the professional journey in the How it works section", () => {
     render(<ForProfessionalsPage />);
 
-    expect(screen.getByRole("heading", { name: /List, manage, and grow in one workspace/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "How it works" })).toBeInTheDocument();
+    expect(screen.getByText(/List, manage, and grow in one workspace/i)).toBeInTheDocument();
 
     for (const step of [
       "Join & Verify",
@@ -88,11 +89,12 @@ describe("ForProfessionalsPage", () => {
   it("keeps process step icons decorative for screen readers", () => {
     const { container } = render(<ForProfessionalsPage />);
 
-    const cards = container.querySelectorAll(".process-step-card");
-    expect(cards).toHaveLength(4);
+    const steps = container.querySelectorAll(".process-step-visual");
+    expect(steps).toHaveLength(4);
+    expect(container.querySelectorAll(".process-step-card")).toHaveLength(0);
 
-    for (const card of Array.from(cards)) {
-      const svg = card.querySelector("svg");
+    for (const step of Array.from(steps)) {
+      const svg = step.querySelector("svg");
       expect(svg).not.toBeNull();
       expect(svg).toHaveAttribute("aria-hidden", "true");
     }
@@ -147,4 +149,3 @@ describe("ForProfessionalsPage", () => {
     );
   });
 });
-

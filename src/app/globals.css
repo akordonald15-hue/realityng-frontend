@@ -221,13 +221,15 @@ a {
   }
 }
 
-/* B2B professional process artwork - the homepage feature-visual language,
-   applied to vector pieces instead of rendered PNGs. The art is always fully
-   drawn, so touch and reduced-motion users lose nothing but the motion. */
-.process-step-card {
-  transition:
-    transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 360ms ease;
+/* The professional journey uses the same cardless, icon-led rhythm as B2C. */
+.process-step-visual::before {
+  position: absolute;
+  inset: 12% 5% 28%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(17, 138, 100, 0.13), transparent 70%);
+  content: "";
+  filter: blur(18px);
+  pointer-events: none;
 }
 
 .process-step-art {
@@ -258,40 +260,28 @@ a {
 }
 
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .process-step-card:hover,
-  .process-step-card:focus-within {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 30px rgba(6, 61, 45, 0.1);
-  }
-
-  .process-step-card:hover .process-step-art-object,
-  .process-step-card:focus-within .process-step-art-object {
+  .process-step-visual:hover .process-step-art-object {
     filter: brightness(1.06) saturate(1.08);
   }
 
-  .process-step-card:hover .process-step-title,
-  .process-step-card:focus-within .process-step-title {
+  .process-step-visual:hover .process-step-title {
     transform: translateY(-4px);
     color: var(--reality-brand-emphasis);
   }
 
-  .process-step-card[data-step="join"]:hover .process-step-art-object,
-  .process-step-card[data-step="join"]:focus-within .process-step-art-object {
+  .process-step-visual[data-step="join"]:hover .process-step-art-object {
     transform: scale(1.1) rotate(-4deg) translateY(-5px);
   }
 
-  .process-step-card[data-step="list"]:hover .process-step-art-object,
-  .process-step-card[data-step="list"]:focus-within .process-step-art-object {
+  .process-step-visual[data-step="list"]:hover .process-step-art-object {
     transform: scale(1.09) translateY(-9px);
   }
 
-  .process-step-card[data-step="leads"]:hover .process-step-art-object,
-  .process-step-card[data-step="leads"]:focus-within .process-step-art-object {
+  .process-step-visual[data-step="leads"]:hover .process-step-art-object {
     transform: scale(1.08) rotate(4deg) translateY(-6px);
   }
 
-  .process-step-card[data-step="grow"]:hover .process-step-art-object,
-  .process-step-card[data-step="grow"]:focus-within .process-step-art-object {
+  .process-step-visual[data-step="grow"]:hover .process-step-art-object {
     transform: scale(1.1) rotate(-3deg) translateY(-7px);
   }
 }
@@ -313,7 +303,6 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .process-step-card,
   .process-step-art-object,
   .process-step-title {
     transition: none;

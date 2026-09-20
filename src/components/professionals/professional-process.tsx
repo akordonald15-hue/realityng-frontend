@@ -38,7 +38,7 @@ export function ProfessionalProcess() {
   return (
     <StaggerReveal
       as="section"
-      className="rounded-[2rem] bg-reality-surfaceBrand px-5 py-12 md:px-10 md:py-16"
+      className="rounded-[2rem] bg-reality-surface px-5 py-14 md:px-10 md:py-20"
       duration={0.76}
       stagger={0.1}
       start="top 86%"
@@ -47,47 +47,41 @@ export function ProfessionalProcess() {
     >
       <ProcessArtDefs />
 
-      <div className="mx-auto max-w-[620px] text-center">
+      <div className="mx-auto max-w-[760px] text-center">
         <div data-motion-child>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-text-brand">
+          <h2 className="font-display text-4xl font-bold leading-tight text-reality-text-primary md:text-6xl">
             How it works
-          </p>
-          <h2 className="mt-3 font-display text-4xl font-medium leading-tight text-reality-text-primary md:text-5xl">
-            List, manage, and grow in one workspace
           </h2>
         </div>
         <p
-          className="mx-auto mt-4 max-w-[480px] text-sm leading-6 text-reality-text-secondary md:text-base md:leading-7"
+          className="mx-auto mt-4 max-w-[620px] text-base leading-7 text-reality-text-secondary md:text-lg md:leading-8"
           data-motion-child
         >
-          Set up your professional account once, then run listings, enquiries, and viewings from a
+          List, manage, and grow in one workspace. Run listings, enquiries, and viewings from a
           single place.
         </p>
       </div>
 
-      <div className="mt-10 grid grid-cols-2 gap-3 md:mt-12 md:gap-5 xl:grid-cols-4">
+      <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:mt-14 md:gap-x-8 md:gap-y-14 xl:grid-cols-4">
         {steps.map((step, index) => {
           const Art = step.Art;
           return (
             <article
-              className="process-step-card flex flex-col items-center rounded-[20px] bg-reality-surface p-4 text-center shadow-reality-sm md:p-6"
+              className="process-step-visual relative flex flex-col items-center text-center"
               data-motion-child
               data-step={step.slug}
               key={step.title}
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-reality-brand-600 md:text-[11px]">
-                Step {index + 1}
-              </p>
               <span
-                className="process-step-art mt-2 block h-24 w-24 md:mt-3 md:h-32 md:w-32 xl:h-36 xl:w-36"
+                className="process-step-art relative block h-36 w-36 md:h-48 md:w-48 xl:h-56 xl:w-56"
                 style={{ animationDelay: `${index * -0.8}s` }}
               >
                 <Art />
               </span>
-              <h3 className="process-step-title mt-2 text-base font-semibold text-reality-text-primary md:mt-3 md:text-lg">
+              <h3 className="process-step-title mt-4 text-lg font-semibold text-reality-text-primary md:mt-5 md:text-2xl">
                 {step.title}
               </h3>
-              <p className="mt-2 text-xs leading-5 text-reality-text-tertiary md:text-sm md:leading-6">
+              <p className="mt-2 max-w-[280px] text-sm leading-6 text-reality-text-secondary md:text-base md:leading-7">
                 {step.description}
               </p>
             </article>
