@@ -165,7 +165,7 @@ export function PublicAssistantWidget() {
       <div
         className={
           hasAppeared
-            ? "pointer-events-none fixed bottom-5 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-end gap-3 sm:right-6"
+            ? "pointer-events-none fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-4 z-50 flex max-w-[calc(100vw-2rem)] items-end gap-3 sm:right-6"
             : "hidden"
         }
       >
@@ -181,7 +181,7 @@ export function PublicAssistantWidget() {
           onClick={openAssistant}
           type="button"
         >
-          <AssistantOrb state={orbState} size="md" />
+          <AssistantOrb state={orbState} size="launcher" />
           <span className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-full bg-reality-surfaceDark px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-reality-sm backdrop-blur-md transition group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
             Ask Reality AI
           </span>

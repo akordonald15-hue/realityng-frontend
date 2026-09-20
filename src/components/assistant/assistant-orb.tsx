@@ -6,7 +6,7 @@ type AssistantOrbState = "idle" | "thinking" | "listening";
 
 type AssistantOrbProps = {
   state?: AssistantOrbState;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "launcher";
   className?: string;
 };
 
@@ -14,6 +14,9 @@ const sizeClasses = {
   sm: "h-11 w-11",
   md: "h-14 w-14",
   lg: "h-20 w-20",
+  // Narrow phones get a smaller visible orb so the floating launcher covers
+  // less body copy. The button around it keeps its full touch target.
+  launcher: "h-11 w-11 sm:h-14 sm:w-14",
 };
 
 export function AssistantOrb({ state = "idle", size = "md", className }: AssistantOrbProps) {
