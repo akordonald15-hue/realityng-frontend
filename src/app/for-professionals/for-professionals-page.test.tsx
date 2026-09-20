@@ -86,7 +86,7 @@ describe("ForProfessionalsPage", () => {
     expect(screen.queryByRole("heading", { level: 3, name: "Inspection" })).not.toBeInTheDocument();
   });
 
-  it("keeps process step icons decorative for screen readers", () => {
+  it("renders original professional artwork decoratively without step cards", () => {
     const { container } = render(<ForProfessionalsPage />);
 
     const steps = container.querySelectorAll(".process-step-visual");
@@ -94,9 +94,10 @@ describe("ForProfessionalsPage", () => {
     expect(container.querySelectorAll(".process-step-card")).toHaveLength(0);
 
     for (const step of Array.from(steps)) {
-      const svg = step.querySelector("svg");
-      expect(svg).not.toBeNull();
-      expect(svg).toHaveAttribute("aria-hidden", "true");
+      const image = step.querySelector("img");
+      expect(image).not.toBeNull();
+      expect(image).toHaveAttribute("alt", "");
+      expect(image?.getAttribute("src")).toContain("%2Fprofessionals%2F");
     }
   });
 
