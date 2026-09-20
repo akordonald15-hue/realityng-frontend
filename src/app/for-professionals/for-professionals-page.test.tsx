@@ -69,7 +69,8 @@ describe("ForProfessionalsPage", () => {
   it("describes the professional journey in the How it works section", () => {
     render(<ForProfessionalsPage />);
 
-    expect(screen.getByRole("heading", { name: /List, manage, and grow in one workspace/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "How it works" })).toBeInTheDocument();
+    expect(screen.getByText(/List, manage, and grow in one workspace/i)).toBeInTheDocument();
 
     for (const step of [
       "Join & Verify",
@@ -85,16 +86,18 @@ describe("ForProfessionalsPage", () => {
     expect(screen.queryByRole("heading", { level: 3, name: "Inspection" })).not.toBeInTheDocument();
   });
 
-  it("keeps process step icons decorative for screen readers", () => {
+  it("renders original professional artwork decoratively without step cards", () => {
     const { container } = render(<ForProfessionalsPage />);
 
-    const cards = container.querySelectorAll(".process-step-card");
-    expect(cards).toHaveLength(4);
+    const steps = container.querySelectorAll(".process-step-visual");
+    expect(steps).toHaveLength(4);
+    expect(container.querySelectorAll(".process-step-card")).toHaveLength(0);
 
-    for (const card of Array.from(cards)) {
-      const svg = card.querySelector("svg");
-      expect(svg).not.toBeNull();
-      expect(svg).toHaveAttribute("aria-hidden", "true");
+    for (const step of Array.from(steps)) {
+      const image = step.querySelector("img");
+      expect(image).not.toBeNull();
+      expect(image).toHaveAttribute("alt", "");
+      expect(image?.getAttribute("src")).toContain("%2Fprofessionals%2F");
     }
   });
 
@@ -147,4 +150,3 @@ describe("ForProfessionalsPage", () => {
     );
   });
 });
-
