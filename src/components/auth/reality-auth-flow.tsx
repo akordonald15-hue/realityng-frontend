@@ -9,10 +9,12 @@ import { z } from "zod";
 
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { LegalDocumentModal } from "@/components/auth/legal-document-modal";
 import { Button } from "@/components/ui/button";
 import { SuccessState } from "@/components/ui/success-state";
 import { getApiErrorMessage } from "@/lib/api/errors";
+import { getRoleDashboardPath } from "@/lib/auth/permissions";
 import { USE_MOCKS } from "@/lib/demo-mode";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -69,11 +71,12 @@ export function RealityAuthFlow({
   role,
 }: RealityAuthFlowProps) {
   const router = useRouter();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signInWithGoogle, signUp } = useAuth();
   const [queryParams, setQueryParams] = useState(() => new URLSearchParams());
   const [activeMode, setActiveMode] = useState<AuthMode>(mode);
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [isGooglePending, setIsGooglePending] = useState(false);
   const [legalDocument, setLegalDocument] = useState<"terms" | "privacy" | null>(null);
   const [signInStep, setSignInStep] = useState<"identifier" | "password" | "success">(
     "identifier",
@@ -126,6 +129,40 @@ export function RealityAuthFlow({
       await onAuthenticated?.();
     } catch (error) {
       setServerError(getApiErrorMessage(error));
+    }
+  }
+
+  async function completeGoogleSignIn(credential: string) {
+    setServerError("");
+    setIsGooglePending(true);
+    try {
+      let redirectPath = requestedPath;
+      // null keeps AuthProvider from redirecting; this flow owns the destination.
+      const response = await signInWithGoogle(credential, null);
+
+      if (onAuthenticated) {
+        // Protected-action continuation: stay on the page and resume the action.
+        setSignInStep("success");
+        await onAuthenticated();
+        return;
+      }
+
+      // Role onboarding follows professional intent, not account age. A brand
+      // new customer signing in with Google stays on the ordinary buyer path.
+      if (!redirectPath && selectedRole) {
+        redirectPath = "/onboarding/role-setup";
+      }
+      if (redirectPath === "/onboarding/role-setup" && selectedRole) {
+        const roleSetupParams = new URLSearchParams();
+        roleSetupParams.set("role", selectedRole);
+        redirectPath = `${redirectPath}?${roleSetupParams.toString()}`;
+      }
+      setSignInStep("success");
+      router.push(redirectPath || getRoleDashboardPath(response.user));
+    } catch (error) {
+      setServerError(getApiErrorMessage(error));
+    } finally {
+      setIsGooglePending(false);
     }
   }
 
@@ -281,6 +318,7 @@ export function RealityAuthFlow({
             )}
           </div>
         </form>
+        <GoogleSignInButton disabled={isGooglePending} onCredential={completeGoogleSignIn} />
       </div>
     );
   }
@@ -473,7 +511,7 @@ export function RealityAuthFlow({
           )}
         </div>
       </form>
+      <GoogleSignInButton disabled={isGooglePending} onCredential={completeGoogleSignIn} />
     </div>
   );
 }
-
