@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { getCurrentUser, loginUser, logoutUser, registerUser } from "@/lib/api/auth";
+import { getCurrentUser, loginUser, loginWithGoogle, logoutUser, registerUser } from "@/lib/api/auth";
 import { getRoleDashboardPath } from "@/lib/auth/permissions";
 import { mergeAnonymousShortlist } from "@/lib/anonymous-shortlist";
 import { clearTokens, getRefreshToken, setTokens } from "@/lib/auth/token-storage";
-import type { LoginPayload, RegisterPayload } from "@/lib/api/auth";
-import type { User } from "@/lib/auth/types";
+import type { GoogleAuthResponse, LoginPayload, RegisterPayload } from "@/lib/api/auth";
+import type { AuthTokens, User } from "@/lib/auth/types";
 
 type AuthContextValue = {
   user: User | null;
@@ -17,6 +17,10 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   refreshSession: () => Promise<void>;
   signIn: (payload: LoginPayload, redirectTo?: string | null) => Promise<void>;
+  signInWithGoogle: (
+    credential: string,
+    redirectTo?: string | null,
+  ) => Promise<GoogleAuthResponse>;
   signUp: (payload: RegisterPayload) => Promise<User>;
   signOut: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -57,9 +61,12 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     refreshSession();
   }, [refreshSession]);
 
-  const signIn = useCallback(
-    async (payload: LoginPayload, redirectTo?: string | null) => {
-      const response = await loginUser(payload);
+  /**
+   * Single place where a successful authentication becomes a session, so
+   * password and Google sign-in cannot drift apart.
+   */
+  const establishSession = useCallback(
+    (response: AuthTokens & { user: User }, redirectTo?: string | null) => {
       setTokens(response.access, response.refresh);
       setUser(response.user);
       reconcileShortlist();
@@ -68,6 +75,22 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
       }
     },
     [reconcileShortlist, router],
+  );
+
+  const signIn = useCallback(
+    async (payload: LoginPayload, redirectTo?: string | null) => {
+      establishSession(await loginUser(payload), redirectTo);
+    },
+    [establishSession],
+  );
+
+  const signInWithGoogle = useCallback(
+    async (credential: string, redirectTo?: string | null) => {
+      const response = await loginWithGoogle(credential);
+      establishSession(response, redirectTo);
+      return response;
+    },
+    [establishSession],
   );
 
   const signUp = useCallback(async (payload: RegisterPayload) => registerUser(payload), []);
@@ -92,11 +115,12 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
       isAuthenticated: Boolean(user),
       refreshSession,
       signIn,
+      signInWithGoogle,
       signUp,
       signOut,
       setUser,
     }),
-    [isLoading, refreshSession, signIn, signOut, signUp, user],
+    [isLoading, refreshSession, signIn, signInWithGoogle, signOut, signUp, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -61,6 +61,14 @@ export async function loginUser(payload: LoginPayload): Promise<AuthTokens & { u
   return response.data;
 }
 
+export type GoogleAuthResponse = AuthTokens & { user: User; created?: boolean };
+
+/** Exchange a Google ID token for the standard RealityNG session. */
+export async function loginWithGoogle(credential: string): Promise<GoogleAuthResponse> {
+  const response = await apiClient.post<GoogleAuthResponse>("/auth/google/", { credential });
+  return response.data;
+}
+
 export async function logoutUser(refresh: string): Promise<void> {
   if (USE_MOCKS) {
     await mockLogoutUser();
