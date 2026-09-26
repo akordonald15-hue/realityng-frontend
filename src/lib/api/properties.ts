@@ -135,6 +135,8 @@ export type PropertyFilters = {
   listing_type?: string;
   min_price?: string;
   max_price?: string;
+  min_bedrooms?: string;
+  min_bathrooms?: string;
   min_lat?: string;
   max_lat?: string;
   min_lng?: string;

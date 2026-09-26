@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
 
 import { PropertyMapPanel } from "@/components/maps/property-map-panel";
+import { GuidedSearchPrompt } from "@/components/properties/guided-search-prompt";
 import { getAvailablePropertyLocations } from "@/lib/api/available-property-locations";
 import { PropertyCard } from "@/components/properties/property-card";
 import { PublicShell } from "@/components/layout/public-shell";
@@ -61,6 +62,8 @@ function filtersFromParams(params: URLSearchParams): PropertyFilters {
     listing_type: params.get("listing_type") ?? "",
     min_price: params.get("min_price") ?? "",
     max_price: params.get("max_price") ?? "",
+    min_bedrooms: params.get("min_bedrooms") ?? "",
+    min_bathrooms: params.get("min_bathrooms") ?? "",
     ordering: params.get("ordering") ?? defaultOrdering,
   };
 }
@@ -93,6 +96,8 @@ function filterLabel(key: string, value: string) {
     listing_type: `Listing: ${value.replaceAll("_", " ")}`,
     min_price: `Min: ₦${Number(value).toLocaleString("en-NG")}`,
     max_price: `Up to ₦${Number(value).toLocaleString("en-NG")}`,
+    min_bedrooms: `${value}+ bedrooms`,
+    min_bathrooms: `${value}+ bathrooms`,
     ordering: `Sort: ${value.replace("-", "").replaceAll("_", " ")}`,
   };
   return labels[key] ?? `${key}: ${value}`;
@@ -288,6 +293,7 @@ function PropertiesContent() {
 
         <section className="mx-auto max-w-reality-wide px-4 pb-20 sm:px-6">
           <div className="rounded-[2rem] bg-reality-surface px-4 py-8 sm:px-6 md:px-8">
+          <GuidedSearchPrompt />
           <div className="reality-reveal mb-10 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="grid w-full gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,299px)_174px_174px_174px_auto] xl:items-end">
               <label className="grid gap-2 text-left text-sm font-medium text-reality-text-primary">

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { SuccessState } from "@/components/ui/success-state";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { getRoleDashboardPath } from "@/lib/auth/permissions";
+import { isAcceptableNigerianPhone, NIGERIAN_PHONE_MESSAGE } from "@/lib/auth/nigerian-phone";
 import { USE_MOCKS } from "@/lib/demo-mode";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -27,7 +28,10 @@ const signUpSchema = z.object({
   first_name: z.string().max(100).optional(),
   last_name: z.string().max(100).optional(),
   email: z.string().email("Enter a valid email address."),
-  phone_number: z.string().optional(),
+  phone_number: z
+    .string()
+    .optional()
+    .refine(isAcceptableNigerianPhone, NIGERIAN_PHONE_MESSAGE),
   password: z.string().min(8, "Password must be at least 8 characters."),
   accepts_terms: z.boolean().refine(Boolean, "Accept the Terms to continue."),
   accepts_privacy: z.boolean().refine(Boolean, "Acknowledge the Privacy Notice to continue."),
@@ -362,8 +366,12 @@ export function RealityAuthFlow({
               />
             </div>
             <TextField
+              autoComplete="tel"
               error={signUpForm.formState.errors.phone_number}
+              inputMode="tel"
               label="Phone"
+              placeholder="08031234567"
+              type="tel"
               variant="reality"
               {...signUpForm.register("phone_number")}
             />
