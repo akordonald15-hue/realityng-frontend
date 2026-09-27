@@ -13,7 +13,10 @@ export function sentryOptions() {
       process.env.SENTRY_ENVIRONMENT ??
       process.env.VERCEL_ENV ??
       "local",
-    release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
+    release:
+      process.env.NEXT_PUBLIC_SENTRY_RELEASE ??
+      process.env.SENTRY_RELEASE ??
+      process.env.VERCEL_GIT_COMMIT_SHA,
     sendDefaultPii: false,
     tracesSampleRate: sampleRate(process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE),
     profilesSampleRate: 0,
