@@ -29,11 +29,13 @@ function scrubValue(value: unknown): unknown {
       ]),
     );
   }
+  if (typeof value === "string") return scrubUrl(value);
   return value;
 }
 
 function scrubUrl(value: unknown): unknown {
   if (typeof value !== "string") return value;
+  if (!value.includes("?") || (!value.includes("://") && !value.startsWith("/"))) return value;
   try {
     const url = new URL(value, "https://monitoring.invalid");
     for (const key of [...url.searchParams.keys()]) {

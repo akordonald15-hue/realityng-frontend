@@ -13,7 +13,11 @@ describe("Sentry privacy controls", () => {
           cookies: { session: "secret" },
           headers: { Authorization: "Bearer secret", Accept: "application/json" },
         },
-        extra: { password: "secret", nested: { googleCredential: "secret" } },
+        extra: {
+          password: "secret",
+          nested: { googleCredential: "secret" },
+          signedUrl: "https://storage.test/private.pdf?X-Amz-Signature=secret",
+        },
         user: { id: "safe-id", email: "private@example.test", ip_address: "127.0.0.1" },
       },
       {},
@@ -25,6 +29,7 @@ describe("Sentry privacy controls", () => {
     expect(event.request?.url).toContain("reset_token=%5BFiltered%5D");
     expect(event.extra?.password).toBe("[Filtered]");
     expect(event.extra?.nested).toEqual({ googleCredential: "[Filtered]" });
+    expect(event.extra?.signedUrl).toContain("X-Amz-Signature=%5BFiltered%5D");
     expect(event.user).toEqual({ id: "safe-id" });
   });
 
