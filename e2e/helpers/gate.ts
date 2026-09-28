@@ -102,20 +102,24 @@ export async function authenticatedApiStatus(
   pathName: string,
   method = "GET",
 ) {
-  return page.evaluate(async ({ requestedPath, requestedMethod }) => {
+  return page.evaluate(async ({ requestedPath, requestedMethod, apiBase }) => {
     const token = window.localStorage.getItem("realityng.accessToken");
-    const response = await fetch(`http://127.0.0.1:58001/api/v1${requestedPath}`, {
+    const response = await fetch(`${apiBase}${requestedPath}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       method: requestedMethod,
     });
     return response.status;
-  }, { requestedPath: pathName, requestedMethod: method });
+  }, {
+    requestedPath: pathName,
+    requestedMethod: method,
+    apiBase: process.env.REALITYNG_E2E_API_BASE_URL ?? "http://127.0.0.1:58001/api/v1",
+  });
 }
 
 export async function authenticatedSignedUrlCheck(page: Page, pathName: string) {
-  return page.evaluate(async (requestedPath) => {
+  return page.evaluate(async ({ requestedPath, apiBase }) => {
     const token = window.localStorage.getItem("realityng.accessToken");
-    const response = await fetch(`http://127.0.0.1:58001/api/v1${requestedPath}`, {
+    const response = await fetch(`${apiBase}${requestedPath}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     const payload = response.ok ? await response.json() as { url?: string } : {};
@@ -128,11 +132,14 @@ export async function authenticatedSignedUrlCheck(page: Page, pathName: string) 
         signedUrl && [...signedUrl.searchParams.keys()].some((key) => /signature|credential/i.test(key)),
       ),
     };
-  }, pathName);
+  }, {
+    requestedPath: pathName,
+    apiBase: process.env.REALITYNG_E2E_API_BASE_URL ?? "http://127.0.0.1:58001/api/v1",
+  });
 }
 
 export async function authenticatedWalkthroughUploadDenial(page: Page, propertyId: string) {
-  return page.evaluate(async (requestedPropertyId) => {
+  return page.evaluate(async ({ requestedPropertyId, apiBase }) => {
     const token = window.localStorage.getItem("realityng.accessToken");
     const form = new FormData();
     form.set("title", "Synthetic revoked-manager authorization probe");
@@ -142,7 +149,7 @@ export async function authenticatedWalkthroughUploadDenial(page: Page, propertyI
       { type: "video/mp4" },
     ));
     const response = await fetch(
-      `http://127.0.0.1:58001/api/v1/inspections/properties/${requestedPropertyId}/walkthroughs/`,
+      `${apiBase}/inspections/properties/${requestedPropertyId}/walkthroughs/`,
       {
         body: form,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -154,7 +161,10 @@ export async function authenticatedWalkthroughUploadDenial(page: Page, propertyI
       status: response.status,
       deniedByAssignment: body.includes("cannot upload walkthroughs for this property"),
     };
-  }, propertyId);
+  }, {
+    requestedPropertyId: propertyId,
+    apiBase: process.env.REALITYNG_E2E_API_BASE_URL ?? "http://127.0.0.1:58001/api/v1",
+  });
 }
 
 export async function captureEvidence(page: Page, testInfo: TestInfo, name: string) {
