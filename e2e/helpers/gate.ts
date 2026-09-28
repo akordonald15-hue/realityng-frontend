@@ -83,8 +83,11 @@ export async function signIn(page: Page, persona: Persona) {
   const seed = qaSeed();
   await page.goto("/auth/sign-in");
   await page.getByLabel("Email").fill(seed.users[persona]);
+  if (await page.getByLabel("Password").count() === 0) {
+    await page.getByRole("button", { name: "Continue", exact: true }).click();
+  }
   await page.getByLabel("Password").fill(seed.password);
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByRole("button", { name: /^(Sign in|Continue)$/ }).click();
   await page.waitForURL((url) => !url.pathname.startsWith("/auth/sign-in"));
   await expect(page.getByText("Demo mode is active")).toHaveCount(0);
 }
