@@ -1,0 +1,64 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-ci:
+    name: Frontend CI / Release Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_USE_MOCKS: "false"
+      NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:8000/api/v1
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ""
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ""
+      NEXT_PUBLIC_SENTRY_DSN: ""
+      NEXT_PUBLIC_SENTRY_ENVIRONMENT: ci
+      NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE: "0"
+      SENTRY_AUTH_TOKEN: ""
+      SENTRY_ORG: ""
+      SENTRY_PROJECT: ""
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Check committed diff hygiene
+        run: git diff --check HEAD^ HEAD
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Production build
+        run: npm run build
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
