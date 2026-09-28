@@ -1,8 +1,10 @@
 import { defineConfig } from "@playwright/test";
 
 const chromeExecutable =
-  process.env.REALITYNG_CHROME_EXECUTABLE ??
-  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+  process.env.REALITYNG_CHROME_EXECUTABLE;
+
+const remoteMode = process.env.REALITYNG_E2E_REMOTE === "true";
+const baseURL = process.env.REALITYNG_E2E_BASE_URL ?? "http://127.0.0.1:3000";
 
 const backendEnvironment = {
   DJANGO_SETTINGS_MODULE: "config.settings.browser_qa",
@@ -41,9 +43,9 @@ export default defineConfig({
   outputDir: "test-results",
   reporter: [["line"], ["html", { open: "never", outputFolder: "playwright-report" }]],
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL,
     browserName: "chromium",
-    launchOptions: { executablePath: chromeExecutable },
+    launchOptions: chromeExecutable ? { executablePath: chromeExecutable } : undefined,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "off",
@@ -55,7 +57,7 @@ export default defineConfig({
     { name: "chrome-mobile", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
     { name: "chrome-narrow", use: { viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true } },
   ],
-  webServer: [
+  webServer: remoteMode ? undefined : [
     {
       command: ".venv\\Scripts\\daphne.exe -b 127.0.0.1 -p 58001 config.asgi:application",
       cwd: "../realityng-backend",
