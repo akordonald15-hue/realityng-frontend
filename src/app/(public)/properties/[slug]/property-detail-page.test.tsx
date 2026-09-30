@@ -166,6 +166,8 @@ describe("PropertyDetailPage", () => {
     expect(await screen.findByText("Inspection walkthrough")).toBeInTheDocument();
     expect(await screen.findByText("Similar properties")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View Ikoyi Apartment" })).toBeInTheDocument();
+    expect(mocks.getPublicProperties).toHaveBeenCalledTimes(1);
+    expect(mocks.getPublicProperties).toHaveBeenCalledWith({ ordering: "-featured" });
 
     const jsonLd = document.querySelector("#realityng-property-jsonld");
     expect(jsonLd).toBeInTheDocument();
