@@ -7,11 +7,10 @@ import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { BrandLogo } from "@/components/brand/brand-logo";
+import { AuthCard } from "@/components/auth/auth-card";
 import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { resetPassword } from "@/lib/api/auth";
 import { getApiErrorMessage } from "@/lib/api/errors";
 
@@ -53,15 +52,8 @@ function ResetPasswordForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-white px-5 py-10">
-      <Card className="w-full max-w-md p-6 text-center sm:p-8">
-        <Link aria-label="RealityNG home" className="mx-auto inline-flex" href="/">
-          <BrandLogo className="h-16 w-auto object-contain" priority />
-        </Link>
-        <h1 className="mt-8 font-display text-3xl font-semibold text-reality-text-primary">
-          Choose a new password
-        </h1>
-        <form className="mt-8 space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
+    <AuthCard description="Use a strong password you have not used for this account before." title="Choose a new password">
+        <form className="space-y-4 text-left" onSubmit={handleSubmit(onSubmit)}>
           <TextField label="User ID" error={errors.uid} {...register("uid")} />
           <TextField label="Reset token" error={errors.token} {...register("token")} />
           <div className="space-y-2">
@@ -86,24 +78,19 @@ function ResetPasswordForm() {
             {isSubmitting ? "Saving..." : "Save new password"}
           </Button>
         </form>
-        <Link
-          className="mt-6 inline-flex text-sm font-semibold text-reality-brand-600"
-          href="/auth/sign-in"
-        >
+        <Link className="mt-6 inline-flex text-sm font-semibold text-reality-brand-600" href="/auth/sign-in">
           Back to sign in
         </Link>
-      </Card>
-    </main>
+    </AuthCard>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
     <Suspense
-      fallback={<main className="bg-white px-6 py-10 text-reality-text-secondary">Loading...</main>}
+      fallback={<main className="min-h-screen bg-reality-canvas px-6 py-10 text-reality-text-secondary">Loading password reset…</main>}
     >
       <ResetPasswordForm />
     </Suspense>
   );
 }
-
