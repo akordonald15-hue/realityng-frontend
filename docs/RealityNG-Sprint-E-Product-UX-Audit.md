@@ -1,7 +1,9 @@
 # RealityNG Sprint E Product UI/UX Audit
 
-Status: baseline audit in progress; route-specific implementation has not started  
-Baseline: frontend `693717cbf3d75ca56376aea13eb8dd943fc7352b`  
+Status: baseline audit in progress; route-specific implementation has not started
+
+Baseline: frontend `693717cbf3d75ca56376aea13eb8dd943fc7352b`
+
 Audit date: 2026-09-30
 
 ## Audit method and limits
