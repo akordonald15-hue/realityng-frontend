@@ -52,9 +52,12 @@ export default defineConfig({
   },
   projects: [
     { name: "chrome-desktop", use: { viewport: { width: 1440, height: 900 } } },
+    { name: "chrome-wide", use: { viewport: { width: 1280, height: 800 } } },
+    { name: "chrome-compact-desktop", use: { viewport: { width: 1024, height: 768 } } },
     { name: "chrome-laptop", use: { viewport: { width: 1366, height: 768 } } },
     { name: "chrome-tablet", use: { viewport: { width: 768, height: 1024 } } },
     { name: "chrome-mobile", use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
+    { name: "chrome-mobile-375", use: { viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true } },
     { name: "chrome-narrow", use: { viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true } },
   ],
   webServer: remoteMode ? undefined : [

@@ -29,12 +29,13 @@ export function FormMessage({
 
   return (
     <div
+      aria-live={tone === "error" ? "assertive" : "polite"}
       className={`rounded-md border px-3 py-2 text-sm ${
         variant === "reality" ? realityToneClasses[tone] : toneClasses[tone]
       } ${className}`}
+      role={tone === "error" ? "alert" : "status"}
     >
       {children}
     </div>
   );
 }
-
