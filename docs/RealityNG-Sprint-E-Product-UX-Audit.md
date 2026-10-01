@@ -233,3 +233,29 @@ Assessment codes:
 | Professional entry points | Shared flow | Existing `role` + safe `next` propagation retained for homepage, navigation, and professional CTAs; no auth or authorization contract changed. |
 
 E2b automated evidence: ten desktop/mobile axe scans passed with no serious or critical WCAG A/AA violation. Public overflow passed across the required six widths. Mobile navigation and assistant focus behavior are covered in both component and Playwright tests. Property-detail unit coverage continues to assert exactly one similar-property inventory request.
+
+## E3 Buyer route audit
+
+| Buyer surface | Design source | E3 classification | Primary finding / resolution |
+|---|---|---|---|
+| `/dashboard` | Partial Figma | Polished | Existing overview, discovery entry, metrics, request rail, saved rail, activity, loading, empty, and error behavior retained. Copy and display hierarchy were normalized without changing queries or tab behavior. |
+| `/saved-properties` | Partial Figma / shared components | Polished | Active cards and privacy-preserving unavailable tombstones retained. Page now uses the authenticated Buyer shell; removal continues to use property ID and invalidates both favorites and dashboard data. |
+| Buyer inquiries and viewings on `/dashboard` | Engineer-designed | Usable but product-constrained | Status, property context, date/time, next action, cancel/apply states, loading, empty, and errors are present. There are no dedicated Buyer inquiry/viewing list routes; this remains product debt rather than a fabricated workflow. |
+| `/apply/[propertyId]` | Partial Figma | Polished | Annual-income contract, additional-income rows, validation, pending state, API failure, and mobile single-column order remain covered. No financial contract changed. |
+| `/dashboard/applications/[applicationId]` | Engineer-designed shared Buyer/reviewer view | Polished | Buyer/reviewer variants, annual versus legacy monthly labels, status actions, and owner-note isolation remain test-covered. |
+| `/dashboard/messages`, `/dashboard/messages/[id]` | Partial Figma | Polished | Responsive inbox/thread states, unread count, retry, optimistic/pending send, long-text wrapping, keyboard send, realtime isolation, and scroll-to-latest retained. Outgoing-message contrast strengthened. |
+| `/dashboard/notifications` | Engineer-designed | Polished | Read/unread distinction no longer relies on color alone; body/timestamp readability and empty state improved. Existing realtime and preferences contracts retained. |
+| `/settings/profile` | Engineer-designed | Polished | Profile, verification state, validation, loading, error, success, and cancellation are present. Production phone behavior is unchanged; Nigerian-phone WIP remains excluded. |
+| `/settings/notifications` | Engineer-designed | Polished | Preference grouping, pressed-state semantics, loading, and update failure are present. No unsupported password/destructive settings were invented. |
+| `/dashboard/transactions`, `/dashboard/transactions/[id]` | Engineer-designed / functional | Usable but product-constrained | List loading/error/empty hierarchy and semantic surfaces improved. Detail continues to expose only API-supported milestones, proofs, escrow, financing, and status actions; backend financial authorization remains authoritative. Property titles are unavailable in the list contract, so opaque identifiers remain tracked debt. |
+| `/dashboard/financing`, `/dashboard/financing/apply`, `/dashboard/financing/[id]` | Partial Figma | Polished | Existing product selection, draft/application status, loading, empty, and API-error surfaces retained. No unsupported payment workflow added. |
+| `/dashboard/inspections`, `/dashboard/inspections/[id]` | Engineer-designed | Usable | Buyer request tracking, private report states, and authorization remain intact. Broader Inspector workspace polish belongs to E5. |
+| `/dashboard/construction`, `/dashboard/construction/projects/[slug]` | Engineer-designed / functional | Usable | Reachable stakeholder views remain data-driven. Full construction workspace polish remains E4/E5 scope. |
+
+### E3 authenticated shell decisions
+
+- Buyer-only mobile navigation now exposes Home, Saved, Messages, Alerts, and Profile with `aria-current`, 64 px touch targets, a semantic active surface, and safe-area padding.
+- The navigation is withheld from admin, approved supply, and approved professional personas so E3 does not redesign later-role workspaces.
+- Buyer pages reserve bottom space so fixed navigation cannot cover content.
+- The authenticated assistant moves above Buyer navigation, uses safe-area-aware panel height, focuses its composer when ready, and restores focus to its launcher on close.
+- No new data request, chart library, backend contract, security rule, or role capability was introduced.

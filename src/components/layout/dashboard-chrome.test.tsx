@@ -16,14 +16,16 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/providers/auth-provider", () => ({
-  useAuth: () => ({
+  useOptionalAuth: () => ({
     isLoading: mocks.isLoading,
     user: mocks.user,
   }),
 }));
 
 vi.mock("@/components/assistant/assistant-widget", () => ({
-  AssistantWidget: () => null,
+  AssistantWidget: ({ mobileNavigationOffset }: { mobileNavigationOffset?: boolean }) => (
+    <div data-testid="assistant-offset">{String(Boolean(mobileNavigationOffset))}</div>
+  ),
 }));
 
 vi.mock("@/components/layout/navbar", () => ({
@@ -43,6 +45,9 @@ describe("DashboardChrome", () => {
     mocks.user = roleUser("buyer");
     render(<DashboardChrome>Buyer</DashboardChrome>);
     expect(screen.getByTestId("navbar-variant")).toHaveTextContent("reality");
+    expect(screen.getByRole("navigation", { name: "Buyer navigation" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByTestId("assistant-offset")).toHaveTextContent("true");
 
     mocks.user = roleUser("agent");
     render(<DashboardChrome>Agent</DashboardChrome>);
@@ -67,4 +72,3 @@ describe("DashboardChrome", () => {
     expect(screen.getAllByTestId("navbar-variant").at(-1)).toHaveTextContent("reality");
   });
 });
-

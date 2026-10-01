@@ -16,6 +16,10 @@ vi.mock("@/components/auth/protected-route", () => ({
   ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock("@/components/assistant/assistant-widget", () => ({
+  AssistantWidget: () => null,
+}));
+
 vi.mock("@/lib/api/properties", async () => {
   const actual =
     await vi.importActual<typeof import("@/lib/api/properties")>("@/lib/api/properties");
@@ -127,4 +131,3 @@ describe("SavedPropertiesPage", () => {
     expect(await screen.findByRole("link", { name: "Browse properties" })).toHaveAttribute("href", "/properties");
   });
 });
-

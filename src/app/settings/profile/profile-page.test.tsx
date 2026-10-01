@@ -43,8 +43,8 @@ vi.mock("@/components/auth/protected-route", () => ({
   ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock("@/components/layout/navbar", () => ({
-  Navbar: () => <nav aria-label="Primary">Navbar</nav>,
+vi.mock("@/components/layout/dashboard-chrome", () => ({
+  DashboardChrome: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/providers/auth-provider", () => ({
@@ -211,4 +211,3 @@ describe("ProfilePage", () => {
     expect(screen.getByText("Landlord pending")).toBeInTheDocument();
   });
 });
-

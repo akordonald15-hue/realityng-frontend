@@ -217,7 +217,7 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("region", { name: "Discover properties" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Browse properties/ })).toHaveAttribute("href", "/properties");
-    expect(screen.getByText("Your dashboard Summary")).toBeInTheDocument();
+    expect(screen.getByText("A summary of your current property journey.")).toBeInTheDocument();
     expect(screen.getByText("My application")).toBeInTheDocument();
     expect(screen.getByText("Saved property")).toBeInTheDocument();
     expect(screen.getByText("Inquiries")).toBeInTheDocument();
@@ -300,8 +300,8 @@ describe("DashboardPage", () => {
     await user.click(screen.getByRole("tab", { name: "Saved" }));
 
     expect(screen.getByRole("tab", { name: "Saved" })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByText("Saved Property")).toBeInTheDocument();
-    expect(screen.queryByText("Recently viewed property")).not.toBeInTheDocument();
+    expect(screen.getByText("Saved properties")).toBeInTheDocument();
+    expect(screen.queryByText("Recently viewed properties")).not.toBeInTheDocument();
   });
 
   it("surfaces dashboard API failure in the buyer design", async () => {
