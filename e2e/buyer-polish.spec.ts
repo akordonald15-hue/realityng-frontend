@@ -4,6 +4,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { assertNoMaterialOverflow, monitorBrowser, qaSeed, signIn } from "./helpers/gate";
 
 async function expectNoSeriousViolations(page: Page, route: string) {
+  // Allow the short entrance reveal to reach its fully opaque resting state so
+  // axe measures the rendered interface rather than a transient animation frame.
+  await page.waitForTimeout(500);
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
@@ -11,7 +14,15 @@ async function expectNoSeriousViolations(page: Page, route: string) {
     (violation) => violation.impact === "critical" || violation.impact === "serious",
   );
   expect(
-    blocking.map((violation) => ({ id: violation.id, route })),
+    blocking.map((violation) => ({
+      help: violation.help,
+      id: violation.id,
+      nodes: violation.nodes.map((node) => ({
+        failureSummary: node.failureSummary,
+        target: node.target.join(" "),
+      })),
+      route,
+    })),
     `${route} has serious or critical accessibility violations`,
   ).toEqual([]);
 }

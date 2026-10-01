@@ -1178,7 +1178,7 @@ function BuyerSectionHeader({
       <div>
         <h2 className="text-2xl font-medium leading-8 text-reality-text-primary">{title}</h2>
         {description ? (
-          <p className="mt-2 text-base leading-6 text-reality-text-secondary">{description}</p>
+          <p className="mt-2 text-base leading-6 text-reality-text-primary">{description}</p>
         ) : null}
       </div>
       {action}
@@ -1240,7 +1240,7 @@ function BuyerMetricGrid({
 function EmptyDashboardState({ children }: { children: React.ReactNode }) {
   return (
     <Card
-      className="flex min-h-[180px] items-center justify-center rounded-[24px] border-dashed p-6 text-center text-sm leading-6 text-reality-text-quaternary"
+      className="flex min-h-[180px] items-center justify-center rounded-[24px] border-dashed p-6 text-center text-sm leading-6 text-reality-text-secondary"
       variant="reality"
     >
       {children}
@@ -1349,9 +1349,9 @@ function BuyerActivityFeed({ activity }: { activity: ActivityItem[] }) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-semibold text-reality-text-primary">{item.label}</p>
-              <p className="mt-1 text-sm text-reality-text-quaternary">{item.entity_type}</p>
+              <p className="mt-1 text-sm text-reality-text-secondary">{item.entity_type}</p>
             </div>
-            <span className="shrink-0 text-xs text-reality-text-quaternary">
+            <span className="shrink-0 text-xs text-reality-text-secondary">
               <ApplicationDate value={item.occurred_at} />
             </span>
           </div>
