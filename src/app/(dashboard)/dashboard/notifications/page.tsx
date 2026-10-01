@@ -126,18 +126,22 @@ export default function NotificationsPage() {
                       <span className="h-2 w-2 shrink-0 rounded-full bg-reality-brand-500" />
                     )}
                   </div>
-                  <p className="mt-1 text-xs leading-5 text-reality-text-quaternary">
+                  <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
                     {notification.body}
                   </p>
-                  <p className="mt-1 text-xs text-reality-text-quaternary">
+                  <p className="mt-2 text-xs text-reality-text-tertiary">
                     {new Date(notification.created_at).toLocaleString()}
                   </p>
+                  {!notification.is_read ? <span className="sr-only">Unread notification</span> : null}
                 </Card>
               </button>
             ))
           ) : (
-            <Card className="rounded-[18px] p-5 text-sm text-reality-text-quaternary" variant="reality">
-              No notifications yet.
+            <Card className="rounded-[18px] border-dashed bg-reality-surfaceMuted p-6" variant="reality">
+              <p className="font-semibold text-reality-text-primary">You are all caught up</p>
+              <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
+                Updates about applications, viewings, messages, and account activity will appear here.
+              </p>
             </Card>
           )}
         </section>
@@ -146,4 +150,3 @@ export default function NotificationsPage() {
     </ProtectedRoute>
   );
 }
-

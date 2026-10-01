@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 
-import { Navbar } from "@/components/layout/navbar";
+import { DashboardChrome } from "@/components/layout/dashboard-chrome";
 
 const settingsNav = [
   { href: "/settings/profile", label: "Personal information" },
@@ -26,8 +26,8 @@ export function AccountSettingsShell({
   const pathname = usePathname();
 
   return (
+    <DashboardChrome>
     <div className="min-h-screen bg-reality-canvas text-reality-text-primary">
-      <Navbar variant="reality" />
       <main className="mx-auto w-full max-w-reality px-5 py-8 sm:px-6 lg:px-10 xl:py-12">
         <nav
           aria-label="Breadcrumb"
@@ -77,6 +77,6 @@ export function AccountSettingsShell({
         </div>
       </main>
     </div>
+    </DashboardChrome>
   );
 }
-

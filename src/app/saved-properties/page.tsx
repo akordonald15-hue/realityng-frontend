@@ -5,8 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
+import { DashboardChrome } from "@/components/layout/dashboard-chrome";
 import { SavedPropertyCard } from "@/components/properties/saved-property-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -82,13 +81,10 @@ function SavedPropertiesContent() {
 
 export default function SavedPropertiesPage() {
   return (
-    <div className="min-h-screen bg-white text-reality-text-primary [color-scheme:light]">
-      <Navbar variant="reality" />
-      <ProtectedRoute>
+    <ProtectedRoute>
+      <DashboardChrome>
         <SavedPropertiesContent />
-      </ProtectedRoute>
-      <Footer variant="reality" />
-    </div>
+      </DashboardChrome>
+    </ProtectedRoute>
   );
 }
-

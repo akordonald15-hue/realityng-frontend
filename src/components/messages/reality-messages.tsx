@@ -536,7 +536,7 @@ function MessageBubble({ currentUserId, message }: { currentUserId?: string; mes
         className={clsx(
           "max-w-[min(82%,620px)] rounded-[22px] px-4 py-3 shadow-reality-xs",
           outgoing
-            ? "bg-reality-brand-500 text-white"
+            ? "bg-reality-brand-600 text-white"
             : "border border-reality-border-secondary bg-reality-bg-subtle text-reality-text-primary",
         )}
       >
@@ -695,4 +695,3 @@ function mergeMessages(current: Message[], incoming: Message[]) {
     return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
   });
 }
-

@@ -22,13 +22,15 @@ function createMockId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-export function AssistantWidget() {
+export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavigationOffset?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [unavailable, setUnavailable] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const assistantConfig = useQuery({
@@ -103,6 +105,12 @@ export function AssistantWidget() {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (isOpen && !showHistory) {
+      inputRef.current?.focus();
+    }
+  }, [conversationId, isOpen, showHistory]);
+
   function handleOpen() {
     setIsOpen(true);
     if (assistantConfig.data?.enabled === false) {
@@ -127,7 +135,11 @@ export function AssistantWidget() {
       <button
         type="button"
         onClick={handleOpen}
-        className="group fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820]"
+        ref={launcherRef}
+        className={clsx(
+          "group fixed right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820]",
+          mobileNavigationOffset ? "bottom-24 sm:bottom-6" : "bottom-6",
+        )}
         aria-label="Open RealityNG assistant"
       >
         <AssistantOrb state="idle" size="md" />
@@ -139,7 +151,12 @@ export function AssistantWidget() {
   }
 
   return (
-    <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex h-[min(32rem,calc(100vh-2rem))] w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]">
+    <Card aria-label="RealityNG assistant" className={clsx(
+      "assistant-fade-scale assistant-glass-panel fixed left-4 right-4 z-50 flex w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]",
+      mobileNavigationOffset
+        ? "bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] h-[min(32rem,calc(100svh-6rem))]"
+        : "bottom-4 h-[min(32rem,calc(100svh-2rem))]",
+    )} role="region">
       <div className="flex items-center justify-between border-b border-brand-secondary/20 bg-reality-bg-subtle px-4 py-3">
         <div className="flex items-center gap-3">
           <AssistantOrb
@@ -168,7 +185,10 @@ export function AssistantWidget() {
           </button>
           <button
             type="button"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              setIsOpen(false);
+              window.setTimeout(() => launcherRef.current?.focus(), 0);
+            }}
             className="text-reality-text-secondary transition hover:text-reality-text-primary"
             aria-label="Close assistant"
           >
@@ -284,6 +304,7 @@ export function AssistantWidget() {
             }
           }}
           placeholder="Ask about a property..."
+          ref={inputRef}
           disabled={!conversationId || send.isPending}
           className="flex-1"
         />
@@ -359,4 +380,3 @@ function CloseIcon() {
     </svg>
   );
 }
-

@@ -1178,7 +1178,7 @@ function BuyerSectionHeader({
       <div>
         <h2 className="text-2xl font-medium leading-8 text-reality-text-primary">{title}</h2>
         {description ? (
-          <p className="mt-2 text-base leading-6 text-reality-text-secondary">{description}</p>
+          <p className="mt-2 text-base leading-6 text-reality-text-primary">{description}</p>
         ) : null}
       </div>
       {action}
@@ -1240,7 +1240,7 @@ function BuyerMetricGrid({
 function EmptyDashboardState({ children }: { children: React.ReactNode }) {
   return (
     <Card
-      className="flex min-h-[180px] items-center justify-center rounded-[24px] border-dashed p-6 text-center text-sm leading-6 text-reality-text-quaternary"
+      className="flex min-h-[180px] items-center justify-center rounded-[24px] border-dashed p-6 text-center text-sm leading-6 text-reality-text-secondary"
       variant="reality"
     >
       {children}
@@ -1349,9 +1349,9 @@ function BuyerActivityFeed({ activity }: { activity: ActivityItem[] }) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-semibold text-reality-text-primary">{item.label}</p>
-              <p className="mt-1 text-sm text-reality-text-quaternary">{item.entity_type}</p>
+              <p className="mt-1 text-sm text-reality-text-secondary">{item.entity_type}</p>
             </div>
-            <span className="shrink-0 text-xs text-reality-text-quaternary">
+            <span className="shrink-0 text-xs text-reality-text-secondary">
               <ApplicationDate value={item.occurred_at} />
             </span>
           </div>
@@ -1416,7 +1416,7 @@ function BuyerDashboard({
             className="text-sm font-medium text-reality-text-tertiary transition hover:text-reality-brand-600"
             href="/properties"
           >
-            Back
+            Marketplace
           </Link>
           <Link className={buttonClasses("realitySecondary", "h-10 px-5")} href="/properties">
             Explore properties
@@ -1424,7 +1424,7 @@ function BuyerDashboard({
         </div>
 
         <section className="mt-8 rounded-[28px] border border-reality-border-secondary bg-reality-surface px-5 py-6 shadow-reality-xs sm:px-8">
-          <h1 className="text-4xl font-medium leading-[44px] text-reality-text-primary">
+          <h1 className="font-display text-4xl font-medium leading-[44px] text-reality-text-primary">
             Hi, {user?.first_name || "there"}
           </h1>
           <p className="mt-2 text-xl leading-7 text-reality-text-secondary">Welcome back!</p>
@@ -1460,7 +1460,7 @@ function BuyerDashboard({
         <div className="reality-reveal">
           {showOverview ? (
             <section className="mt-8 rounded-[28px] bg-reality-surfaceMuted p-5 sm:p-7">
-              <BuyerSectionHeader description="Your dashboard Summary" title="Overview" />
+              <BuyerSectionHeader description="A summary of your current property journey." title="Overview" />
               <div className="mt-6">
                 <BuyerMetricGrid isLoading={dashboardQuery.isLoading} overview={overview} />
               </div>
@@ -1470,7 +1470,7 @@ function BuyerDashboard({
 
         {showRequests ? (
           <section className="mt-10 rounded-[28px] border border-reality-border-secondary bg-reality-surface p-5 shadow-reality-xs sm:p-7">
-            <BuyerSectionHeader title="Applications & Requests" />
+            <BuyerSectionHeader title="Applications and requests" />
             <div className="mt-8">
               <BuyerApplicationsAndRequests overview={overview} />
             </div>
@@ -1480,8 +1480,8 @@ function BuyerDashboard({
         {showSaved ? (
           <section className="mt-16">
             <BuyerSectionHeader
-              description="Properties you showed interest in"
-              title="Saved Property"
+              description="Properties you saved for a closer look."
+              title="Saved properties"
               action={
                 <Link
                   className={buttonClasses("realitySecondary", "h-10 px-5")}
@@ -1503,8 +1503,8 @@ function BuyerDashboard({
         {showViewed ? (
           <section className="mt-16">
             <BuyerSectionHeader
-              description="Property you view recently"
-              title="Recently viewed property"
+              description="Properties you viewed recently."
+              title="Recently viewed properties"
             />
             <div className="mt-8">
               <DashboardPropertyRail
