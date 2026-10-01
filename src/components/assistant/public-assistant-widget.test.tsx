@@ -95,6 +95,7 @@ describe("PublicAssistantWidget", () => {
 
     expect(screen.getByRole("heading", { name: "RealityNG AI" })).toBeInTheDocument();
     expect(screen.getByText(/I'm your AI property assistant/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Ask RealityNG AI")).toHaveFocus();
   });
 
   it("answers supported walkthrough questions locally", () => {
@@ -123,4 +124,3 @@ describe("PublicAssistantWidget", () => {
       .toBeInTheDocument();
   });
 });
-

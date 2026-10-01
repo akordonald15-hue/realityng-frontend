@@ -100,6 +100,8 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<RealityDropdownId | null>(null);
   const realityNavRef = useRef<HTMLDivElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileDrawerRef = useRef<HTMLDivElement>(null);
   const closeDropdownTimerRef = useRef<number | null>(null);
   const protectedAccountLinks = accountLinks.map((link) => ({
     ...link,
@@ -110,16 +112,41 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
     if (!isOpen) return;
     const previousBodyOverflow = document.body.style.overflow;
     const previousRootOverflow = document.documentElement.style.overflow;
+    const mobileTrigger = mobileTriggerRef.current;
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+    const drawer = mobileDrawerRef.current;
+    const focusableSelector = [
+      "a[href]",
+      "button:not([disabled])",
+      "[tabindex]:not([tabindex='-1'])",
+    ].join(",");
+    drawer?.querySelector<HTMLElement>(focusableSelector)?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !drawer) return;
+      const focusable = Array.from(drawer.querySelectorAll<HTMLElement>(focusableSelector));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    document.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousRootOverflow;
-      document.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("keydown", handleKeyDown);
+      mobileTrigger?.focus();
     };
   }, [isOpen]);
 
@@ -262,6 +289,7 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
                 </div>
               ) : (
                 <Link
+                  aria-current={isActive(group.href) ? "page" : undefined}
                   className="rounded-sm py-2 transition hover:text-reality-brand-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
                   href={group.href}
                   key={group.label}
@@ -336,14 +364,14 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
             >
               List Property
             </ProtectedActionLink>
-          <Button
+          <button
             aria-controls="mobile-navigation"
             aria-expanded={isOpen}
             aria-label="Toggle navigation"
-            className="h-10 w-10 p-0 lg:hidden"
+            className={buttonClasses("realityGhost", "h-10 w-10 p-0 lg:hidden")}
             onClick={() => setIsOpen((value) => !value)}
+            ref={mobileTriggerRef}
             type="button"
-            variant="realityGhost"
           >
             <span aria-hidden="true" className="grid gap-1">
               <span
@@ -360,7 +388,7 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
                 )}
               />
             </span>
-          </Button>
+          </button>
           </div>
         </nav>
         {isOpen ? <div
@@ -378,13 +406,14 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
           <div className={clsx(
             "absolute inset-y-0 right-0 w-1/2 min-w-[230px] max-w-[420px] overflow-y-auto overscroll-contain bg-white px-4 pb-8 pt-5 text-reality-text-primary shadow-2xl sm:px-6",
             isOpen && "reality-mobile-drawer",
-          )}>
+          )} ref={mobileDrawerRef}>
           <div className="mb-4 flex items-center justify-between border-b border-reality-border-secondary pb-4">
             <span className="font-display text-xl font-semibold">Menu</span>
             <button aria-label="Close menu" className="rounded-full border border-reality-border-secondary px-3 py-2 text-sm" onClick={() => setIsOpen(false)} type="button">Close</button>
           </div>
           <div className="grid gap-1 text-sm font-medium">
             <Link
+              aria-current={pathname === "/" ? "page" : undefined}
               className="rounded-[10px] px-3 py-3 text-reality-text-secondary hover:bg-reality-bg-muted"
               href="/"
               onClick={() => setIsOpen(false)}
@@ -392,6 +421,7 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
               Home
             </Link>
             <Link
+              aria-current={pathname === "/properties" ? "page" : undefined}
               className="rounded-[10px] px-3 py-3 text-reality-text-secondary hover:bg-reality-bg-muted"
               href="/properties"
               onClick={() => setIsOpen(false)}
@@ -401,6 +431,7 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
             {realityGroups.filter((group) => group.id !== "rent" && group.id !== "sale").map((group) => (
               <div key={group.label}>
                 <Link
+                  aria-current={isActive(group.href) ? "page" : undefined}
                   className="flex rounded-[10px] px-3 py-3 text-reality-text-secondary hover:bg-reality-bg-muted"
                   href={group.href}
                   onClick={() => setIsOpen(false)}
@@ -486,4 +517,3 @@ export function Navbar({ transparent = false, variant = "reality" }: NavbarProps
     </header>
   );
 }
-

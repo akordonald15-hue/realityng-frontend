@@ -217,3 +217,19 @@ Assessment codes:
 - Do not introduce fake public inventory or customer data.
 - Do not merge `wip/launch-closure-features` or apply/drop `stash@{0}`.
 - Each batch gets its own focused PR, full frontend gate, visual evidence, deployment, and regression check.
+
+## E2b public and onboarding closure
+
+| Surface | Classification | E2b finding and disposition |
+|---|---|---|
+| `/` | Partially Figma-designed / approved evolution | Hero and marketing artwork retained. Zero-inventory presentation remains data-honest. Active search tabs now use an AA-safe semantic brand surface. |
+| `/for-professionals` | Partially Figma-designed / approved evolution | Approved cardless four-step process, artwork, motion, and reduced-motion behavior retained. No replacement redesign was justified. |
+| `/properties` | Engineer-designed / shared-component | Existing deliberate loading, empty-marketplace, filtered-empty, and error states retained. Responsive overflow passed at 1440, 1280, 1024, 768, 390, and 375 px. |
+| `/properties/[slug]` | Partially Figma-designed / approved evolution | No-photo, unavailable map/walkthrough, archived, and similar-listing states remain explicit. The performance contract remains one similar-inventory request and three total property-detail API calls. |
+| Public navigation | Shared component | Mobile drawer now receives and traps focus, closes with Escape, restores focus, exposes current-page semantics, and continues to lock background scroll. |
+| Footer | Shared component | Semantic grouping and approved cityscape retained; keyboard focus indication added to every footer link. |
+| Public assistant | Engineer-designed / shared-component | Phone teaser suppression retained. The opened panel now receives input focus, restores launcher focus on close, respects safe-area inset, and exposes a named region. |
+| `/onboarding/role-setup` | Engineer-designed / shared-component | Reframed as optional professional setup on the semantic canvas. Internal admin roles are excluded, approval wording is accurate, loading/error/retry states are intentional, and safe `next` continuation is preserved without automatic role grants. |
+| Professional entry points | Shared flow | Existing `role` + safe `next` propagation retained for homepage, navigation, and professional CTAs; no auth or authorization contract changed. |
+
+E2b automated evidence: ten desktop/mobile axe scans passed with no serious or critical WCAG A/AA violation. Public overflow passed across the required six widths. Mobile navigation and assistant focus behavior are covered in both component and Playwright tests. Property-detail unit coverage continues to assert exactly one similar-property inventory request.

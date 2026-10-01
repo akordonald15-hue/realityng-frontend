@@ -40,7 +40,7 @@ export function SegmentedTabs({
           className={clsx(
             "reality-pressable h-9 rounded-full px-5 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 disabled:cursor-not-allowed disabled:opacity-60",
             item.value === value
-              ? "bg-reality-brand-500 text-white shadow-reality-xs"
+              ? "bg-reality-brand-600 text-white shadow-reality-xs"
               : "text-reality-text-secondary hover:bg-reality-bg-muted",
             buttonProps?.className,
           )}
@@ -56,4 +56,3 @@ export function SegmentedTabs({
     </div>
   );
 }
-

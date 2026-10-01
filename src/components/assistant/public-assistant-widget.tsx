@@ -90,6 +90,8 @@ export function PublicAssistantWidget() {
     },
   ]);
   const hasInteractedRef = useRef(false);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const responseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isAuthenticated = Boolean(auth?.isAuthenticated);
   const helperText = useMemo(
@@ -160,6 +162,10 @@ export function PublicAssistantWidget() {
     setIsOpen(true);
   }
 
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus();
+  }, [isOpen]);
+
   if (!isOpen) {
     return (
       <div
@@ -179,6 +185,7 @@ export function PublicAssistantWidget() {
           aria-label="Open RealityNG AI"
           className="assistant-fade-scale pointer-events-auto group relative flex h-16 w-16 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brandEmphasis focus-visible:ring-offset-2 sm:h-[4.5rem] sm:w-[4.5rem]"
           onClick={openAssistant}
+          ref={launcherRef}
           type="button"
         >
           <AssistantOrb state={orbState} size="launcher" />
@@ -192,7 +199,7 @@ export function PublicAssistantWidget() {
   }
 
   return (
-    <Card className="assistant-fade-scale assistant-glass-panel fixed bottom-4 left-4 right-4 z-50 flex max-h-[min(35rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-2xl p-0 sm:left-auto sm:right-6 sm:w-[24rem]">
+    <Card aria-label="RealityNG AI assistant" className="assistant-fade-scale assistant-glass-panel fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-4 right-4 z-50 flex max-h-[min(35rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-2xl p-0 sm:left-auto sm:right-6 sm:w-[24rem]" role="region">
       <div className="flex items-start justify-between gap-3 border-b border-reality-border-secondary bg-reality-surfaceBrand px-4 py-3">
         <div className="flex items-center gap-3">
           <AssistantOrb state={orbState} size="sm" />
@@ -206,7 +213,10 @@ export function PublicAssistantWidget() {
         <button
           aria-label="Close RealityNG AI"
           className="flex h-10 w-10 items-center justify-center rounded-full text-reality-text-primary transition hover:bg-reality-surfaceMuted focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brandEmphasis"
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            setIsOpen(false);
+            window.setTimeout(() => launcherRef.current?.focus(), 0);
+          }}
           type="button"
         >
           <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" /></svg>
@@ -271,6 +281,7 @@ export function PublicAssistantWidget() {
           onChange={(event) => setDraft(event.target.value)}
           onFocus={() => setIsInputFocused(true)}
           placeholder="Ask how RealityNG works..."
+          ref={inputRef}
           value={draft}
         />
         <Button disabled={!draft.trim()} type="submit">
@@ -280,4 +291,3 @@ export function PublicAssistantWidget() {
     </Card>
   );
 }
-
