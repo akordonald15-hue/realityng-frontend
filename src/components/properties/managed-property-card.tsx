@@ -98,9 +98,13 @@ export function ManagedPropertyCard({
               </Link>
             ) : null}
           </div>
+          {!editHref ? (
+            <p className="mt-4 rounded-[14px] bg-reality-surfaceMuted px-3 py-2 text-sm leading-5 text-reality-text-secondary">
+              View-only assignment. Listing changes require the Manage listing capability.
+            </p>
+          ) : null}
         </div>
       </div>
     </Card>
   );
 }
-

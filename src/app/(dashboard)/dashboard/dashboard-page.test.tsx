@@ -378,7 +378,7 @@ describe("DashboardPage", () => {
     renderWithQueryClient(<DashboardPage />);
 
     expect(await screen.findByRole("heading", { name: "Hi, Tunde" })).toBeInTheDocument();
-    expect(screen.getByText("Manage properties you own or represent.")).toBeInTheDocument();
+    expect(screen.getAllByText("Manage properties you own or represent.").length).toBeGreaterThan(0);
     expect(
       screen.getByRole("tablist", { name: "Agent and landlord dashboard sections" }),
     ).toBeInTheDocument();
@@ -390,10 +390,10 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Property inquiries")).toBeInTheDocument();
     expect(screen.getByText("Viewing requests")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Applications & Requests" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "My Property" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Message" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Saved Property" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Recently viewed property" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "My Properties" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Messages" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Saved Properties" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Recently Viewed Properties" })).toBeInTheDocument();
     expect(await screen.findByText("Can we inspect this property tomorrow?")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Conversation/i })).toHaveAttribute(
       "href",
@@ -437,7 +437,7 @@ describe("DashboardPage", () => {
     renderWithQueryClient(<DashboardPage />);
 
     expect(await screen.findByRole("heading", { name: "Hi, Ada" })).toBeInTheDocument();
-    expect(screen.getByText("Manage properties you own or represent.")).toBeInTheDocument();
+    expect(screen.getAllByText("Manage properties you own or represent.").length).toBeGreaterThan(0);
     expect(
       screen.getByText(
         "No applications, inquiries, or viewing requests yet. New buyer activity will appear here.",
@@ -486,7 +486,7 @@ describe("DashboardPage", () => {
       "aria-selected",
       "true",
     );
-    expect(screen.getByRole("heading", { name: "Message" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Messages" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Applications & Requests" })).not.toBeInTheDocument();
   });
 

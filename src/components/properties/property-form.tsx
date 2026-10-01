@@ -124,6 +124,7 @@ function supportedPropertyType(value?: PropertyType): SupportedCreatePropertyTyp
     : "apartment";
 }
 
+
 function numberOrNull(value: number | "" | undefined) {
   return value === "" || value === undefined ? null : value;
 }
@@ -244,7 +245,7 @@ function CounterField({
         </span>
         <button
           aria-label={`Increase ${label}`}
-          className="h-10 w-10 rounded-full bg-reality-brand-500 text-lg font-semibold text-white transition hover:bg-reality-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
+          className="h-10 w-10 rounded-full bg-reality-brand-700 text-lg font-semibold text-white transition hover:bg-reality-brand-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
           onClick={() => setValue(name, numericValue + 1)}
           type="button"
         >
@@ -389,7 +390,7 @@ export function PropertyForm({
                   aria-disabled={index > maxUnlockedStepIndex}
                   className={`shrink-0 rounded-xl px-5 py-3 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 lg:w-full lg:text-left ${
                     step === item.id
-                      ? "bg-reality-brand-500 text-white shadow-reality-xs"
+                      ? "bg-reality-brand-700 text-white shadow-reality-xs"
                       : index > maxUnlockedStepIndex
                         ? "cursor-not-allowed bg-reality-surfaceMuted text-reality-text-quaternary opacity-60"
                       : "bg-reality-surface text-reality-text-secondary hover:bg-reality-surfaceBrand"
@@ -593,4 +594,3 @@ export function PropertyForm({
     </main>
   );
 }
-

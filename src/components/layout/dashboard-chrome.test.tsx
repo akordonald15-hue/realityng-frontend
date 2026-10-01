@@ -52,10 +52,27 @@ describe("DashboardChrome", () => {
     mocks.user = roleUser("agent");
     render(<DashboardChrome>Agent</DashboardChrome>);
     expect(screen.getAllByTestId("navbar-variant").at(-1)).toHaveTextContent("reality");
+    expect(screen.getByRole("navigation", { name: "Professional workspace" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Professional navigation" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Home" }).at(-1)).toHaveAttribute("aria-current", "page");
+    expect(screen.getAllByTestId("assistant-offset").at(-1)).toHaveTextContent("true");
 
     mocks.user = roleUser("landlord");
     render(<DashboardChrome>Landlord</DashboardChrome>);
     expect(screen.getAllByTestId("navbar-variant").at(-1)).toHaveTextContent("reality");
+    expect(screen.getAllByText("Landlord workspace").length).toBeGreaterThan(0);
+  });
+
+  it("marks property creation as part of the professional property workspace", () => {
+    mocks.pathname = "/properties/new";
+    mocks.user = roleUser("agent");
+
+    render(<DashboardChrome>New property</DashboardChrome>);
+
+    for (const link of screen.getAllByRole("link", { name: "Properties" })) {
+      expect(link).toHaveAttribute("aria-current", "page");
+    }
+    mocks.pathname = "/dashboard";
   });
 
   it("uses Reality chrome for admin and non-supply professionals too", () => {
