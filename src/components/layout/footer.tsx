@@ -78,7 +78,7 @@ function FooterColumn({
       <p className="text-sm font-semibold text-reality-text-primary">{title}</p>
       <div className="mt-4 grid gap-3 text-sm text-reality-text-tertiary">
         {links.map((link) => (
-          <Link className="transition hover:text-reality-brandEmphasis" href={link.href} key={`${link.href}-${link.label}`}>
+          <Link className="rounded-sm transition hover:text-reality-brandEmphasis focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brandEmphasis focus-visible:ring-offset-2" href={link.href} key={`${link.href}-${link.label}`}>
             {link.label}
           </Link>
         ))}
@@ -86,4 +86,3 @@ function FooterColumn({
     </div>
   );
 }
-

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
+import { ModalShell } from "@/components/ui/modal-shell";
 
 type RoleSelectionOptions = {
   nextPath?: string;
@@ -100,46 +101,24 @@ export function RoleSelectionProvider({ children }: Readonly<{ children: React.R
     <RoleSelectionContext.Provider value={value}>
       {children}
       {isOpen ? (
-        <div
-          aria-labelledby="role-selection-title"
-          aria-modal="true"
-          className="fixed inset-0 z-[90] flex items-end justify-center bg-black/75 p-4 backdrop-blur-sm sm:items-center"
-          role="dialog"
-        >
-          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-md border border-brand-secondary/30 bg-white p-5 text-reality-text-primary shadow-2xl sm:p-7">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <BrandLogo className="h-14 w-auto object-contain" tone="light" />
-                <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-reality-brand-600">
-                  Create an account to continue.
-                </p>
-                <h2
-                  className="mt-3 font-display text-3xl font-semibold text-reality-text-primary"
-                  id="role-selection-title"
-                >
-                  Welcome to RealityNG
-                </h2>
-                <p className="mt-2 max-w-xl leading-7 text-reality-text-secondary">
-                  Tell us who you are so we can personalize your experience.
-                </p>
-                {options.actionLabel ? (
-                  <p className="mt-3 text-sm text-reality-text-secondary">
-                    Continue to:{" "}
-                    <span className="font-semibold text-reality-brand-600">
-                      {options.actionLabel}
-                    </span>
-                  </p>
-                ) : null}
-              </div>
-              <button
-                aria-label="Close account role selection"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-xl text-reality-text-secondary hover:bg-reality-bg-muted hover:text-reality-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
-                onClick={() => setIsOpen(false)}
-                type="button"
-              >
-                x
-              </button>
-            </div>
+        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/75 p-4 backdrop-blur-sm sm:items-center">
+          <ModalShell
+            className="max-h-[92vh] max-w-3xl overflow-y-auto p-5 sm:p-7"
+            closeLabel="Close account role selection"
+            description="Tell us who you are so we can personalize your experience."
+            onClose={() => setIsOpen(false)}
+            title="Welcome to RealityNG"
+          >
+            <BrandLogo className="h-12 w-auto object-contain" tone="light" />
+            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-reality-brand-600">
+              Create an account to continue.
+            </p>
+            {options.actionLabel ? (
+              <p className="mt-3 text-sm text-reality-text-secondary">
+                Continue to:{" "}
+                <span className="font-semibold text-reality-brand-600">{options.actionLabel}</span>
+              </p>
+            ) : null}
             <div className="mt-5 rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-reality-brand-600">
                 Your account unlocks
@@ -188,7 +167,7 @@ export function RoleSelectionProvider({ children }: Readonly<{ children: React.R
                 Continue browsing
               </Button>
             </div>
-          </div>
+          </ModalShell>
         </div>
       ) : null}
     </RoleSelectionContext.Provider>
@@ -205,4 +184,3 @@ export function useRoleSelection() {
   }
   return context;
 }
-

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { RoleSelectionProvider, useRoleSelection } from "@/components/auth/role-selection-modal";
@@ -53,5 +53,20 @@ describe("RoleSelectionProvider", () => {
       "/auth/sign-up?role=buyer&next=%2Fproperties%2Flekki-apartment",
     );
   });
-});
 
+  it("closes with Escape and restores focus to the opener", async () => {
+    render(
+      <RoleSelectionProvider>
+        <Trigger />
+      </RoleSelectionProvider>,
+    );
+    const opener = screen.getByRole("button", { name: "Open account prompt" });
+    opener.focus();
+    fireEvent.click(opener);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(opener).toHaveFocus();
+  });
+});

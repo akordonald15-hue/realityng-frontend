@@ -31,6 +31,13 @@ vi.mock("@/lib/api/auth", () => ({
         created_at: "2026-06-16T00:00:00Z",
         approval_required: true,
       },
+      {
+        id: "role-admin",
+        name: "admin",
+        description: "Internal administration.",
+        created_at: "2026-06-16T00:00:00Z",
+        approval_required: true,
+      },
     ]),
   requestRole: (role: string) => mocks.requestRole(role),
 }));
@@ -50,6 +57,18 @@ describe("RoleSetupPage", () => {
 
     await waitFor(() => expect(mocks.requestRole).toHaveBeenCalledWith("agent"));
     expect(await screen.findByText("agent role requested and awaiting approval.")).toBeInTheDocument();
+    expect(screen.queryByText("Internal administration.")).not.toBeInTheDocument();
+  });
+
+  it("preserves a safe continuation without automatically granting a role", async () => {
+    window.history.pushState({}, "", "/onboarding/role-setup?role=agent&next=%2Fproperties%2Fnew");
+    renderWithQueryClient(<RoleSetupPage />);
+
+    expect(await screen.findByText(/Continue with agent/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Continue to your next step" })).toHaveAttribute(
+      "href",
+      "/properties/new",
+    );
+    expect(mocks.requestRole).not.toHaveBeenCalled();
   });
 });
-

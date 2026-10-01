@@ -57,6 +57,21 @@ describe("Navbar", () => {
     expect(screen.queryByText("Where Dreams Find an Address")).not.toBeInTheDocument();
   });
 
+  it("contains keyboard focus in the mobile drawer and restores it on close", async () => {
+    const user = userEvent.setup();
+    render(<Navbar />);
+
+    const trigger = screen.getByRole("button", { name: "Toggle navigation" });
+    await user.click(trigger);
+
+    const close = screen.getByRole("button", { name: "Close menu" });
+    expect(close).toHaveFocus();
+    await user.keyboard("{Shift>}{Tab}{/Shift}");
+    expect(screen.getAllByRole("link", { name: "Get Started" }).at(-1)).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(trigger).toHaveFocus();
+  });
+
   it("can render the opt-in Reality navigation without changing the default shell", async () => {
     const user = userEvent.setup();
     render(<Navbar variant="reality" />);
@@ -142,4 +157,3 @@ describe("Navbar", () => {
     expect(authMocks.signOut).toHaveBeenCalledTimes(1);
   });
 });
-
