@@ -703,8 +703,10 @@ export async function listProviderTrades(): Promise<ProviderTrade[]> {
   if (USE_MOCKS) {
     return mockListProviderTrades();
   }
-  const response = await apiClient.get<ProviderTrade[]>("/services/provider-profile/trades/");
-  return response.data;
+  const response = await apiClient.get<ProviderTrade[] | { results: ProviderTrade[] }>(
+    "/services/provider-profile/trades/",
+  );
+  return Array.isArray(response.data) ? response.data : response.data.results;
 }
 
 export async function createProviderTrade(payload: ProviderTradePayload): Promise<ProviderTrade> {
@@ -740,8 +742,10 @@ export async function listServiceAreas(): Promise<ServiceArea[]> {
   if (USE_MOCKS) {
     return mockListServiceAreas();
   }
-  const response = await apiClient.get<ServiceArea[]>("/services/provider-profile/service-areas/");
-  return response.data;
+  const response = await apiClient.get<ServiceArea[] | { results: ServiceArea[] }>(
+    "/services/provider-profile/service-areas/",
+  );
+  return Array.isArray(response.data) ? response.data : response.data.results;
 }
 
 export async function createServiceArea(payload: ServiceAreaPayload): Promise<ServiceArea> {
@@ -780,8 +784,10 @@ export async function listPortfolioImages(): Promise<PortfolioImage[]> {
   if (USE_MOCKS) {
     return mockListPortfolioImages();
   }
-  const response = await apiClient.get<PortfolioImage[]>("/services/provider-profile/portfolio/");
-  return response.data;
+  const response = await apiClient.get<PortfolioImage[] | { results: PortfolioImage[] }>(
+    "/services/provider-profile/portfolio/",
+  );
+  return Array.isArray(response.data) ? response.data : response.data.results;
 }
 
 export async function createPortfolioImage(

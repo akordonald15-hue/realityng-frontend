@@ -39,11 +39,13 @@ export default function InspectorAssignmentDetailPage() {
   const reportQuery = useQuery({
     queryKey: ["inspection-report", params.id],
     queryFn: () => getInspectionReportForRequest(params.id),
+    enabled: requestQuery.isSuccess,
     retry: false,
   });
   const timelineQuery = useQuery({
     queryKey: ["inspection-timeline", params.id],
     queryFn: () => listInspectionTimeline(params.id),
+    enabled: requestQuery.isSuccess,
   });
   const createReportMutation = useMutation({
     mutationFn: () => {
@@ -85,6 +87,21 @@ export default function InspectorAssignmentDetailPage() {
         title={request?.property.title ?? "Inspection work"}
         description="Create reports, attach private evidence, and submit the result to RealityNG operations for moderation."
       />
+      {requestQuery.isLoading ? (
+        <Card className="mt-8 p-5 text-reality-text-secondary">Loading inspection assignment...</Card>
+      ) : null}
+      {requestQuery.isError ? (
+        <Card className="mt-8 border-reality-border-secondary bg-reality-surfaceMuted p-6" role="status">
+          <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
+            This assignment is no longer available
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-reality-text-secondary">
+            It may have been declined, cancelled, or reassigned. Return to your assignment list for
+            the work currently available to you.
+          </p>
+        </Card>
+      ) : null}
+      {requestQuery.isSuccess ? (
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-6">
           {request ? (
@@ -110,16 +127,28 @@ export default function InspectorAssignmentDetailPage() {
                     evidenceMutation.mutate(report.id);
                   }}
                 >
-                  <Input
-                    accept="image/jpeg,image/png,application/pdf"
-                    onChange={(event) => setEvidenceFile(event.target.files?.[0] ?? null)}
-                    required
-                    type="file"
-                  />
+                  <label className="grid gap-2 text-sm font-semibold text-reality-text-primary">
+                    Evidence file
+                    <Input
+                      accept="image/jpeg,image/png,application/pdf"
+                      aria-describedby="inspection-evidence-help"
+                      onChange={(event) => setEvidenceFile(event.target.files?.[0] ?? null)}
+                      required
+                      type="file"
+                    />
+                    <span className="text-xs font-normal text-reality-text-secondary" id="inspection-evidence-help">
+                      JPEG, PNG, or PDF only. Evidence remains private and access controlled.
+                    </span>
+                  </label>
                   <Button disabled={evidenceMutation.isPending || !evidenceFile} type="submit">
-                    Upload evidence
+                    {evidenceMutation.isPending ? "Uploading..." : "Upload evidence"}
                   </Button>
                 </form>
+                {evidenceMutation.isError ? (
+                  <div className="mt-4">
+                    <FormMessage tone="error">{getApiErrorMessage(evidenceMutation.error)}</FormMessage>
+                  </div>
+                ) : null}
               </Card>
             </>
           ) : (
@@ -152,7 +181,7 @@ export default function InspectorAssignmentDetailPage() {
                     value={recommendation}
                   />
                 </label>
-                <Select disabled value="good">
+                <Select aria-label="Overall condition" disabled value="good">
                   <option value="good">Good condition</option>
                 </Select>
                 {createReportMutation.isError ? (
@@ -168,9 +197,16 @@ export default function InspectorAssignmentDetailPage() {
           )}
 
           {report && report.status === "draft" ? (
-            <Button disabled={submitMutation.isPending} onClick={() => submitMutation.mutate(report.id)}>
-              {submitMutation.isPending ? "Submitting..." : "Submit report for review"}
-            </Button>
+            <div>
+              <Button disabled={submitMutation.isPending} onClick={() => submitMutation.mutate(report.id)}>
+                {submitMutation.isPending ? "Submitting..." : "Submit report for review"}
+              </Button>
+              {submitMutation.isError ? (
+                <div className="mt-3">
+                  <FormMessage tone="error">{getApiErrorMessage(submitMutation.error)}</FormMessage>
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </div>
         <Card className="h-fit p-5">
@@ -180,6 +216,7 @@ export default function InspectorAssignmentDetailPage() {
           </div>
         </Card>
       </div>
+      ) : null}
     </main>
   );
 }

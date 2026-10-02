@@ -5,17 +5,17 @@ import type {
 } from "@/lib/api/inspections";
 
 const toneByStatus: Record<string, string> = {
-  approved: "border-emerald-300/30 bg-emerald-300/10 text-emerald-100",
-  completed: "border-emerald-300/30 bg-emerald-300/10 text-emerald-100",
-  requested: "border-brand-secondary/40 bg-brand-secondary/15 text-reality-brand-600",
-  pending_review: "border-brand-secondary/40 bg-brand-secondary/15 text-reality-brand-600",
-  submitted: "border-brand-secondary/40 bg-brand-secondary/15 text-reality-brand-600",
-  scheduled: "border-sky-300/30 bg-sky-300/10 text-sky-100",
-  assigned: "border-sky-300/30 bg-sky-300/10 text-sky-100",
-  in_progress: "border-sky-300/30 bg-sky-300/10 text-sky-100",
-  needs_more_information: "border-orange-300/30 bg-orange-300/10 text-orange-100",
-  needs_revision: "border-orange-300/30 bg-orange-300/10 text-orange-100",
-  rejected: "border-red-300/30 bg-red-300/10 text-red-100",
+  approved: "border-emerald-700/25 bg-emerald-50 text-emerald-800",
+  completed: "border-emerald-700/25 bg-emerald-50 text-emerald-800",
+  requested: "border-reality-brand-700/25 bg-reality-surfaceBrand text-reality-brandEmphasis",
+  pending_review: "border-reality-brand-700/25 bg-reality-surfaceBrand text-reality-brandEmphasis",
+  submitted: "border-reality-brand-700/25 bg-reality-surfaceBrand text-reality-brandEmphasis",
+  scheduled: "border-sky-700/25 bg-sky-50 text-sky-800",
+  assigned: "border-sky-700/25 bg-sky-50 text-sky-800",
+  in_progress: "border-sky-700/25 bg-sky-50 text-sky-800",
+  needs_more_information: "border-amber-700/25 bg-amber-50 text-amber-900",
+  needs_revision: "border-amber-700/25 bg-amber-50 text-amber-900",
+  rejected: "border-red-700/25 bg-red-50 text-red-800",
   cancelled: "border-reality-border-secondary bg-reality-bg-subtle text-reality-text-secondary",
   hidden: "border-reality-border-secondary bg-reality-bg-subtle text-reality-text-secondary",
   archived: "border-reality-border-secondary bg-reality-bg-subtle text-reality-text-secondary",
@@ -40,4 +40,3 @@ export function InspectionStatusBadge({
     </span>
   );
 }
-

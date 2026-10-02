@@ -3,8 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { AssignmentCard } from "@/components/inspections/inspection-widgets";
+import { FormMessage } from "@/components/forms/form-message";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
+import { getApiErrorMessage } from "@/lib/api/errors";
 import {
   acceptInspectionAssignment,
   declineInspectionAssignment,
@@ -38,6 +40,14 @@ export default function InspectorAssignmentsPage() {
         {assignmentsQuery.isLoading ? (
           <Card className="p-5 text-reality-text-secondary">Loading assignments...</Card>
         ) : null}
+        {assignmentsQuery.isError ? (
+          <FormMessage tone="error">{getApiErrorMessage(assignmentsQuery.error)}</FormMessage>
+        ) : null}
+        {acceptMutation.isError || declineMutation.isError ? (
+          <FormMessage tone="error">
+            {getApiErrorMessage(acceptMutation.error ?? declineMutation.error)}
+          </FormMessage>
+        ) : null}
         {assignmentsQuery.data?.map((assignment) => (
           <AssignmentCard
             assignment={assignment}
@@ -54,4 +64,3 @@ export default function InspectorAssignmentsPage() {
     </main>
   );
 }
-

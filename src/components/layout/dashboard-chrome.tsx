@@ -25,6 +25,22 @@ const professionalNavigation = [
   { href: "/settings/profile", label: "Profile" },
 ];
 
+const providerNavigation = [
+  { href: "/dashboard/artisan", label: "Overview" },
+  { href: "/dashboard/artisan/profile", label: "Profile" },
+  { href: "/dashboard/artisan/portfolio", label: "Portfolio" },
+  { href: "/dashboard/artisan/quote-requests", label: "Requests" },
+  { href: "/dashboard/messages", label: "Messages" },
+];
+
+const inspectorNavigation = [
+  { href: "/dashboard/inspector", label: "Overview" },
+  { href: "/dashboard/inspector/assignments", label: "Assignments" },
+  { href: "/dashboard/messages", label: "Messages" },
+  { href: "/dashboard/notifications", label: "Alerts" },
+  { href: "/settings/profile", label: "Profile" },
+];
+
 function routeIsActive(pathname: string, item: { href: string; aliases?: string[] }) {
   if (item.href === "/dashboard") return pathname === item.href;
   return pathname === item.href
@@ -37,12 +53,36 @@ export function DashboardChrome({ children }: { children: React.ReactNode }) {
   const auth = useOptionalAuth();
   const user = auth?.user ?? null;
   const showProfessionalNavigation = Boolean(user) && !isAdmin(user) && isApprovedSupplyUser(user);
+  const showProviderNavigation = Boolean(user) && !isAdmin(user) && hasApprovedRole(user, "artisan");
+  const showInspectorNavigation = Boolean(user) && !isAdmin(user) && hasApprovedRole(user, "inspector");
+  const professionalRole = hasApprovedRole(user, "landlord") ? "Landlord" : "Agent";
   const showBuyerNavigation = Boolean(user)
     && !isAdmin(user)
     && !isApprovedSupplyUser(user)
     && !isApprovedProfessional(user);
-  const hasMobileNavigation = showBuyerNavigation || showProfessionalNavigation;
-  const professionalRole = hasApprovedRole(user, "landlord") ? "Landlord" : "Agent";
+  const workspaceNavigation = showProfessionalNavigation
+    ? professionalNavigation
+    : showProviderNavigation
+      ? providerNavigation
+      : showInspectorNavigation
+        ? inspectorNavigation
+        : null;
+  const desktopNavigationLabel = showProfessionalNavigation
+    ? "Professional workspace"
+    : showProviderNavigation
+      ? "Provider workspace"
+      : "Inspector workspace";
+  const mobileNavigationLabel = showProfessionalNavigation
+    ? "Professional navigation"
+    : showProviderNavigation
+      ? "Provider navigation"
+      : "Inspector navigation";
+  const workspaceLabel = showProfessionalNavigation
+    ? `${professionalRole} workspace`
+    : showProviderNavigation
+      ? "Provider workspace"
+      : "Inspector workspace";
+  const hasMobileNavigation = showBuyerNavigation || Boolean(workspaceNavigation);
 
   return (
     <>
@@ -53,17 +93,17 @@ export function DashboardChrome({ children }: { children: React.ReactNode }) {
           hasMobileNavigation && "pb-20 md:pb-0",
         )}
       >
-        {showProfessionalNavigation ? (
+        {workspaceNavigation ? (
           <nav
-            aria-label="Professional workspace"
+            aria-label={desktopNavigationLabel}
             className="hidden border-b border-reality-border-secondary bg-reality-surface md:block"
           >
             <div className="mx-auto flex min-h-14 w-full max-w-reality items-center justify-between gap-6 px-6 xl:px-0">
               <p className="shrink-0 text-sm font-semibold text-reality-brandEmphasis">
-                {professionalRole} workspace
+                {workspaceLabel}
               </p>
               <div className="flex items-stretch gap-1">
-                {professionalNavigation.map((item) => {
+                {workspaceNavigation.map((item) => {
                   const active = routeIsActive(pathname, item);
                   return (
                     <Link
@@ -114,12 +154,12 @@ export function DashboardChrome({ children }: { children: React.ReactNode }) {
           })}
         </nav>
       ) : null}
-      {showProfessionalNavigation ? (
+      {workspaceNavigation ? (
         <nav
-          aria-label="Professional navigation"
+          aria-label={mobileNavigationLabel}
           className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-reality-border-secondary bg-white/95 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-8px_30px_rgba(6,61,45,0.08)] backdrop-blur md:hidden"
         >
-          {professionalNavigation.map((item) => {
+          {workspaceNavigation.map((item) => {
             const active = routeIsActive(pathname, item);
             return (
               <Link

@@ -66,18 +66,18 @@ export function QuoteRequestsList({
               <p>{request.preferred_contact_method}</p>
             </div>
           </div>
-          <div className="mt-4 grid gap-3 rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-4 text-sm text-reality-text-secondary md:grid-cols-3">
-            <span>{request.customer_name}</span>
-            <span>{request.phone}</span>
-            <span>{request.email}</span>
-            <span>{[request.lga, request.state].filter(Boolean).join(", ")}</span>
-            <span>{request.budget_range || "Budget not supplied"}</span>
-            <span>
+          <dl className="mt-4 grid gap-3 rounded-[18px] border border-reality-border-secondary bg-reality-surfaceMuted p-4 text-sm md:grid-cols-2 lg:grid-cols-3">
+            <div><dt className="font-semibold text-reality-text-primary">Customer</dt><dd className="mt-1 text-reality-text-secondary">{request.customer_name}</dd></div>
+            <div><dt className="font-semibold text-reality-text-primary">Phone</dt><dd className="mt-1 text-reality-text-secondary">{request.phone}</dd></div>
+            <div><dt className="font-semibold text-reality-text-primary">Email</dt><dd className="mt-1 break-all text-reality-text-secondary">{request.email}</dd></div>
+            <div><dt className="font-semibold text-reality-text-primary">Location</dt><dd className="mt-1 text-reality-text-secondary">{[request.lga, request.state].filter(Boolean).join(", ") || "Not supplied"}</dd></div>
+            <div><dt className="font-semibold text-reality-text-primary">Budget</dt><dd className="mt-1 text-reality-text-secondary">{request.budget_range || "Not supplied"}</dd></div>
+            <div><dt className="font-semibold text-reality-text-primary">Preferred start</dt><dd className="mt-1 text-reality-text-secondary">
               {request.preferred_start_date
                 ? new Date(request.preferred_start_date).toLocaleDateString("en-NG")
                 : "Flexible start"}
-            </span>
-          </div>
+            </dd></div>
+          </dl>
           {mode === "admin" ? (
             <div className="mt-4">
               <p className="text-sm text-reality-text-secondary">
@@ -121,4 +121,3 @@ export function QuoteRequestsList({
     </div>
   );
 }
-

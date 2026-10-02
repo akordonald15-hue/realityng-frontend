@@ -81,10 +81,27 @@ describe("DashboardChrome", () => {
     expect(screen.getByTestId("navbar-variant")).toHaveTextContent("reality");
 
     mocks.user = roleUser("artisan");
+    mocks.pathname = "/dashboard/artisan/quote-requests";
     render(<DashboardChrome>Artisan</DashboardChrome>);
     expect(screen.getAllByTestId("navbar-variant").at(-1)).toHaveTextContent("reality");
+    expect(screen.getByRole("navigation", { name: "Provider workspace" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Provider navigation" })).toBeInTheDocument();
+    for (const link of screen.getAllByRole("link", { name: "Requests" })) {
+      expect(link).toHaveAttribute("aria-current", "page");
+    }
+    expect(screen.getAllByTestId("assistant-offset").at(-1)).toHaveTextContent("true");
+
+    mocks.user = roleUser("inspector");
+    mocks.pathname = "/dashboard/inspector/assignments/assignment-1";
+    render(<DashboardChrome>Inspector</DashboardChrome>);
+    expect(screen.getByRole("navigation", { name: "Inspector workspace" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Inspector navigation" })).toBeInTheDocument();
+    for (const link of screen.getAllByRole("link", { name: "Assignments" })) {
+      expect(link).toHaveAttribute("aria-current", "page");
+    }
 
     mocks.user = roleUser("landlord", "pending");
+    mocks.pathname = "/dashboard";
     render(<DashboardChrome>Pending landlord</DashboardChrome>);
     expect(screen.getAllByTestId("navbar-variant").at(-1)).toHaveTextContent("reality");
   });
