@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { FormMessage } from "@/components/forms/form-message";
 import { QuoteRequestsList } from "@/components/services/quote-requests-list";
 import { buttonClasses } from "@/components/ui/button";
@@ -33,6 +34,7 @@ export default function AdminQuoteRequestsPage() {
     setFilters((current) => ({
       ...current,
       [key]: value || undefined,
+      page: 1,
     }));
   }
 
@@ -91,8 +93,8 @@ export default function AdminQuoteRequestsPage() {
             />
           )}
         </div>
+        {quoteRequestsQuery.data ? <AdminPagination count={quoteRequestsQuery.data.count} hasNext={Boolean(quoteRequestsQuery.data.next)} hasPrevious={Boolean(quoteRequestsQuery.data.previous)} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} page={filters.page ?? 1} /> : null}
       </main>
     </ProtectedRoute>
   );
 }
-

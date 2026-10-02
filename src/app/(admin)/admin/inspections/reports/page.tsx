@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { InspectionReportCard } from "@/components/inspections/inspection-widgets";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,10 +20,11 @@ import {
 export default function AdminInspectionReportsPage() {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<InspectionReportStatus | "">("submitted");
+  const [page, setPage] = useState(1);
   const [reasonById, setReasonById] = useState<Record<string, string>>({});
   const reportsQuery = useQuery({
-    queryKey: ["admin-inspection-reports", status],
-    queryFn: () => adminListReports(status || undefined),
+    queryKey: ["admin-inspection-reports", status, page],
+    queryFn: () => adminListReports(status || undefined, page),
   });
   const approveMutation = useMutation({
     mutationFn: adminApproveReport,
@@ -43,7 +45,7 @@ export default function AdminInspectionReportsPage() {
           description="Approve reports only after verifying that private evidence and summary notes match RealityNG standards."
         />
         <Card className="mt-6 p-4">
-          <Select onChange={(event) => setStatus(event.target.value as InspectionReportStatus | "")} value={status}>
+          <Select aria-label="Filter reports by status" onChange={(event) => { setStatus(event.target.value as InspectionReportStatus | ""); setPage(1); }} value={status}>
             <option value="">Any status</option>
             <option value="submitted">Submitted</option>
             <option value="under_review">Under review</option>
@@ -84,9 +86,10 @@ export default function AdminInspectionReportsPage() {
           {reportsQuery.data?.results.length === 0 ? (
             <Card className="p-5 text-sm text-reality-text-secondary">No reports match this queue.</Card>
           ) : null}
+          {reportsQuery.isError ? <Card className="border-red-200 bg-red-50 p-5 text-sm text-red-800" role="alert">Inspection reports could not be loaded.</Card> : null}
         </div>
+        {reportsQuery.data ? <AdminPagination count={reportsQuery.data.count} hasNext={Boolean(reportsQuery.data.next)} hasPrevious={Boolean(reportsQuery.data.previous)} onPageChange={setPage} page={page} /> : null}
       </main>
     </ProtectedRoute>
   );
 }
-

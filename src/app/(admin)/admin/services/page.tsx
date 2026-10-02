@@ -74,7 +74,7 @@ export default function AdminServicesDashboardPage() {
           <Card className="mt-8 p-5 text-reality-text-secondary">Loading services operations...</Card>
         ) : null}
         {dashboardQuery.isError ? (
-          <Card className="mt-8 p-5 text-red-200">Services operations could not be loaded.</Card>
+          <Card className="mt-8 border-red-200 bg-red-50 p-5 text-red-800" role="alert">Services operations could not be loaded.</Card>
         ) : null}
 
         {dashboard ? (
@@ -193,4 +193,3 @@ export default function AdminServicesDashboardPage() {
     </ProtectedRoute>
   );
 }
-

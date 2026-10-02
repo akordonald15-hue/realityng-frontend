@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { AppealList } from "@/components/services/governance-widgets";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,9 +17,10 @@ import {
 
 export default function AdminServiceAppealsPage() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
   const appealsQuery = useQuery({
-    queryKey: ["admin-service-appeals"],
-    queryFn: () => adminListAppeals(),
+    queryKey: ["admin-service-appeals", page],
+    queryFn: () => adminListAppeals({ page }),
   });
   const moderationMutation = useMutation({
     mutationFn: ({
@@ -58,7 +61,9 @@ export default function AdminServiceAppealsPage() {
                   <Button
                     disabled={moderationMutation.isPending}
                     key={action}
-                    onClick={() => moderationMutation.mutate({ appeal, action })}
+                    onClick={() => {
+                      if (window.confirm(`${action} this provider appeal? This decision changes its moderation state.`)) moderationMutation.mutate({ appeal, action });
+                    }}
                     variant={action === "approve" ? "primary" : "secondary"}
                   >
                     {action}
@@ -68,8 +73,8 @@ export default function AdminServiceAppealsPage() {
             </Card>
           ))}
         </div>
+        {appealsQuery.data ? <AdminPagination count={appealsQuery.data.count} hasNext={Boolean(appealsQuery.data.next)} hasPrevious={Boolean(appealsQuery.data.previous)} onPageChange={setPage} page={page} /> : null}
       </main>
     </ProtectedRoute>
   );
 }
-

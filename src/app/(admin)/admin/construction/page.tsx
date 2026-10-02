@@ -26,7 +26,7 @@ export default function AdminConstructionDashboardPage() {
           <Card className="mt-8 p-5 text-reality-text-secondary">Loading construction oversight...</Card>
         ) : null}
         {dashboardQuery.isError ? (
-          <Card className="mt-8 p-5 text-red-200">Construction oversight could not load.</Card>
+          <Card className="mt-8 border-red-200 bg-red-50 p-5 text-red-800" role="alert">Construction oversight could not load.</Card>
         ) : null}
         {dashboardQuery.data ? (
           <ConstructionDashboardBody
@@ -38,4 +38,3 @@ export default function AdminConstructionDashboardPage() {
     </ProtectedRoute>
   );
 }
-
