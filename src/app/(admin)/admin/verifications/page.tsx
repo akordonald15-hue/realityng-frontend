@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { FormMessage } from "@/components/forms/form-message";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -57,15 +58,17 @@ export default function AdminVerificationsPage() {
   const [actionError, setActionError] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<AdminVerificationAction | null>(null);
+  const [businessPage, setBusinessPage] = useState(1);
+  const [propertyPage, setPropertyPage] = useState(1);
 
   const businessQuery = useQuery({
-    queryKey: ["admin-verification-requests"],
-    queryFn: () => listAdminVerificationRequests(),
+    queryKey: ["admin-verification-requests", businessPage],
+    queryFn: () => listAdminVerificationRequests(businessPage),
   });
 
   const propertyQuery = useQuery({
-    queryKey: ["admin-property-verifications"],
-    queryFn: () => listAdminPropertyVerifications(),
+    queryKey: ["admin-property-verifications", propertyPage],
+    queryFn: () => listAdminPropertyVerifications(propertyPage),
   });
 
   const isLoading = businessQuery.isLoading || propertyQuery.isLoading;
@@ -181,6 +184,7 @@ export default function AdminVerificationsPage() {
           ) : (
             <p className="text-sm text-reality-text-secondary">No business or artisan verification requests yet.</p>
           )}
+          {businessQuery.data ? <AdminPagination count={businessQuery.data.count} hasNext={Boolean(businessQuery.data.next)} hasPrevious={Boolean(businessQuery.data.previous)} onPageChange={setBusinessPage} page={businessPage} /> : null}
         </section>
 
         <section className="mt-8">
@@ -210,9 +214,9 @@ export default function AdminVerificationsPage() {
           ) : (
             <p className="text-sm text-reality-text-secondary">No property verification requests yet.</p>
           )}
+          {propertyQuery.data ? <AdminPagination count={propertyQuery.data.count} hasNext={Boolean(propertyQuery.data.next)} hasPrevious={Boolean(propertyQuery.data.previous)} onPageChange={setPropertyPage} page={propertyPage} /> : null}
         </section>
       </main>
     </ProtectedRoute>
   );
 }
-

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { ReviewModerationList } from "@/components/services/review-moderation-list";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
@@ -12,9 +13,10 @@ import { adminListServiceReviews, type ServiceReviewStatus } from "@/lib/api/ser
 
 export default function AdminServiceReviewsPage() {
   const [status, setStatus] = useState<ServiceReviewStatus | "">("pending");
+  const [page, setPage] = useState(1);
   const reviewsQuery = useQuery({
-    queryKey: ["admin-service-reviews", status],
-    queryFn: () => adminListServiceReviews({ status, ordering: "newest" }),
+    queryKey: ["admin-service-reviews", status, page],
+    queryFn: () => adminListServiceReviews({ status, ordering: "newest", page }),
   });
 
   return (
@@ -27,7 +29,8 @@ export default function AdminServiceReviewsPage() {
         />
         <Card className="mt-6 max-w-xs p-4">
           <Select
-            onChange={(event) => setStatus(event.target.value as ServiceReviewStatus | "")}
+            aria-label="Filter reviews by status"
+            onChange={(event) => { setStatus(event.target.value as ServiceReviewStatus | ""); setPage(1); }}
             value={status}
           >
             <option value="">Any status</option>
@@ -46,8 +49,8 @@ export default function AdminServiceReviewsPage() {
             <ReviewModerationList reviews={reviewsQuery.data?.results ?? []} />
           )}
         </div>
+        {reviewsQuery.data ? <AdminPagination count={reviewsQuery.data.count} hasNext={Boolean(reviewsQuery.data.next)} hasPrevious={Boolean(reviewsQuery.data.previous)} onPageChange={setPage} page={page} /> : null}
       </main>
     </ProtectedRoute>
   );
 }
-

@@ -434,10 +434,11 @@ export async function getAdminInspectionDashboard(): Promise<AdminInspectionDash
 
 export async function adminListInspectionRequests(
   status?: InspectionRequestStatus,
+  page = 1,
 ): Promise<PaginatedInspectionRequests> {
   if (USE_MOCKS) return mockListAdminInspectionRequests();
   const response = await apiClient.get<PaginatedInspectionRequests>("/inspections/admin/requests/", {
-    params: status ? { status } : undefined,
+    params: { ...(status ? { status } : {}), page },
   });
   return response.data;
 }
@@ -475,11 +476,12 @@ export async function adminAssignInspectionRequest(payload: {
 
 export async function adminListWalkthroughs(
   status?: WalkthroughStatus,
+  page = 1,
 ): Promise<PaginatedInspectionWalkthroughs> {
   if (USE_MOCKS) return mockListAdminWalkthroughs();
   const response = await apiClient.get<PaginatedInspectionWalkthroughs>(
     "/inspections/admin/walkthroughs/",
-    { params: status ? { status } : undefined },
+    { params: { ...(status ? { status } : {}), page } },
   );
   return response.data;
 }
@@ -506,10 +508,11 @@ export async function adminRejectWalkthrough(
 
 export async function adminListReports(
   status?: InspectionReportStatus,
+  page = 1,
 ): Promise<PaginatedInspectionReports> {
   if (USE_MOCKS) return mockListAdminReports();
   const response = await apiClient.get<PaginatedInspectionReports>("/inspections/admin/reports/", {
-    params: status ? { status } : undefined,
+    params: { ...(status ? { status } : {}), page },
   });
   return response.data;
 }

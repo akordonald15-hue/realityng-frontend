@@ -29,7 +29,7 @@ export function AdminEscrowQueueClient() {
         ) : null}
 
         {escrowsQuery.isError ? (
-          <Card className="mt-8 p-5 text-red-200">
+          <Card className="mt-8 border-red-200 bg-red-50 p-5 text-red-800" role="alert">
             Escrow operations could not be loaded.
           </Card>
         ) : null}
@@ -39,10 +39,10 @@ export function AdminEscrowQueueClient() {
             {escrowsQuery.data.length === 0 ? (
               <Card className="p-5 text-reality-text-secondary">No escrow records found.</Card>
             ) : (
-              <div className="divide-y divide-white/10">
+              <div className="divide-y divide-reality-border-secondary">
                 {escrowsQuery.data.map((escrow) => (
                   <Link
-                    className="block bg-white/[0.03] p-4 transition hover:bg-reality-bg-subtle"
+                    className="block bg-white p-4 transition hover:bg-reality-bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-reality-brand-600"
                     href={`/dashboard/transactions/${escrow.transaction}/escrow`}
                     key={escrow.id}
                   >
@@ -72,4 +72,3 @@ export function AdminEscrowQueueClient() {
     </ProtectedRoute>
   );
 }
-

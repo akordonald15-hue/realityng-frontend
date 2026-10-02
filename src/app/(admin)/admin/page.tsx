@@ -3,9 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
-import { ProtectedRoute } from "@/components/auth/protected-route";
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
 import { Badge } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -47,6 +44,17 @@ function AdminContent() {
           </Link>
         </div>
       </div>
+
+      {dashboardQuery.isLoading ? (
+        <Card className="mt-8 p-5 text-sm text-reality-text-secondary" role="status">
+          Loading operational overview…
+        </Card>
+      ) : null}
+      {dashboardQuery.isError ? (
+        <Card className="mt-8 border-red-200 bg-red-50 p-5 text-sm text-red-800" role="alert">
+          The operational overview could not be loaded. Refresh the page or try again shortly.
+        </Card>
+      ) : null}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {(overview?.metrics ?? []).map((metric) => (
@@ -174,14 +182,5 @@ function AdminContent() {
 }
 
 export default function AdminPage() {
-  return (
-    <div className="min-h-screen bg-white text-reality-text-primary [color-scheme:light]">
-      <Navbar variant="reality" />
-      <ProtectedRoute requireAdmin>
-        <AdminContent />
-      </ProtectedRoute>
-      <Footer variant="reality" />
-    </div>
-  );
+  return <AdminContent />;
 }
-

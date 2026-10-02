@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { InspectionRequestCard } from "@/components/inspections/inspection-widgets";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,10 +20,11 @@ import {
 export default function AdminInspectionRequestsPage() {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<InspectionRequestStatus | "">("requested");
+  const [page, setPage] = useState(1);
   const [reasonById, setReasonById] = useState<Record<string, string>>({});
   const requestsQuery = useQuery({
-    queryKey: ["admin-inspection-requests", status],
-    queryFn: () => adminListInspectionRequests(status || undefined),
+    queryKey: ["admin-inspection-requests", status, page],
+    queryFn: () => adminListInspectionRequests(status || undefined, page),
   });
   const approveMutation = useMutation({
     mutationFn: adminApproveInspectionRequest,
@@ -44,7 +46,8 @@ export default function AdminInspectionRequestsPage() {
         />
         <Card className="mt-6 p-4">
           <Select
-            onChange={(event) => setStatus(event.target.value as InspectionRequestStatus | "")}
+            aria-label="Filter inspection requests by status"
+            onChange={(event) => { setStatus(event.target.value as InspectionRequestStatus | ""); setPage(1); }}
             value={status}
           >
             <option value="">Any status</option>
@@ -98,9 +101,12 @@ export default function AdminInspectionRequestsPage() {
           {requestsQuery.data?.results.length === 0 ? (
             <Card className="p-5 text-sm text-reality-text-secondary">No inspection requests match this queue.</Card>
           ) : null}
+          {requestsQuery.isError ? (
+            <Card className="border-red-200 bg-red-50 p-5 text-sm text-red-800" role="alert">Inspection requests could not be loaded.</Card>
+          ) : null}
         </div>
+        {requestsQuery.data ? <AdminPagination count={requestsQuery.data.count} hasNext={Boolean(requestsQuery.data.next)} hasPrevious={Boolean(requestsQuery.data.previous)} onPageChange={setPage} page={page} /> : null}
       </main>
     </ProtectedRoute>
   );
 }
-

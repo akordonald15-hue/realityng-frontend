@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { ProviderStatusBadge } from "@/components/services/provider-status-badge";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,7 +22,7 @@ export default function AdminServiceProvidersPage() {
   });
 
   function updateFilter(key: keyof AdminProviderFilters, value: string) {
-    setFilters((current) => ({ ...current, [key]: value }));
+    setFilters((current) => ({ ...current, [key]: value, page: 1 }));
   }
 
   return (
@@ -92,8 +93,8 @@ export default function AdminServiceProvidersPage() {
             <Card className="p-5 text-reality-text-secondary">No provider profiles match this queue.</Card>
           )}
         </div>
+        {providersQuery.data ? <AdminPagination count={providersQuery.data.count} hasNext={Boolean(providersQuery.data.next)} hasPrevious={Boolean(providersQuery.data.previous)} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} page={filters.page ?? 1} /> : null}
       </main>
     </ProtectedRoute>
   );
 }
-

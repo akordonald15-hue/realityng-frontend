@@ -253,6 +253,7 @@ export type PortfolioReorderPayload = {
 };
 
 export type AdminProviderFilters = {
+  page?: number;
   status?: ProviderStatus | "";
   provider_type?: ProviderType | "";
   state?: string;
@@ -317,6 +318,7 @@ export type QuoteRequest = {
 };
 
 export type QuoteRequestFilters = {
+  page?: number;
   status?: QuoteRequestStatus | "";
   search?: string;
   ordering?: "newest" | "oldest" | "";
@@ -399,6 +401,7 @@ export type ServiceReviewPayload = {
 };
 
 export type ServiceReviewFilters = {
+  page?: number;
   status?: ServiceReviewStatus | "";
   provider?: string;
   customer?: string;
@@ -474,6 +477,7 @@ export type ServiceComplaintPayload = {
 };
 
 export type ServiceComplaintFilters = {
+  page?: number;
   status?: ServiceComplaintStatus | "";
   category?: ServiceComplaintCategory | "";
   provider?: string;
@@ -522,6 +526,7 @@ export type ProviderAppealPayload = {
 };
 
 export type ProviderAppealFilters = {
+  page?: number;
   status?: ProviderAppealStatus | "";
   appeal_type?: ProviderAppealType | "";
   provider?: string;
