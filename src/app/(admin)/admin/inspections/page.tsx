@@ -74,7 +74,7 @@ export default function AdminInspectionsDashboardPage() {
               <div className="mt-5 space-y-4">
                 {dashboard.recent_requests.map((request) => (
                   <InspectionRequestCard
-                    href={`/admin/inspections/requests/${request.id}`}
+                    href="/admin/inspections/requests"
                     key={request.id}
                     request={request}
                   />
@@ -105,4 +105,3 @@ export default function AdminInspectionsDashboardPage() {
     </ProtectedRoute>
   );
 }
-

@@ -19,7 +19,6 @@ All current custom staff routes are engineer-designed/internal operational surfa
 - There is no custom user-management, role-approval, property-listing moderation, audit-log, applications, viewings, or leads admin route in this frontend. Staff dependency on Django Admin or backend operations must be documented before beta; E6 does not invent unsupported APIs.
 - Financing and escrow API adapters flatten paginated backend responses to arrays. They render the returned collection safely but cannot expose server pagination without a contract change.
 - The inspector directory adapter also flattens its paginated response and therefore has no page controls.
-- Admin inspection dashboard links to request detail URLs for which no custom frontend route exists. This is a beta operational gap and must be resolved by adding the supported detail contract or removing the deep link.
 - Verification decisions currently collect operational notes through native prompts. The action is functional and keyboard accessible, but a structured, validated review dialog with visible consequences remains E7/product debt.
 - No bulk moderation actions are implemented. This is post-beta unless queue volume demonstrates an operational need.
 
