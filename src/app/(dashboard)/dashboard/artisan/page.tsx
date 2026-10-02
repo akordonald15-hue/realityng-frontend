@@ -88,14 +88,28 @@ export default function ArtisanDashboardPage() {
   const profile = dashboard?.profile;
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-reality px-4 py-10 sm:px-6 lg:px-8">
       <SectionHeader
         eyebrow="Artisan dashboard"
         title="Provider operations command centre"
         description="Monitor profile readiness, quote requests, reviews, portfolio strength, coverage, and the next work that needs attention."
       />
 
-      {!profile && !dashboardQuery.isLoading ? (
+      {dashboardQuery.isError ? (
+        <Card className="mt-8 border-reality-border-secondary bg-reality-surfaceMuted p-6" variant="reality">
+          <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
+            Provider operations could not be loaded
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-reality-text-secondary">
+            Check your connection and try again. Your profile and requests have not been changed.
+          </p>
+          <Button className="mt-5" onClick={() => dashboardQuery.refetch()} variant="realitySecondary">
+            Try again
+          </Button>
+        </Card>
+      ) : null}
+
+      {!profile && dashboardQuery.isSuccess ? (
         <Card className="mt-8 p-6">
           <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
             Create your provider profile
@@ -104,12 +118,10 @@ export default function ArtisanDashboardPage() {
             Start a draft profile before adding trades, service areas, and portfolio samples.
             Profiles become public only after admin approval.
           </p>
-          {createMutation.isError || dashboardQuery.isError ? (
+          {createMutation.isError ? (
             <div className="mt-4">
               <FormMessage tone="error">
-                {createMutation.isError
-                  ? getApiErrorMessage(createMutation.error)
-                  : getApiErrorMessage(dashboardQuery.error)}
+                {getApiErrorMessage(createMutation.error)}
               </FormMessage>
             </div>
           ) : null}
@@ -253,4 +265,3 @@ export default function ArtisanDashboardPage() {
     </main>
   );
 }
-

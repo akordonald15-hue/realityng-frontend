@@ -258,6 +258,7 @@ export function AssignmentCard({
           {onDecline ? (
             <>
               <input
+                aria-label={`Reason for declining ${assignment.inspection_request.property.title}`}
                 className="h-11 flex-1 rounded-md border border-reality-border-secondary bg-reality-bg-subtle px-3 text-sm text-reality-text-primary"
                 onChange={(event) => setReason(event.target.value)}
                 placeholder="Decline reason"
@@ -327,4 +328,3 @@ export function WalkthroughModerationCard({
     </Card>
   );
 }
-

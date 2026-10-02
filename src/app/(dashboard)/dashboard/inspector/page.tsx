@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
 import { AssignmentCard, InspectionRequestCard } from "@/components/inspections/inspection-widgets";
+import { FormMessage } from "@/components/forms/form-message";
 import { Card } from "@/components/ui/card";
 import { buttonClasses } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -34,9 +35,11 @@ export default function InspectorDashboardPage() {
         <Card className="mt-8 p-5 text-reality-text-secondary">Loading inspector dashboard...</Card>
       ) : null}
       {dashboardQuery.isError ? (
-        <Card className="mt-8 p-5 text-red-200">
-          Inspector dashboard is available only to approved inspectors.
-        </Card>
+        <div className="mt-8">
+          <FormMessage tone="error">
+            We could not load this inspector workspace. Confirm that your inspector role is active, then try again.
+          </FormMessage>
+        </div>
       ) : null}
       {dashboard ? (
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -65,6 +68,11 @@ export default function InspectorDashboardPage() {
                   request={request}
                 />
               ))}
+              {dashboard.recent_requests.length === 0 ? (
+                <p className="rounded-[18px] bg-reality-surfaceMuted p-4 text-sm text-reality-text-secondary">
+                  Completed and recently updated inspection work will appear here.
+                </p>
+              ) : null}
             </div>
           </Card>
         </div>
@@ -72,4 +80,3 @@ export default function InspectorDashboardPage() {
     </main>
   );
 }
-

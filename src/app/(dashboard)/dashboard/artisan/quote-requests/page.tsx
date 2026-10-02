@@ -43,10 +43,12 @@ export default function ArtisanQuoteRequestsPage() {
 
       <Card className="mt-6 grid gap-3 p-4 md:grid-cols-3">
         <Input
+          aria-label="Search quote requests"
           onChange={(event) => updateFilter("search", event.target.value)}
           placeholder="Search customer, title, or location"
         />
         <Select
+          aria-label="Filter quote requests by status"
           onChange={(event) =>
             updateFilter("status", event.target.value as QuoteRequestStatus)
           }
@@ -60,6 +62,7 @@ export default function ArtisanQuoteRequestsPage() {
           <option value="cancelled">Cancelled</option>
         </Select>
         <Select
+          aria-label="Sort quote requests"
           onChange={(event) => updateFilter("ordering", event.target.value)}
           value={filters.ordering ?? "newest"}
         >
@@ -82,4 +85,3 @@ export default function ArtisanQuoteRequestsPage() {
     </main>
   );
 }
-

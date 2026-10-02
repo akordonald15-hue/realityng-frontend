@@ -284,3 +284,30 @@ E2b automated evidence: ten desktop/mobile axe scans passed with no serious or c
 - `MANAGE_LISTING`, application, and viewing affordances continue to depend on backend response signals; frontend presentation is not treated as authorization.
 - No dashboard-query experiment, new request, table/chart library, cache, or backend contract was introduced.
 - Provider, Inspector, Artisan, Admin, and construction workspace redesign remains E5+ scope.
+
+## E5 Provider, Artisan, and Inspector route audit
+
+| Surface | Design source | E5 classification | Finding / resolution |
+|---|---|---|---|
+| Shared Provider shell | Engineer-designed | Polished | Added Provider identity and responsive Overview/Profile/Portfolio/Requests/Messages navigation. Mobile safe-area and assistant offset now match the shared RealityNG shell. |
+| `/dashboard/artisan` | Engineer-designed | Polished | Profile readiness, moderation status, metrics, recent quote requests, reviews, reminders, activity, loading, first-profile, and retryable error states are intentionally grouped on semantic surfaces. |
+| `/dashboard/artisan/profile` | Engineer-designed | Polished | Profile identity, contact fields, trades, experience, service areas, moderation state, portfolio, save/submit feedback, and fee-product limitation are explicit. Fixed live paginated-list handling for trades and service areas. |
+| `/dashboard/artisan/portfolio` | Engineer-designed | Polished | Upload validation, pending state, empty state, cover selection, deletion, errors, responsive gallery, and public/private media distinction are present. Fixed live paginated-list handling. |
+| `/dashboard/artisan/quote-requests` | Engineer-designed | Polished with product debt | Search, status, ordering, customer/property context, dates, budget, actions, empty, loading, and errors are present. Metadata is now a labelled responsive definition list. The API exposes pagination but this screen still has no pagination controls. |
+| Artisan reviews, complaints, and appeals | Engineer-designed | Usable | Existing governance lists/details, empty states, and moderation status remain in scope and use the shared Provider shell. These are secondary beta paths and retain their existing forms. |
+| Provider messages, notifications, verification, and settings | Shared components | Polished | Uses the E3 messaging/notification quality baseline and shared verification/settings flows without weakening message or private-document authorization. |
+| Shared Inspector shell | Engineer-designed | Polished | Added Inspector identity and responsive Overview/Assignments/Messages/Alerts/Profile navigation with active-route semantics and mobile assistant clearance. |
+| `/dashboard/inspector` | Engineer-designed | Polished | Active assignments, recent work, intentional empty states, loading, and a retry-oriented role/error explanation are visible without decorative noise. |
+| `/dashboard/inspector/assignments` | Engineer-designed | Polished | Accept/decline actions, labelled decline reason, pending protection, mutation errors, loading, empty, and list errors are explicit. |
+| `/dashboard/inspector/assignments/[id]` | Engineer-designed | Polished | Property context, status, report, timeline, evidence, upload constraints, pending/error feedback, and report submission are grouped by operational priority. Report/timeline requests now wait for an authorized assignment response. |
+| Stale Inspector assignments | Security-designed state | Polished | Declined, cancelled, and reassigned access remains fail-closed. The UI presents one non-enumerating unavailable state and never renders report or evidence tools. |
+| Inspector profile/settings | Shared component | Usable | General profile and notification settings are available. There is no dedicated inspector-profile editing API or route in the current product contract. |
+
+### E5 product and performance boundaries
+
+- The current provider contract models services through trade categories, experience, service areas, profile status, and portfolio; it has no separate service-SKU CRUD or availability-calendar workflow.
+- Quote requests are enquiries with lifecycle actions, not priced quote documents. No unsupported pricing or payment UI was invented.
+- Inspector reports and evidence live inside assignment detail; there is no separate Inspector report index or evidence deletion contract.
+- Provider list normalization accepts both the backend's paginated response and existing unpaginated mocks without adding requests.
+- Inspector detail avoids report and timeline calls until the assignment request succeeds, reducing unauthorized/stale-route amplification from three requests to one.
+- No new UI library, cache, polling loop, backend permission, signed-URL behavior, or upload MIME contract was introduced.

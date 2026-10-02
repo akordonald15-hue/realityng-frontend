@@ -80,6 +80,13 @@ export function PortfolioManager() {
           in the private trust workflow and are not managed here.
         </p>
         {message ? <div className="mt-4"><FormMessage variant="reality">{message}</FormMessage></div> : null}
+        {coverMutation.isError || deleteMutation.isError ? (
+          <div className="mt-4">
+            <FormMessage tone="error" variant="reality">
+              {getApiErrorMessage(coverMutation.error ?? deleteMutation.error)}
+            </FormMessage>
+          </div>
+        ) : null}
         <form
           className="mt-5 grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto]"
           noValidate
@@ -155,4 +162,3 @@ export function PortfolioManager() {
     </div>
   );
 }
-
