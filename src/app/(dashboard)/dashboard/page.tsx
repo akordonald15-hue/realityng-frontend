@@ -51,7 +51,7 @@ import {
   type ViewingDecisionPayload,
 } from "@/lib/api/viewings";
 import type { ActivityItem, TransactionItem } from "@/lib/api/workflow";
-import { isAdmin, isApprovedSupplyUser } from "@/lib/auth/permissions";
+import { hasApprovedRole, isAdmin, isApprovedSupplyUser } from "@/lib/auth/permissions";
 import { formatPrice } from "@/lib/properties/format";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -1796,7 +1796,7 @@ function SupplyDashboardBody({
       ) : null}
 
       <section className="mt-8 rounded-[28px] bg-reality-surfaceMuted p-5 sm:p-7">
-        <BuyerSectionHeader description="Your dashboard Summary" title="Overview" />
+        <BuyerSectionHeader description="A summary of your current property operations." title="Overview" />
         <div className="mt-6">
           <SupplyMetricGrid isLoading={dashboardQuery.isLoading} overview={overview} />
         </div>
@@ -1816,8 +1816,8 @@ function SupplyDashboardBody({
               View all
             </Link>
           }
-          description="Manage properties you own or represent"
-          title="My Property"
+          description="Manage properties you own or represent."
+          title="My Properties"
         />
         <div className="mt-8">
           <SupplyManagedPropertyRail
@@ -1840,8 +1840,8 @@ function SupplyDashboardBody({
               View all
             </Link>
           }
-          description="Recent conversations with buyers and tenants"
-          title="Message"
+          description="Recent conversations with buyers and tenants."
+          title="Messages"
         />
         <div className="mt-8">
           <SupplyMessagePreview isLoading={messageQuery.isLoading} threads={messageQuery.data} />
@@ -1860,8 +1860,8 @@ function SupplyDashboardBody({
               View all
             </Link>
           }
-          description="Properties you saved"
-          title="Saved Property"
+          description="Marketplace properties you saved."
+          title="Saved Properties"
         />
         <div className="mt-8">
           {overview?.savedFavorites ? <SavedFavoriteRail favorites={overview.savedFavorites} /> : <DashboardPropertyRail
@@ -1873,8 +1873,8 @@ function SupplyDashboardBody({
 
       <section className="mt-14">
         <BuyerSectionHeader
-          description="Property you view recently"
-          title="Recently viewed property"
+          description="Properties you viewed recently."
+          title="Recently Viewed Properties"
         />
         <div className="mt-8">
           <DashboardPropertyRail
@@ -1893,12 +1893,14 @@ function SupplyDashboardShell({
   managedPropertiesQuery,
   messageQuery,
   overview,
+  roleLabel,
 }: {
   dashboardQuery: ReturnType<typeof useQuery<DashboardOverview>>;
   firstName?: string;
   managedPropertiesQuery: ReturnType<typeof useQuery<PaginatedProperties>>;
   messageQuery: ReturnType<typeof useQuery<ConversationThread[]>>;
   overview?: DashboardOverview;
+  roleLabel: "Agent" | "Landlord";
 }) {
   const [activeTab, setActiveTab] = useState("overview");
   const showOverview = activeTab === "overview";
@@ -1923,6 +1925,9 @@ function SupplyDashboardShell({
         </div>
 
         <section className="mt-8 rounded-[28px] border border-reality-border-secondary bg-reality-surface px-5 py-6 shadow-reality-xs sm:px-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-reality-brand-700">
+            {roleLabel} workspace
+          </p>
           <h1 className="text-4xl font-medium leading-[44px] text-reality-text-primary">
             Hi, {firstName || "there"}
           </h1>
@@ -1967,8 +1972,8 @@ function SupplyDashboardShell({
                   Add Property
                 </Link>
               }
-              description="Manage properties you own or represent"
-              title="My Property"
+              description="Manage properties you own or represent."
+              title="My Properties"
             />
             <div className="mt-8">
               <SupplyManagedPropertyRail
@@ -1996,8 +2001,8 @@ function SupplyDashboardShell({
                   View all
                 </Link>
               }
-              description="Recent conversations with buyers and tenants"
-              title="Message"
+              description="Recent conversations with buyers and tenants."
+              title="Messages"
             />
             <div className="mt-8">
               <SupplyMessagePreview isLoading={messageQuery.isLoading} threads={messageQuery.data} />
@@ -2077,6 +2082,7 @@ function DashboardContent() {
         managedPropertiesQuery={managedPropertiesQuery}
         messageQuery={messageQuery}
         overview={overview}
+        roleLabel={hasApprovedRole(user, "landlord") ? "Landlord" : "Agent"}
       />
     );
   }

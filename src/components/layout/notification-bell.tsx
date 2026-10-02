@@ -29,6 +29,7 @@ function BellIcon({ className }: { className?: string }) {
   );
 }
 
+
 type NotificationBellProps = {
   variant?: "legacy" | "reality";
 };
@@ -116,7 +117,7 @@ export function NotificationBell({ variant = "reality" }: NotificationBellProps)
           <span
             className={
               isReality
-                ? "absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-reality-brand-500 px-1 text-[10px] font-semibold text-white"
+                ? "absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-reality-brand-700 px-1 text-[10px] font-semibold text-white"
                 : "absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-secondary px-1 text-[10px] font-semibold text-reality-text-primary"
             }
           >
@@ -212,5 +213,3 @@ export function NotificationBell({ variant = "reality" }: NotificationBellProps)
     </details>
   );
 }
-
-

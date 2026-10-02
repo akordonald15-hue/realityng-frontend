@@ -259,3 +259,28 @@ E2b automated evidence: ten desktop/mobile axe scans passed with no serious or c
 - Buyer pages reserve bottom space so fixed navigation cannot cover content.
 - The authenticated assistant moves above Buyer navigation, uses safe-area-aware panel height, focuses its composer when ready, and restores focus to its launcher on close.
 - No new data request, chart library, backend contract, security rule, or role capability was introduced.
+
+## E4 Landlord, Agent, and property-management route audit
+
+| Professional surface | Design source | E4 classification | Primary finding / resolution |
+|---|---|---|---|
+| Shared authenticated shell | Engineer-designed | Polished | Added persistent Landlord/Agent identity, desktop workspace navigation, and mobile Home/Properties/Leads/Messages/Profile navigation. Active-route semantics, safe-area spacing, and assistant offset are shared without reusing Buyer priorities blindly. |
+| `/dashboard` | Partial Figma | Polished | Landlord and Agent identity is explicit; overview, metrics, requests, inventory, messages, saved, recent, loading, empty, and error states retain the existing data contract. Copy and section hierarchy were normalized. |
+| `/dashboard/properties` | Partial Figma / shared components | Polished | Status/search/sort filters, pagination, approved/draft/pending/rejected/archived states, retry, and empty actions are present. Canonical edit links continue to use slugs. Assignments without `can_manage_listing` now explain their view-only state. |
+| `/properties/new` | Partial Figma | Polished | Five-step Details/Location/Features/Media/Review workflow, progressive unlocking, field validation, draft save, submission, and responsive controls remain intact. |
+| `/dashboard/properties/[propertyId]/edit` | Partial Figma | Polished | The shared segment is decoded as the canonical property slug. Loading, retryable API/permission failures, populated defaults, save feedback, and media management remain intact. |
+| Property media manager | Engineer-designed | Polished | Upload, caption, lazy preview, cover, reorder, delete, loading, empty, and mutation-pending states are present. No upload/security or first-cover contract changed. |
+| `/dashboard/leads`, `/dashboard/leads/[id]` | Engineer-designed | Usable with backend/product debt | Search, pipeline, priority, metrics, status, notes, activity, retry, and empty states are present. The API exposes pagination but the list has no pagination controls; assignment still requires a raw user ID because no eligible-assignee directory contract exists. These were not masked with fake UI. |
+| Applications on dashboard and `/dashboard/applications/[applicationId]` | Engineer-designed | Polished | Applicant/property context, yearly income, clearly labelled legacy monthly income, review actions, owner notes, and applicant/reviewer privacy variants remain backend-authorized through `can_manage_application`. |
+| Viewing management on `/dashboard` | Engineer-designed | Polished | Requested/scheduled/completed/cancelled states and management actions remain gated by the backend `can_manage_viewing` signal. |
+| `/dashboard/messages`, `/dashboard/messages/[id]` | Partial Figma | Polished | E3 message hierarchy, sending/retry behavior, long-content handling, mobile navigation, and WebSocket isolation are shared by professional personas. |
+| `/dashboard/notifications` and `/settings/notifications` | Engineer-designed | Polished | Read/unread semantics, action clarity, preference loading, and update failures use the shared E3 quality baseline. |
+| `/verification`, `/verification/new`, `/verification/property/[propertyId]/new` | Engineer-designed | Usable | Status, document submission, loading, and failure states remain data-driven. Signed private-document behavior and upload authorization were not changed. |
+| `/settings/profile` | Engineer-designed | Polished | Contact/profile/verification information uses the shared authenticated shell. Nigerian-phone WIP remains excluded. |
+
+### E4 capability and performance decisions
+
+- Professional navigation exposes listing and CRM destinations but does not add transaction or payment authority.
+- `MANAGE_LISTING`, application, and viewing affordances continue to depend on backend response signals; frontend presentation is not treated as authorization.
+- No dashboard-query experiment, new request, table/chart library, cache, or backend contract was introduced.
+- Provider, Inspector, Artisan, Admin, and construction workspace redesign remains E5+ scope.

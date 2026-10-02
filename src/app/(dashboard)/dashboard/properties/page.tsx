@@ -56,6 +56,7 @@ function filterParams(searchParams: URLSearchParams): PropertyFilters {
   };
 }
 
+
 function ManagementSkeleton() {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
@@ -168,7 +169,7 @@ export default function ManagedPropertiesPage() {
                   aria-selected={selected}
                   className={`h-10 rounded-full px-5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500 ${
                     selected
-                      ? "bg-reality-brand-500 text-white shadow-reality-xs"
+                      ? "bg-reality-brand-700 text-white shadow-reality-xs"
                       : "border border-transparent bg-transparent text-reality-text-secondary hover:bg-reality-surface"
                   }`}
                   key={tab.value}
@@ -322,4 +323,3 @@ export default function ManagedPropertiesPage() {
     </main>
   );
 }
-

@@ -38,6 +38,7 @@ vi.mock("@/lib/api/properties", async () => {
   };
 });
 
+
 function property(overrides = {}) {
   return {
     id: "property-1",
@@ -113,6 +114,9 @@ describe("ManagedPropertiesPage", () => {
 
     expect(await screen.findByText("Waterfront Banana Island Duplex")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Edit" })).not.toBeInTheDocument();
+    expect(
+      screen.getByText("View-only assignment. Listing changes require the Manage listing capability."),
+    ).toBeInTheDocument();
   });
 
   it("continues owned drafts through their slug instead of their UUID", async () => {
@@ -226,4 +230,3 @@ describe("ManagedPropertiesPage", () => {
     expect(mocks.listManagedProperties).not.toHaveBeenCalled();
   });
 });
-
