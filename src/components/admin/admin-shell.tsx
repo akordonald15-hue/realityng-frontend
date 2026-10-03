@@ -24,9 +24,9 @@ export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-reality-bg-canvas">
+    <div className="min-h-screen bg-reality-canvas">
       <Navbar variant="reality" />
-      <div className="border-b border-reality-border-secondary bg-reality-bg-dark text-white">
+      <div className="border-b border-reality-border-secondary bg-reality-surfaceDark text-white">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">
             Internal workspace
@@ -48,7 +48,7 @@ export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>
                   className={clsx(
                     "rounded-full px-4 py-2.5 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-reality-brand-600 focus-visible:ring-offset-2",
                     active
-                      ? "bg-reality-brand-subtle text-reality-emphasis"
+                      ? "bg-reality-surfaceBrand text-reality-brandEmphasis"
                       : "text-reality-text-secondary hover:bg-reality-bg-muted hover:text-reality-text-primary",
                   )}
                   href={item.href}

@@ -49,6 +49,7 @@ export default function AdminServiceProvidersPage() {
             placeholder="Search provider"
           />
           <Select
+            aria-label="Filter providers by status"
             onChange={(event) => updateFilter("status", event.target.value)}
             value={filters.status}
           >

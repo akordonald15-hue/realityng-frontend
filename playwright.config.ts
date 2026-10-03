@@ -4,15 +4,17 @@ const chromeExecutable =
   process.env.REALITYNG_CHROME_EXECUTABLE;
 
 const remoteMode = process.env.REALITYNG_E2E_REMOTE === "true";
-const baseURL = process.env.REALITYNG_E2E_BASE_URL ?? "http://127.0.0.1:3000";
+const frontendPort = process.env.REALITYNG_E2E_FRONTEND_PORT ?? "3000";
+const backendPort = process.env.REALITYNG_E2E_BACKEND_PORT ?? "58001";
+const baseURL = process.env.REALITYNG_E2E_BASE_URL ?? `http://127.0.0.1:${frontendPort}`;
 
 const backendEnvironment = {
   DJANGO_SETTINGS_MODULE: "config.settings.browser_qa",
   SECRET_KEY: "local-development-secret",
   DEBUG: "true",
   ALLOWED_HOSTS: "localhost,127.0.0.1",
-  CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000",
-  CSRF_TRUSTED_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000",
+  CORS_ALLOWED_ORIGINS: `http://localhost:${frontendPort},http://127.0.0.1:${frontendPort}`,
+  CSRF_TRUSTED_ORIGINS: `http://localhost:${frontendPort},http://127.0.0.1:${frontendPort}`,
   DRF_THROTTLE_ANON_RATE: "10000/hour",
   DRF_THROTTLE_USER_RATE: "10000/hour",
   DRF_THROTTLE_AUTH_LOGIN_RATE: "10000/hour",
@@ -62,21 +64,21 @@ export default defineConfig({
   ],
   webServer: remoteMode ? undefined : [
     {
-      command: ".venv\\Scripts\\daphne.exe -b 127.0.0.1 -p 58001 config.asgi:application",
+      command: `.venv\\Scripts\\daphne.exe -b 127.0.0.1 -p ${backendPort} config.asgi:application`,
       cwd: "../realityng-backend",
-      url: "http://127.0.0.1:58001/api/v1/health/",
+      url: `http://127.0.0.1:${backendPort}/api/v1/health/`,
       reuseExistingServer: true,
       timeout: 120_000,
       env: backendEnvironment,
     },
     {
-      command: "npm run build && npm run start -- -p 3000",
-      url: "http://127.0.0.1:3000",
+      command: `npm run build && npm run start -- -p ${frontendPort}`,
+      url: `http://127.0.0.1:${frontendPort}`,
       reuseExistingServer: true,
       timeout: 300_000,
       env: {
         NEXT_PUBLIC_USE_MOCKS: "false",
-        NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:58001/api/v1",
+        NEXT_PUBLIC_API_BASE_URL: `http://127.0.0.1:${backendPort}/api/v1`,
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: "",
       },
     },
