@@ -3,6 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { assertNoMaterialOverflow, monitorBrowser, signIn } from "./helpers/gate";
 
+test.setTimeout(300_000);
+
 async function expectNoSeriousViolations(page: Page, route: string) {
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -27,9 +29,12 @@ test("admin operations retain coherent navigation and accessible dense queues", 
     "/admin",
     "/admin/verifications",
     "/admin/inspections/requests",
+    "/admin/inspections/walkthroughs",
+    "/admin/inspections/reports",
     "/admin/services/providers",
     "/admin/services/reviews",
     "/admin/services/complaints",
+    "/admin/services/appeals",
     "/admin/payments/escrow",
     "/admin/financing",
     "/admin/construction",
