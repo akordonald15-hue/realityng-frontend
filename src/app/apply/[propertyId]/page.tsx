@@ -267,8 +267,8 @@ function Field({ children, error, id, label, required = false }: FieldProps) {
 }
 
 function ApplicationForm() {
-  const params = useParams<{ propertyId: string }>();
-  const searchParams = useSearchParams();
+  const params = useParams<{ propertyId: string }>()!;
+  const searchParams = useSearchParams()!;
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const propertySlug = searchParams.get("slug") ?? "";

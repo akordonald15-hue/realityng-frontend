@@ -21,7 +21,7 @@ import {
 
 export default function FinancingApplyPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams()!;
   const transactionId = searchParams.get("transaction_id");
   const productId = searchParams.get("product_id");
   const [selectedProduct, setSelectedProduct] = useState<FinancingProduct | null>(null);

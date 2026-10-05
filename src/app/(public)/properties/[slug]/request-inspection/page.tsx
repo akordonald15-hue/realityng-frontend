@@ -34,7 +34,7 @@ const initialForm = (propertyId = ""): InspectionRequestPayload => ({
 });
 
 export default function RequestInspectionPage() {
-  const params = useParams<{ slug: string }>();
+  const params = useParams<{ slug: string }>()!;
   const router = useRouter();
   const propertyQuery = useQuery({
     queryKey: ["public-property", params.slug],

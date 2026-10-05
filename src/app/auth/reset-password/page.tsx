@@ -23,7 +23,7 @@ const resetPasswordSchema = z.object({
 type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
 function ResetPasswordForm() {
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams()!;
   const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);

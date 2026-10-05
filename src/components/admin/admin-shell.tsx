@@ -21,7 +21,7 @@ function isActive(pathname: string, href: string) {
 }
 
 export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>) {
-  const pathname = usePathname();
+  const pathname = usePathname()!;
 
   return (
     <div className="min-h-screen bg-reality-canvas">

@@ -74,8 +74,8 @@ function ManagementSkeleton() {
 export default function ManagedPropertiesPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const pathname = usePathname()!;
+  const searchParams = useSearchParams()!;
   const params = new URLSearchParams(searchParams.toString());
   const filters = filterParams(searchParams);
   const isAllowed = isApprovedSupplyUser(user);

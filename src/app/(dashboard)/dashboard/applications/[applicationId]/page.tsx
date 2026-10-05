@@ -610,7 +610,7 @@ function SupplyApplicationDetail({ application }: { application: RentalApplicati
 }
 
 export default function ApplicationDetailPage() {
-  const params = useParams<{ applicationId: string }>();
+  const params = useParams<{ applicationId: string }>()!;
   const applicationId = params.applicationId;
   const queryClient = useQueryClient();
   const { user, isLoading: authLoading } = useAuth();

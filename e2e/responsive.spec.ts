@@ -11,6 +11,12 @@ import {
 test("authenticated buyer launch surfaces remain usable at the representative viewport", async ({ page }, testInfo) => {
   const seed = qaSeed();
   const monitor = monitorBrowser(page);
+  const reportRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes(`/inspections/requests/${seed.inspections.active}/report/`)) {
+      reportRequests.push(request.url());
+    }
+  });
   await signIn(page, "buyer");
 
   for (const route of [
@@ -24,6 +30,10 @@ test("authenticated buyer launch surfaces remain usable at the representative vi
     await expect(page).not.toHaveURL(/\/auth\/sign-in/);
     await expect(page.getByRole("main")).not.toBeEmpty();
     await assertNoMaterialOverflow(page);
+    if (route === `/dashboard/inspections/${seed.inspections.active}`) {
+      await expect(page.getByText("No approved report is available yet.")).toBeVisible();
+      expect(reportRequests).toEqual([]);
+    }
   }
 
   if (testInfo.project.name === "chrome-mobile") {

@@ -116,7 +116,7 @@ export function ApplicationRequestCard({
         </StatusChip>
       </div>
       <div className="space-y-2">
-        <p className="text-sm font-medium text-[#bc8936]">{meta.label}</p>
+        <p className="text-sm font-medium text-reality-brandEmphasis">{meta.label}</p>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-xl font-semibold leading-8 text-black">

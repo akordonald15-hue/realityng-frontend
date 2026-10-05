@@ -6,6 +6,11 @@ const chromeExecutable =
 const remoteMode = process.env.REALITYNG_E2E_REMOTE === "true";
 const frontendPort = process.env.REALITYNG_E2E_FRONTEND_PORT ?? "3000";
 const backendPort = process.env.REALITYNG_E2E_BACKEND_PORT ?? "58001";
+const backendCwd = process.env.REALITYNG_E2E_BACKEND_CWD ?? "../realityng-backend";
+const backendDaphne =
+  process.env.REALITYNG_E2E_BACKEND_DAPHNE ?? ".venv\\Scripts\\daphne.exe";
+const frontendCommand = process.env.REALITYNG_E2E_FRONTEND_COMMAND
+  ?? "node scripts/start-e2e-standalone.mjs";
 const baseURL = process.env.REALITYNG_E2E_BASE_URL ?? `http://127.0.0.1:${frontendPort}`;
 
 const backendEnvironment = {
@@ -64,19 +69,22 @@ export default defineConfig({
   ],
   webServer: remoteMode ? undefined : [
     {
-      command: `.venv\\Scripts\\daphne.exe -b 127.0.0.1 -p ${backendPort} config.asgi:application`,
-      cwd: "../realityng-backend",
+      command: `${backendDaphne} -b 127.0.0.1 -p ${backendPort} config.asgi:application`,
+      cwd: backendCwd,
       url: `http://127.0.0.1:${backendPort}/api/v1/health/`,
       reuseExistingServer: true,
       timeout: 120_000,
       env: backendEnvironment,
     },
     {
-      command: `npm run build && npm run start -- -p ${frontendPort}`,
+      command: frontendCommand,
+      stdout: "pipe",
       url: `http://127.0.0.1:${frontendPort}`,
       reuseExistingServer: true,
-      timeout: 300_000,
+      timeout: 600_000,
       env: {
+        HOSTNAME: "127.0.0.1",
+        PORT: frontendPort,
         NEXT_PUBLIC_USE_MOCKS: "false",
         NEXT_PUBLIC_API_BASE_URL: `http://127.0.0.1:${backendPort}/api/v1`,
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: "",

@@ -21,7 +21,7 @@ import {
 } from "@/lib/api/payments";
 
 export default function TransactionDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const transactionId = params.id;
   const queryClient = useQueryClient();
 

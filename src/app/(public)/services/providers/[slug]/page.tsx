@@ -18,7 +18,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { getServiceProvider } from "@/lib/api/services";
 
 export default function ServiceProviderProfilePage() {
-  const params = useParams<{ slug: string }>();
+  const params = useParams<{ slug: string }>()!;
   const providerQuery = useQuery({
     queryKey: ["service-provider", params.slug],
     queryFn: () => getServiceProvider(params.slug),

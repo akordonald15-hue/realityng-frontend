@@ -154,7 +154,7 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
     <Card aria-label="RealityNG assistant" className={clsx(
       "assistant-fade-scale assistant-glass-panel fixed left-4 right-4 z-50 flex w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]",
       mobileNavigationOffset
-        ? "bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] h-[min(32rem,calc(100svh-6rem))]"
+        ? "bottom-24 h-[min(32rem,calc(100svh-7rem))]"
         : "bottom-4 h-[min(32rem,calc(100svh-2rem))]",
     )} role="region">
       <div className="flex items-center justify-between border-b border-brand-secondary/20 bg-reality-bg-subtle px-4 py-3">

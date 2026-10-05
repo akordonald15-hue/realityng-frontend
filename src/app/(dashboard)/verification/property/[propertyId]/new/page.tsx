@@ -54,7 +54,7 @@ const EVIDENCE_FIELDS: {
 ];
 
 export default function NewPropertyVerificationPage() {
-  const params = useParams<{ propertyId: string }>();
+  const params = useParams<{ propertyId: string }>()!;
   const router = useRouter();
   const propertySlug = params.propertyId;
 

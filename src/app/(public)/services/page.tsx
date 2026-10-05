@@ -40,7 +40,7 @@ function cleanFilters(filters: ServiceProviderFilters): ServiceProviderFilters {
 
 function ServicesContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams()!;
   const initialFilters = useMemo(() => filtersFromParams(searchParams), [searchParams]);
   const [filters, setFilters] = useState<ServiceProviderFilters>(initialFilters);
 

@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 
 export default function TransactionFinancingPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   return (
     <ProtectedRoute>
       <main className="mx-auto max-w-3xl p-4">

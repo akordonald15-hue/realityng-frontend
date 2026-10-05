@@ -24,7 +24,7 @@ import {
 } from "@/lib/api/financing";
 
 export default function FinancingDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const applicationId = params.id;
   const queryClient = useQueryClient();
   const [documentType, setDocumentType] = useState("identity");

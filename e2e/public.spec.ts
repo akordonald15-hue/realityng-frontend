@@ -7,6 +7,24 @@ import {
   qaSeed,
 } from "./helpers/gate";
 
+test("property detail retains three data calls and one similar inventory request", async ({ page }) => {
+  const seed = qaSeed();
+  const calls: string[] = [];
+  page.on("request", (request) => {
+    const pathname = new URL(request.url()).pathname;
+    if (pathname.startsWith("/api/v1/") && !pathname.endsWith("/users/me/")) {
+      calls.push(pathname);
+    }
+  });
+  await page.goto(`/properties/${seed.property.slug}`, { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: /^(Similar properties|Continue exploring)$/ })).toBeVisible();
+  expect(calls.sort()).toEqual([
+    `/api/v1/public/properties/${seed.property.slug}/`,
+    `/api/v1/inspections/properties/${seed.property.id}/walkthroughs/public/`,
+    "/api/v1/public/properties/",
+  ].sort());
+});
+
 test("public and authentication journeys render without browser defects", async ({ page }, testInfo) => {
   const seed = qaSeed();
   const monitor = monitorBrowser(page);

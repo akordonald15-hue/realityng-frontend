@@ -14,7 +14,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { adminGetServiceProvider } from "@/lib/api/services";
 
 export default function AdminServiceProviderDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const providerQuery = useQuery({
     queryKey: ["admin-service-provider", params.id],
     queryFn: () => adminGetServiceProvider(params.id),

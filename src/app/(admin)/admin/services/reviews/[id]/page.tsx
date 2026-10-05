@@ -11,7 +11,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { adminGetServiceReview } from "@/lib/api/services";
 
 export default function AdminServiceReviewDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const reviewQuery = useQuery({
     queryKey: ["admin-service-review", params.id],
     queryFn: () => adminGetServiceReview(params.id),

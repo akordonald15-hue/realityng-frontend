@@ -89,15 +89,26 @@ export async function signIn(page: Page, persona: Persona) {
   await page.getByLabel("Password").fill(seed.password);
   await page.getByRole("button", { name: /^(Sign in|Continue)$/ }).click();
   await page.waitForURL((url) => !url.pathname.startsWith("/auth/sign-in"));
+  await waitForPageReady(page);
   await expect(page.getByText("Demo mode is active")).toHaveCount(0);
 }
 
+export async function waitForPageReady(page: Page) {
+  await page.waitForLoadState("networkidle");
+  await expect(page.locator("main").filter({ hasText: /^Loading\.\.\.$/ })).toHaveCount(0);
+}
+
 export async function assertNoMaterialOverflow(page: Page) {
+  await waitForPageReady(page);
   const dimensions = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,
     scrollWidth: document.documentElement.scrollWidth,
+    overflowing: [...document.querySelectorAll("body *")].map((element) => {
+      const rect = element.getBoundingClientRect();
+      return { tag: element.tagName, classes: element.className, left: rect.left, right: rect.right };
+    }).filter((element) => element.right > document.documentElement.clientWidth + 2 || element.left < -2),
   }));
-  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 2);
+  expect(dimensions.scrollWidth, JSON.stringify(dimensions)).toBeLessThanOrEqual(dimensions.clientWidth + 2);
 }
 
 export async function authenticatedApiStatus(
@@ -115,7 +126,8 @@ export async function authenticatedApiStatus(
   }, {
     requestedPath: pathName,
     requestedMethod: method,
-    apiBase: process.env.REALITYNG_E2E_API_BASE_URL ?? "http://127.0.0.1:58001/api/v1",
+    apiBase: process.env.REALITYNG_E2E_API_BASE_URL
+      ?? `http://127.0.0.1:${process.env.REALITYNG_E2E_BACKEND_PORT ?? "58001"}/api/v1`,
   });
 }
 
@@ -137,7 +149,8 @@ export async function authenticatedSignedUrlCheck(page: Page, pathName: string) 
     };
   }, {
     requestedPath: pathName,
-    apiBase: process.env.REALITYNG_E2E_API_BASE_URL ?? "http://127.0.0.1:58001/api/v1",
+    apiBase: process.env.REALITYNG_E2E_API_BASE_URL
+      ?? `http://127.0.0.1:${process.env.REALITYNG_E2E_BACKEND_PORT ?? "58001"}/api/v1`,
   });
 }
 
@@ -166,11 +179,13 @@ export async function authenticatedWalkthroughUploadDenial(page: Page, propertyI
     };
   }, {
     requestedPropertyId: propertyId,
-    apiBase: process.env.REALITYNG_E2E_API_BASE_URL ?? "http://127.0.0.1:58001/api/v1",
+    apiBase: process.env.REALITYNG_E2E_API_BASE_URL
+      ?? `http://127.0.0.1:${process.env.REALITYNG_E2E_BACKEND_PORT ?? "58001"}/api/v1`,
   });
 }
 
 export async function captureEvidence(page: Page, testInfo: TestInfo, name: string) {
+  await waitForPageReady(page);
   const safeName = name.replace(/[^a-z0-9-]+/gi, "-").toLowerCase();
   await page.screenshot({
     path: testInfo.outputPath(`${safeName}.png`),

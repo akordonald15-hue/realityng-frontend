@@ -1,9 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-import { assertNoMaterialOverflow, monitorBrowser, qaSeed, signIn } from "./helpers/gate";
+import { assertNoMaterialOverflow, monitorBrowser, qaSeed, signIn, waitForPageReady } from "./helpers/gate";
 
 async function expectNoSeriousViolations(page: Page, route: string) {
+  await waitForPageReady(page);
   // Allow the short entrance reveal to reach its fully opaque resting state so
   // axe measures the rendered interface rather than a transient animation frame.
   await page.waitForTimeout(500);
@@ -74,10 +75,16 @@ test("Buyer mobile navigation and assistant never collide", async ({ page }, tes
   const launcherBox = await launcher.boundingBox();
   expect(navigationBox && launcherBox && launcherBox.y + launcherBox.height <= navigationBox.y).toBeTruthy();
 
-  await launcher.click();
+  await launcher.focus();
+  await page.keyboard.press("Enter");
   const assistant = page.getByRole("region", { name: "RealityNG assistant" });
   await expect(assistant).toBeVisible();
+  await expect(page.getByPlaceholder("Ask about a property...")).toBeFocused();
   const assistantBox = await assistant.boundingBox();
   expect(navigationBox && assistantBox && assistantBox.y + assistantBox.height <= navigationBox.y).toBeTruthy();
   await assertNoMaterialOverflow(page);
+  await assistant.getByRole("button", { name: "Close assistant", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(assistant).toHaveCount(0);
+  await expect(launcher).toBeFocused();
 });

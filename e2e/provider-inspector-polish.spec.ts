@@ -8,9 +8,11 @@ import {
   monitorBrowser,
   qaSeed,
   signIn,
+  waitForPageReady,
 } from "./helpers/gate";
 
 async function expectNoSeriousViolations(page: Page, route: string) {
+  await waitForPageReady(page);
   await page.waitForTimeout(500);
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -56,7 +58,7 @@ test("provider workspace is coherent across operational routes", async ({ page }
 
   await page.goto("/dashboard/artisan/quote-requests", { waitUntil: "domcontentloaded" });
   await expect(page.locator('nav[aria-label="Provider navigation"]')).toBeAttached();
-  if (testInfo.project.name.includes("mobile")) {
+  if (testInfo.project.name.includes("mobile") || testInfo.project.name === "chrome-narrow") {
     await expect(page.getByRole("navigation", { name: "Provider navigation" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Requests" }).last()).toHaveAttribute("aria-current", "page");
   } else {
@@ -98,7 +100,7 @@ test("inspector workspace preserves active and stale assignment boundaries", asy
   await page.goto(`/dashboard/inspector/assignments/${seed.inspections.active}`, { waitUntil: "domcontentloaded" });
   await expect(page.getByText(/Private evidence|Draft report/).first()).toBeVisible();
   await expect(page.locator('nav[aria-label="Inspector navigation"]')).toBeAttached();
-  if (testInfo.project.name.includes("mobile")) {
+  if (testInfo.project.name.includes("mobile") || testInfo.project.name === "chrome-narrow") {
     await expect(page.getByRole("navigation", { name: "Inspector navigation" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Assignments" }).last()).toHaveAttribute("aria-current", "page");
   } else {

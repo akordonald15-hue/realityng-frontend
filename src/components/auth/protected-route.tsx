@@ -11,7 +11,7 @@ export function ProtectedRoute({
   requireAdmin = false,
 }: Readonly<{ children: React.ReactNode; requireAdmin?: boolean }>) {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname()!;
   const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
