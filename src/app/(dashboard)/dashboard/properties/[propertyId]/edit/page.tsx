@@ -14,7 +14,7 @@ import { getProperty } from "@/lib/api/properties";
 
 export default function EditPropertyPage() {
   // The shared dynamic segment is named propertyId for sibling routes; edit uses a slug.
-  const params = useParams<{ propertyId: string }>();
+  const params = useParams<{ propertyId: string }>()!;
   const propertySlug = decodeURIComponent(params.propertyId);
   const propertyQuery = useQuery({
     queryKey: ["managed-property", propertySlug],

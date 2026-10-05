@@ -109,7 +109,7 @@ export function PropertyCard({ property, variant = "grid", className }: Property
               <span className="line-clamp-1">{formatPrice(property)}</span>
             </div>
             <span
-              aria-label={`View ${property.title}`}
+              aria-hidden="true"
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-black transition group-hover:bg-reality-bg-muted"
             >
               <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 20 20">
@@ -247,5 +247,4 @@ export function PropertyCard({ property, variant = "grid", className }: Property
     </Card>
   );
 }
-
 

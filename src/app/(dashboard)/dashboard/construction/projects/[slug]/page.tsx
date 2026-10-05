@@ -16,7 +16,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { getConstructionProject, listConstructionTimeline } from "@/lib/api/construction";
 
 export default function ConstructionProjectDetailPage() {
-  const params = useParams<{ slug: string }>();
+  const params = useParams<{ slug: string }>()!;
   const projectQuery = useQuery({
     queryKey: ["construction-project", params.slug],
     queryFn: () => getConstructionProject(params.slug),

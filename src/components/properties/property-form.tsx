@@ -380,8 +380,8 @@ export function PropertyForm({
           </p>
         </header>
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr]">
-          <aside className="lg:sticky lg:top-28 lg:self-start">
+        <div className="mt-10 grid min-w-0 gap-8 lg:grid-cols-[240px_1fr]">
+          <aside className="min-w-0 lg:sticky lg:top-28 lg:self-start">
             <p className="mb-3 hidden text-xs font-semibold uppercase tracking-[0.12em] text-reality-text-tertiary lg:block">Listing progress</p>
             <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:space-y-4 lg:overflow-visible">
               {steps.map((item, index) => (

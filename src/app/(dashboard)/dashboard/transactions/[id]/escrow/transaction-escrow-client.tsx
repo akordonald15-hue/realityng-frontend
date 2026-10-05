@@ -20,7 +20,7 @@ import {
 } from "@/lib/api/payments";
 
 export function TransactionEscrowClient() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const transactionId = params.id;
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState("");

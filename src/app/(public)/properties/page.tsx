@@ -111,7 +111,7 @@ function locationValue(city: string, state: string) {
 
 function PropertiesContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams()!;
   const searchParamString = searchParams.toString();
   const urlFilters = useMemo(
     () => filtersFromParams(new URLSearchParams(searchParamString)),

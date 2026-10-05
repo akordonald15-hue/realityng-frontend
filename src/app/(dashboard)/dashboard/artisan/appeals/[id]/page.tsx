@@ -9,7 +9,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { getProviderAppeal } from "@/lib/api/services";
 
 export default function ProviderAppealDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const appealQuery = useQuery({
     queryKey: ["provider-appeal", params.id],
     queryFn: () => getProviderAppeal(params.id),

@@ -29,9 +29,11 @@ export default function globalSetup() {
     );
   }
 
-  const backend = path.resolve(process.cwd(), "../realityng-backend");
+  const backend = path.resolve(
+    process.env.REALITYNG_E2E_BACKEND_CWD ?? path.join(process.cwd(), "../realityng-backend"),
+  );
   const output = execFileSync(
-    path.join(backend, ".venv/Scripts/python.exe"),
+    process.env.REALITYNG_E2E_BACKEND_PYTHON ?? path.join(backend, ".venv/Scripts/python.exe"),
     ["manage.py", "seed_sprint15_browser_qa", "--json"],
     {
       cwd: backend,

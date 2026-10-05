@@ -1,11 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-import { qaSeed, signIn, type Persona } from "./helpers/gate";
+import { qaSeed, signIn, waitForPageReady, type Persona } from "./helpers/gate";
 
 type AxeViolation = Awaited<ReturnType<AxeBuilder["analyze"]>>["violations"][number];
 
 async function expectNoSeriousAccessibilityViolations(page: Page, context: string) {
+  await waitForPageReady(page);
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();

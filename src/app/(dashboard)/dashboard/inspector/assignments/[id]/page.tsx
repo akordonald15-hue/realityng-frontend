@@ -27,7 +27,7 @@ import {
 } from "@/lib/api/inspections";
 
 export default function InspectorAssignmentDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const queryClient = useQueryClient();
   const [summary, setSummary] = useState("");
   const [recommendation, setRecommendation] = useState("");

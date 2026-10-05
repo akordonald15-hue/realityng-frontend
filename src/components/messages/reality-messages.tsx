@@ -75,7 +75,7 @@ export function MessagesInboxPageContent() {
 }
 
 export function MessageThreadPageContent() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const threadId = params.id;
   const { user } = useAuth();
   const currentUserId = user?.id;
@@ -305,7 +305,7 @@ function MessagesShell({ children }: { children: ReactNode }) {
 
 function ThreadList({ activeThreadId, compact, currentUserId, threads }: ThreadListProps) {
   return (
-    <div className={clsx("grid gap-4", compact ? "lg:max-w-[526px]" : "max-w-[1330px]")}>
+    <div className={clsx("grid grid-cols-1 gap-4", compact ? "lg:max-w-[526px]" : "max-w-[1330px]")}>
       {threads.map((thread) => (
         <ThreadRow
           active={thread.id === activeThreadId}
@@ -363,7 +363,7 @@ function ThreadRow({
       {thread.unread_count > 0 ? (
         <span
           aria-label={`${thread.unread_count} unread messages`}
-          className="flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-[#bc8936] px-2 text-xs font-semibold text-white"
+          className="flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-reality-brand-700 px-2 text-xs font-semibold text-white"
         >
           {thread.unread_count > 9 ? "9+" : thread.unread_count}
         </span>

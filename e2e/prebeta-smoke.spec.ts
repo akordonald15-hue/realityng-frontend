@@ -37,7 +37,8 @@ test("synthetic buyer can save and inspect application and viewing state, then l
       viewings: (await viewings.json() as { count: number }).count,
     };
   }, {
-    apiBase: process.env.REALITYNG_E2E_API_BASE_URL ?? "http://127.0.0.1:58001/api/v1",
+    apiBase: process.env.REALITYNG_E2E_API_BASE_URL
+      ?? `http://127.0.0.1:${process.env.REALITYNG_E2E_BACKEND_PORT ?? "58001"}/api/v1`,
     propertyId: seed.property.id,
   });
 

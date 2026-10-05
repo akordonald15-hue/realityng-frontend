@@ -1765,7 +1765,7 @@ function SupplyMessagePreview({
               <ApplicationDate value={thread.last_message?.created_at ?? thread.updated_at} />
             </p>
             {thread.unread_count > 0 ? (
-              <span className="mt-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#bc8936] px-2 text-xs font-semibold text-white">
+              <span className="mt-1 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-reality-brand-700 px-2 text-xs font-semibold text-white">
                 {thread.unread_count}
               </span>
             ) : null}

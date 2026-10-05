@@ -50,8 +50,8 @@ test("real Chrome WebSockets deliver, reconnect, deduplicate, and deny nonpartic
   ]);
   try {
     await Promise.all([
-      expect(pageA.getByText("Realtime: connected")).toBeVisible(),
-      expect(pageB.getByText("Realtime: connected")).toBeVisible(),
+      expect(pageA.getByText("Connected", { exact: true })).toBeVisible(),
+      expect(pageB.getByText("Connected", { exact: true })).toBeVisible(),
     ]);
   } catch (error) {
     throw new Error(
@@ -63,8 +63,8 @@ test("real Chrome WebSockets deliver, reconnect, deduplicate, and deny nonpartic
   const aToB = `A to B ${Date.now()}`;
   await pageA.getByPlaceholder("Write a message...").fill(aToB);
   await pageA.getByRole("button", { name: "Send" }).click();
-  await expect(pageB.getByRole("main").getByText(aToB)).toBeVisible();
-  const notificationSummary = pageB.locator("details > summary").nth(1);
+  await expect(pageB.getByRole("main").locator("article").getByText(aToB, { exact: true })).toBeVisible();
+  const notificationSummary = pageB.locator('summary[aria-label="Notifications"]:visible');
   await notificationSummary.click();
   await expect(pageB.getByText("New message").first()).toBeVisible();
   await notificationSummary.click();
@@ -72,7 +72,7 @@ test("real Chrome WebSockets deliver, reconnect, deduplicate, and deny nonpartic
   const bToA = `B to A ${Date.now()}`;
   await pageB.getByPlaceholder("Write a message...").fill(bToA);
   await pageB.getByRole("button", { name: "Send" }).click();
-  await expect(pageA.getByRole("main").getByText(bToA)).toBeVisible();
+  await expect(pageA.getByRole("main").locator("article").getByText(bToA, { exact: true })).toBeVisible();
 
   await contextB.setOffline(true);
   const missed = `Offline recovery ${Date.now()}`;
@@ -80,13 +80,13 @@ test("real Chrome WebSockets deliver, reconnect, deduplicate, and deny nonpartic
   await pageA.getByRole("button", { name: "Send" }).click();
   await pageB.waitForTimeout(900);
   await contextB.setOffline(false);
-  await expect(pageB.getByText("Realtime: connected")).toBeVisible({ timeout: 10_000 });
-  await expect(pageB.getByRole("main").getByText(missed)).toHaveCount(1);
+  await expect(pageB.getByText("Connected", { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(pageB.getByRole("main").locator("article").getByText(missed, { exact: true })).toHaveCount(1);
 
   const afterReconnect = `After reconnect ${Date.now()}`;
   await pageA.getByPlaceholder("Write a message...").fill(afterReconnect);
   await pageA.getByRole("button", { name: "Send" }).click();
-  await expect(pageB.getByRole("main").getByText(afterReconnect)).toHaveCount(1);
+  await expect(pageB.getByRole("main").locator("article").getByText(afterReconnect, { exact: true })).toHaveCount(1);
 
   expect(socketUrls.some((url) => url.includes(`/ws/messages/threads/${seed.thread}/`))).toBeTruthy();
   expect(socketUrls.every((url) => !/[?&](token|jwt|access_token)=/i.test(url))).toBeTruthy();
@@ -99,9 +99,11 @@ test("real Chrome WebSockets deliver, reconnect, deduplicate, and deny nonpartic
   await signIn(pageC, "nonparticipant");
   await pageC.goto(`/dashboard/messages/${seed.thread}`, { waitUntil: "domcontentloaded" });
   await pageC.waitForTimeout(1500);
-  await expect(pageC.getByText("Realtime: connected")).toHaveCount(0);
+  await expect(pageC.getByText("Connected", { exact: true })).toHaveCount(0);
+  await expect.poll(() => monitorC.failures.some(
+    (failure) => failure.includes("WebSocket handshake") && failure.includes("403"),
+  )).toBeTruthy();
   clearExpectedStatuses();
-  expect(monitorC.failures.some((failure) => failure.includes("WebSocket handshake") && failure.includes("403"))).toBeTruthy();
   expect(
     monitorC.failures.every((failure) =>
       (failure.includes("WebSocket handshake") && failure.includes("403")) ||

@@ -118,7 +118,7 @@ function ActivityTimeline({ activities }: { activities: LeadActivity[] }) {
 }
 
 export default function LeadDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const leadId = params.id;
   const queryClient = useQueryClient();
   const { user, isLoading: authLoading } = useAuth();

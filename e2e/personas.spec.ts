@@ -26,7 +26,7 @@ async function visitRoutes(page: Page, routes: string[]) {
   }
 }
 
-test("buyer and owner core surfaces use the real API", async ({ page }, testInfo) => {
+test("buyer core surfaces use the real API", async ({ page }, testInfo) => {
   const seed = qaSeed();
   const monitor = monitorBrowser(page);
   await signIn(page, "buyer");
@@ -47,11 +47,13 @@ test("buyer and owner core surfaces use the real API", async ({ page }, testInfo
   ]);
   await captureEvidence(page, testInfo, "buyer-dashboard");
   monitor.assertClean();
+});
 
-  const ownerPage = await page.context().browser()!.newPage();
-  const ownerMonitor = monitorBrowser(ownerPage);
-  await signIn(ownerPage, "owner");
-  await visitRoutes(ownerPage, [
+test("owner core surfaces use the real API", async ({ page }) => {
+  const seed = qaSeed();
+  const monitor = monitorBrowser(page);
+  await signIn(page, "owner");
+  await visitRoutes(page, [
     "/dashboard",
     `/properties/${seed.property.slug}`,
     `/dashboard/properties/${seed.property.id}/walkthroughs`,
@@ -62,8 +64,7 @@ test("buyer and owner core surfaces use the real API", async ({ page }, testInfo
     "/dashboard/construction",
     "/dashboard/messages",
   ]);
-  ownerMonitor.assertClean();
-  await ownerPage.close();
+  monitor.assertClean();
 });
 
 test("manager authorization depends on active property assignment", async ({ browser }) => {
@@ -96,7 +97,7 @@ test("manager authorization depends on active property assignment", async ({ bro
 test("inspector assignment lifecycle retains the Sprint 15 authorization fix", async ({ browser }, testInfo) => {
   test.setTimeout(180_000);
   const seed = qaSeed();
-  async function inspect(persona: Persona, requestId: string, allowed: boolean) {
+  async function inspect(persona: Persona, requestId: string, allowed: boolean, missingReport = false) {
     const page = await browser.newPage();
     if (!allowed) {
       allowExpectedStatus(403);
@@ -111,7 +112,17 @@ test("inspector assignment lifecycle retains the Sprint 15 authorization fix", a
     if (allowed) {
       await expect(page.getByText(/Inspection|Report|Evidence/).first()).toBeVisible();
       await assertNoMaterialOverflow(page);
-      monitor.assertClean();
+      if (missingReport) {
+        await expect(page.getByRole("button", { name: "Create draft report", exact: true })).toBeVisible();
+        const apiBase = process.env.REALITYNG_E2E_API_BASE_URL
+          ?? `http://127.0.0.1:${process.env.REALITYNG_E2E_BACKEND_PORT ?? "58001"}/api/v1`;
+        expect([...monitor.failures].sort()).toEqual([
+          `http 404: ${apiBase}/inspections/requests/${requestId}/report/`,
+          "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+        ].sort());
+      } else {
+        monitor.assertClean();
+      }
     } else {
       await expect(page.getByText(/Inspection report|Upload evidence/)).toHaveCount(0);
       expect(monitor.failures.every((failure) =>
@@ -128,7 +139,7 @@ test("inspector assignment lifecycle retains the Sprint 15 authorization fix", a
   await inspect("former_inspector", seed.inspections.declined, false);
   await inspect("former_inspector", seed.inspections.cancelled, false);
   await inspect("former_inspector", seed.inspections.reassigned, false);
-  await inspect("new_inspector", seed.inspections.reassigned, true);
+  await inspect("new_inspector", seed.inspections.reassigned, true, true);
 
   const evidencePage = await browser.newPage();
   await signIn(evidencePage, "inspector");

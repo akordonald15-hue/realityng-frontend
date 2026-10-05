@@ -49,7 +49,7 @@ function routeIsActive(pathname: string, item: { href: string; aliases?: string[
 }
 
 export function DashboardChrome({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const pathname = usePathname()!;
   const auth = useOptionalAuth();
   const user = auth?.user ?? null;
   const showProfessionalNavigation = Boolean(user) && !isAdmin(user) && isApprovedSupplyUser(user);

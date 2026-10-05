@@ -382,7 +382,7 @@ function SimilarProperties({ currentProperty }: { currentProperty: Property }) {
 }
 
 export default function PropertyDetailPage() {
-  const params = useParams<{ slug: string }>();
+  const params = useParams<{ slug: string }>()!;
   const propertyQuery = useQuery({
     queryKey: ["public-property", params.slug],
     queryFn: () => getPublicProperty(params.slug),

@@ -18,7 +18,7 @@ import {
 } from "@/lib/api/inspections";
 
 export default function PropertyWalkthroughsPage() {
-  const params = useParams<{ propertyId: string }>();
+  const params = useParams<{ propertyId: string }>()!;
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

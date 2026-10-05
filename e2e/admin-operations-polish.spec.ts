@@ -1,11 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-import { assertNoMaterialOverflow, monitorBrowser, signIn } from "./helpers/gate";
+import { assertNoMaterialOverflow, monitorBrowser, signIn, waitForPageReady } from "./helpers/gate";
 
 test.setTimeout(300_000);
 
 async function expectNoSeriousViolations(page: Page, route: string) {
+  await waitForPageReady(page);
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();

@@ -23,7 +23,7 @@ export function AccountSettingsShell({
   description,
   title,
 }: AccountSettingsShellProps) {
-  const pathname = usePathname();
+  const pathname = usePathname()!;
 
   return (
     <DashboardChrome>
@@ -49,8 +49,8 @@ export function AccountSettingsShell({
           ) : null}
         </header>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
-          <aside aria-label="Account settings" className="lg:pt-1">
+        <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
+          <aside aria-label="Account settings" className="min-w-0 lg:pt-1">
             <div className="flex gap-2 overflow-x-auto pb-2 lg:block lg:space-y-4 lg:overflow-visible lg:pb-0">
               {settingsNav.map((item) => {
                 const active = pathname === item.href;

@@ -22,8 +22,8 @@ import {
 } from "@/lib/api/financing";
 
 export default function AdminFinancingDetailPage() {
-  const params = useParams<{ id: string }>();
-  const applicationId = params.id;
+  const params = useParams<{ id: string }>()!;
+  const applicationId = params?.id ?? "";
   const queryClient = useQueryClient();
   const [submissionReference, setSubmissionReference] = useState("");
   const [offerReference, setOfferReference] = useState("");
@@ -34,6 +34,7 @@ export default function AdminFinancingDetailPage() {
   const applicationQuery = useQuery({
     queryKey: ["admin", "financing", "applications", applicationId],
     queryFn: () => getAdminFinancingApplication(applicationId),
+    enabled: Boolean(applicationId),
   });
 
   const refresh = async () => {

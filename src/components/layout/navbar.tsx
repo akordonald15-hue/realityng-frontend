@@ -93,7 +93,7 @@ type NavbarProps = {
 };
 
 export function Navbar({ transparent = false, variant = "reality" }: NavbarProps = {}) {
-  const pathname = usePathname();
+  const pathname = usePathname()!;
   const auth = useOptionalAuth();
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const isLoading = auth?.isLoading ?? false;

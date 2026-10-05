@@ -9,7 +9,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { getMyServiceComplaint } from "@/lib/api/services";
 
 export default function CustomerComplaintDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const complaintQuery = useQuery({
     queryKey: ["customer-service-complaint", params.id],
     queryFn: () => getMyServiceComplaint(params.id),

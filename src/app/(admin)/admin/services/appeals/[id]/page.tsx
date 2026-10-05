@@ -10,7 +10,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { adminGetAppeal } from "@/lib/api/services";
 
 export default function AdminAppealDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const appealQuery = useQuery({
     queryKey: ["admin-service-appeal", params.id],
     queryFn: () => adminGetAppeal(params.id),

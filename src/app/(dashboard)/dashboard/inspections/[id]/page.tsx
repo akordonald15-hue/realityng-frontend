@@ -22,7 +22,7 @@ import {
 } from "@/lib/api/inspections";
 
 export default function InspectionDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>()!;
   const queryClient = useQueryClient();
   const requestQuery = useQuery({
     queryKey: ["inspection-request", params.id],
@@ -35,6 +35,7 @@ export default function InspectionDetailPage() {
   const reportQuery = useQuery({
     queryKey: ["inspection-report", params.id],
     queryFn: () => getInspectionReportForRequest(params.id),
+    enabled: requestQuery.data?.status === "completed",
     retry: false,
   });
   const cancelMutation = useMutation({
@@ -77,7 +78,7 @@ export default function InspectionDetailPage() {
               <>
                 <InspectionReportCard report={reportQuery.data} />
               </>
-            ) : reportQuery.isError ? (
+            ) : request.status !== "completed" || reportQuery.isError ? (
               <Card className="p-5 text-sm text-reality-text-secondary">
                 No approved report is available yet.
               </Card>
