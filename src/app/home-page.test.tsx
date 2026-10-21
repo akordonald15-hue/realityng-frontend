@@ -147,7 +147,7 @@ describe("HomePage", () => {
 
     for (const [name, destination] of [
       ["Search", "/properties"],
-      ["Inspection", "/properties"],
+      ["Inspect", "/properties"],
       ["Apply", "/properties"],
       ["Payment", "/dashboard"],
     ]) {
