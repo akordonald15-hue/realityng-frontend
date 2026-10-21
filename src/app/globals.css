@@ -177,7 +177,7 @@ a {
     transform: scale(1.14) rotate(-5deg) translateY(-5px);
   }
 
-  .feature-visual[data-feature="inspection"]:hover .feature-visual-image {
+  .feature-visual[data-feature="inspect"]:hover .feature-visual-image {
     transform: scale(1.12) rotate(5deg) translateY(-7px);
   }
 

@@ -50,9 +50,9 @@ const steps = [
     href: "/properties",
   },
   {
-    title: "Inspection",
+    title: "Inspect",
     description: "Take a closer look and arrange a viewing that works for you.",
-    imageSrc: "/home/features/inspection.png",
+    imageSrc: "/home/features/inspect-flashlight.png",
     href: "/properties",
   },
   {
@@ -64,7 +64,7 @@ const steps = [
   {
     title: "Payment",
     description: "Keep your property journey organized in one place.",
-    imageSrc: "/home/features/payment.png",
+    imageSrc: "/home/features/payment-finance-house.png",
     href: "/dashboard",
   },
 ];
