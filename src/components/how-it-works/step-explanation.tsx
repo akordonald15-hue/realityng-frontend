@@ -78,7 +78,7 @@ export function StepExplanation({
             }}
           >
             <ModalShell
-              className="max-h-[calc(100dvh-2rem)] overflow-y-auto"
+              className="max-h-[calc(100dvh-2rem)] overflow-y-auto [&_h2]:pr-12"
               description={guide.explanation}
               onClose={close}
               title={title}
