@@ -27,7 +27,7 @@ import {
 } from "@/lib/api/properties";
 import { formatListingType, formatPrice, formatPropertyType } from "@/lib/properties/format";
 
-const propertyFormSchema = z
+export const propertyFormSchema = z
   .object({
     title: z.string().min(5, "Enter a descriptive title."),
     description: z.string().min(20, "Description must be at least 20 characters."),
@@ -42,7 +42,7 @@ const propertyFormSchema = z
       "mixed_use",
     ]),
     listing_type: z.enum(["sale", "rent", "apartment_share"]),
-    price: z.coerce.number().positive("Price must be greater than zero."),
+    price: z.coerce.number<number>().positive("Price must be greater than zero."),
     currency: z.string().length(3, "Use a 3-letter currency code."),
     country: z.string().min(1, "Country is required."),
     state: z.string().min(1, "State is required."),
@@ -51,11 +51,11 @@ const propertyFormSchema = z
     neighborhood: z.string().optional(),
     landmark: z.string().optional(),
     address: z.string().min(1, "Address is required."),
-    bedrooms: z.coerce.number().int().nonnegative().optional().or(z.literal("")),
-    bathrooms: z.coerce.number().int().nonnegative().optional().or(z.literal("")),
-    parking_spaces: z.coerce.number().int().nonnegative().optional().or(z.literal("")),
-    land_size: z.coerce.number().positive().optional().or(z.literal("")),
-    floor_area: z.coerce.number().positive().optional().or(z.literal("")),
+    bedrooms: z.coerce.number<number>().int().nonnegative().optional().or(z.literal("")),
+    bathrooms: z.coerce.number<number>().int().nonnegative().optional().or(z.literal("")),
+    parking_spaces: z.coerce.number<number>().int().nonnegative().optional().or(z.literal("")),
+    land_size: z.coerce.number<number>().positive().optional().or(z.literal("")),
+    floor_area: z.coerce.number<number>().positive().optional().or(z.literal("")),
     location_precision: z.enum(["exact", "neighborhood", "city", "hidden"]),
     show_exact_location: z.boolean().optional(),
   })

@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -210,4 +210,13 @@ describe("ProfilePage", () => {
     expect(await screen.findByText("Verification pending")).toBeInTheDocument();
     expect(screen.getByText("Landlord pending")).toBeInTheDocument();
   });
+  it("rejects an overlong name as a field error without calling the profile API", async () => {
+    renderWithQueryClient(<ProfilePage />);
+    const input = await screen.findByLabelText("First name");
+    fireEvent.change(input, { target: { value: "A".repeat(101) } });
+    fireEvent.submit(input.closest("form")!);
+    await waitFor(() => expect(input).toHaveAttribute("aria-invalid", "true"));
+    expect(mocks.updateCurrentUser).not.toHaveBeenCalled();
+  });
+
 });
