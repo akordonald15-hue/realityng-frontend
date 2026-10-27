@@ -11,10 +11,11 @@ import { FormMessage } from "@/components/forms/form-message";
 import { TextField } from "@/components/forms/text-field";
 import { Button } from "@/components/ui/button";
 import { forgotPassword } from "@/lib/api/auth";
+import { emailSchema } from "@/lib/auth/email-schema";
 import { getApiErrorMessage } from "@/lib/api/errors";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
+  email: emailSchema,
 });
 
 type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;

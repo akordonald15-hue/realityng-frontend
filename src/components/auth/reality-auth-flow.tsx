@@ -13,20 +13,21 @@ import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { LegalDocumentModal } from "@/components/auth/legal-document-modal";
 import { Button } from "@/components/ui/button";
 import { SuccessState } from "@/components/ui/success-state";
+import { emailSchema } from "@/lib/auth/email-schema";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { getRoleDashboardPath } from "@/lib/auth/permissions";
 import { USE_MOCKS } from "@/lib/demo-mode";
 import { useAuth } from "@/providers/auth-provider";
 
 const signInSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
+  email: emailSchema,
   password: z.string().min(1, "Password is required."),
 });
 
 const signUpSchema = z.object({
   first_name: z.string().max(100).optional(),
   last_name: z.string().max(100).optional(),
-  email: z.string().email("Enter a valid email address."),
+  email: emailSchema,
   phone_number: z.string().optional(),
   password: z.string().min(8, "Password must be at least 8 characters."),
   accepts_terms: z.boolean().refine(Boolean, "Accept the Terms to continue."),

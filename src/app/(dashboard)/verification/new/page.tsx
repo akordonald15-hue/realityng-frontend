@@ -25,7 +25,7 @@ const verificationTypes: Array<{ value: VerificationType; label: string }> = [
 ];
 
 const optionalText = z.preprocess(
-  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  (value: string | undefined) => (typeof value === "string" && value.trim() === "" ? undefined : value),
   z.string().trim().optional(),
 );
 
@@ -36,7 +36,7 @@ const verificationSchema = z
     cac_registration_number: optionalText,
     trade_category: optionalText,
     years_experience: z.preprocess(
-      (value) => (value === "" || value === undefined ? undefined : Number(value)),
+      (value: string | number | undefined) => (value === "" || value === undefined ? undefined : Number(value)),
       z.number().int().nonnegative("Years of experience cannot be negative.").optional(),
     ),
     phone_number: optionalText,
@@ -79,7 +79,7 @@ export default function NewVerificationRequestPage() {
     handleSubmit,
     formState: { errors },
     watch,
-  } = useForm<VerificationFormValues>({
+  } = useForm<z.input<typeof verificationSchema>, unknown, VerificationFormValues>({
     resolver: zodResolver(verificationSchema),
     defaultValues: {
       verification_type: "agent",
