@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ForProfessionalsPage from "@/app/for-professionals/page";
@@ -78,12 +78,34 @@ describe("ForProfessionalsPage", () => {
       "Manage Leads & Requests",
       "Close & Grow",
     ]) {
-      expect(screen.getByRole("heading", { level: 3, name: step })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: step })).toBeInTheDocument();
     }
 
     // The B2C buyer journey must not leak into the professional page.
     expect(screen.queryByRole("heading", { level: 3, name: "Search" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { level: 3, name: "Inspection" })).not.toBeInTheDocument();
+  });
+
+  it("explains all professional steps and preserves Explore", () => {
+    render(<ForProfessionalsPage />);
+    expect(screen.getByRole("link", { name: "Explore" })).toHaveAttribute("href", "#professional-paths");
+    for (const title of ["Join & Verify", "List Your Property", "Manage Leads & Requests", "Close & Grow"]) {
+      fireEvent.click(screen.getByRole("button", { name: title }));
+      const dialog = screen.getByRole("dialog", { name: title });
+      if (title === "Join & Verify") {
+        expect(dialog).toHaveTextContent("signing up does not automatically approve or verify you");
+        expect(within(dialog).getByRole("link", { name: "Create artisan account" })).toHaveAttribute("href", "/auth/sign-up?role=artisan&next=%2Fonboarding%2Frole-setup");
+      }
+      if (title === "List Your Property") expect(dialog).toHaveTextContent("artisan role alone does not currently provide property listing access");
+      fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+    }
+  });
+
+  it("continues existing users into artisan setup instead of registering again", () => {
+    authMocks.auth = { isAuthenticated: true, user: roleUser("agent") };
+    render(<ForProfessionalsPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Join & Verify" }));
+    expect(screen.getByRole("link", { name: "Continue artisan setup" })).toHaveAttribute("href", "/onboarding/role-setup?role=artisan");
   });
 
   it("renders original professional artwork decoratively without step cards", () => {
