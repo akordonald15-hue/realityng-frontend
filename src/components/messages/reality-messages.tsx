@@ -85,6 +85,8 @@ export function MessageThreadPageContent() {
   const [loadedMessages, setLoadedMessages] = useState<Message[]>([]);
   const [nextHistoryPage, setNextHistoryPage] = useState<number | null>(null);
   const [pendingClientMessages, setPendingClientMessages] = useState<Record<string, string>>({});
+  const [failedClientMessages, setFailedClientMessages] = useState<Record<string, string>>({});
+  const pendingRef = useRef<Record<string, string>>({});
   const [sendError, setSendError] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
 
@@ -108,6 +110,8 @@ export function MessageThreadPageContent() {
     setLoadedMessages([]);
     setNextHistoryPage(null);
     setPendingClientMessages({});
+    pendingRef.current = {};
+    setFailedClientMessages({});
     setSendError("");
   }, [threadId]);
 
@@ -130,8 +134,19 @@ export function MessageThreadPageContent() {
     endRef.current?.scrollIntoView?.({ block: "end" });
   }, [historyPage, loadedMessages.length, pendingClientMessages]);
 
+  const clearPendingMessage = useCallback((id: string) => {
+    delete pendingRef.current[id];
+    setPendingClientMessages({ ...pendingRef.current });
+    setFailedClientMessages((current) => {
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
   const mergeMessageIntoCache = useCallback(
     (message: Message) => {
+      if (message.client_message_id) clearPendingMessage(message.client_message_id);
       queryClient.setQueriesData<MessagePage>(
         { queryKey: ["message-thread-messages", threadId] },
         (current) => {
@@ -152,7 +167,7 @@ export function MessageThreadPageContent() {
       setLoadedMessages((current) => mergeMessages(current, [message]));
       void queryClient.invalidateQueries({ queryKey: ["message-threads"] });
     },
-    [queryClient, threadId],
+    [clearPendingMessage, queryClient, threadId],
   );
 
   const syncMissedMessages = useCallback(async () => {
@@ -164,9 +179,16 @@ export function MessageThreadPageContent() {
       return;
     }
     try {
-      const page = await listThreadMessages(threadId, { after: lastMessage.id });
-      for (const message of page.results) {
-        mergeMessageIntoCache(message);
+      let pageNumber = 1;
+      let more = true;
+      while (more) {
+        const page = await listThreadMessages(threadId, {
+          after: lastMessage.id,
+          page: pageNumber,
+        });
+        for (const message of page.results) mergeMessageIntoCache(message);
+        more = Boolean(page.next);
+        pageNumber += 1;
       }
     } catch {
       void queryClient.invalidateQueries({
@@ -176,10 +198,16 @@ export function MessageThreadPageContent() {
   }, [loadedMessages, mergeMessageIntoCache, queryClient, threadId]);
 
   const sendMutation = useMutation({
-    mutationFn: ({ clientMessageId, text }: { clientMessageId: string; text: string }) =>
-      sendMessage(threadId, text, clientMessageId),
-    onSuccess: (message) => {
-      setBody("");
+    mutationFn: ({
+      clientMessageId,
+      text,
+    }: {
+      clientMessageId: string;
+      text: string;
+      retry?: boolean;
+    }) => sendMessage(threadId, text, clientMessageId),
+    onSuccess: (message, variables) => {
+      if (!variables.retry) setBody("");
       setSendError("");
       mergeMessageIntoCache(message);
     },
@@ -192,16 +220,30 @@ export function MessageThreadPageContent() {
     enabled: Boolean(threadId) && !threadQuery.isError,
     onAccepted: ({ client_message_id }) => {
       if (!client_message_id) return;
-      setPendingClientMessages((current) => {
-        const next = { ...current };
-        delete next[client_message_id];
-        return next;
-      });
+      clearPendingMessage(client_message_id);
+    },
+    onError: ({ client_message_id }) => {
+      if (client_message_id && pendingRef.current[client_message_id]) {
+        const text = pendingRef.current[client_message_id];
+        delete pendingRef.current[client_message_id];
+        setPendingClientMessages({ ...pendingRef.current });
+        setFailedClientMessages((current) => ({ ...current, [client_message_id]: text }));
+      }
+      setSendError("Message could not be sent. Please retry the message.");
     },
     onMessage: mergeMessageIntoCache,
     onReconnect: syncMissedMessages,
     threadId,
   });
+
+  useEffect(() => {
+    if (connectionState !== "disconnected" || !Object.keys(pendingRef.current).length) return;
+    const uncertain = { ...pendingRef.current };
+    pendingRef.current = {};
+    setPendingClientMessages({});
+    setFailedClientMessages((current) => ({ ...current, ...uncertain }));
+    setSendError("Delivery was interrupted. Retry uses the same message reference.");
+  }, [connectionState]);
 
   const activeThread = threadQuery.data;
   const threads = threadsQuery.data ?? [];
@@ -216,10 +258,8 @@ export function MessageThreadPageContent() {
     const clientMessageId = crypto.randomUUID();
     setSendError("");
     if (sendRealtimeMessage(trimmed, clientMessageId)) {
-      setPendingClientMessages((current) => ({
-        ...current,
-        [clientMessageId]: trimmed,
-      }));
+      pendingRef.current[clientMessageId] = trimmed;
+      setPendingClientMessages({ ...pendingRef.current });
       setBody("");
       return;
     }
@@ -270,6 +310,10 @@ export function MessageThreadPageContent() {
             }}
             onSubmit={handleSubmit}
             pendingClientMessages={pendingClientMessages}
+            failedClientMessages={failedClientMessages}
+            onRetryMessage={(id, text) =>
+              sendMutation.mutate({ clientMessageId: id, text, retry: true })
+            }
             realtimeState={connectionState}
             sendError={sendError}
             sending={sendMutation.isPending}
@@ -305,7 +349,9 @@ function MessagesShell({ children }: { children: ReactNode }) {
 
 function ThreadList({ activeThreadId, compact, currentUserId, threads }: ThreadListProps) {
   return (
-    <div className={clsx("grid grid-cols-1 gap-4", compact ? "lg:max-w-[526px]" : "max-w-[1330px]")}>
+    <div
+      className={clsx("grid grid-cols-1 gap-4", compact ? "lg:max-w-[526px]" : "max-w-[1330px]")}
+    >
       {threads.map((thread) => (
         <ThreadRow
           active={thread.id === activeThreadId}
@@ -337,7 +383,9 @@ function ThreadRow({
       aria-current={active ? "page" : undefined}
       className={clsx(
         "group flex min-h-[88px] items-center gap-4 rounded-[20px] border bg-reality-surface px-4 py-4 transition duration-200 hover:border-reality-brand-300 hover:bg-reality-surfaceBrand focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500",
-        active ? "border-reality-brand-300 bg-reality-surfaceBrand shadow-reality-xs" : "border-reality-border-secondary",
+        active
+          ? "border-reality-brand-300 bg-reality-surfaceBrand shadow-reality-xs"
+          : "border-reality-border-secondary",
       )}
       href={`/dashboard/messages/${thread.id}`}
     >
@@ -388,6 +436,8 @@ function ConversationPanel({
   onRetry,
   onSubmit,
   pendingClientMessages,
+  failedClientMessages,
+  onRetryMessage,
   realtimeState,
   sendError,
   sending,
@@ -407,6 +457,8 @@ function ConversationPanel({
   onRetry: () => void;
   onSubmit: (event?: FormEvent) => void;
   pendingClientMessages: Record<string, string>;
+  failedClientMessages: Record<string, string>;
+  onRetryMessage: (id: string, text: string) => void;
   realtimeState: "idle" | "connecting" | "connected" | "disconnected";
   sendError: string;
   sending: boolean;
@@ -458,17 +510,29 @@ function ConversationPanel({
 
         {isLoading ? (
           <ConversationSkeleton />
-        ) : messages.length > 0 || Object.keys(pendingClientMessages).length > 0 ? (
+        ) : messages.length > 0 ||
+          Object.keys(pendingClientMessages).length > 0 ||
+          Object.keys(failedClientMessages).length > 0 ? (
           <div className="space-y-4">
             {messages.map((message) => (
-              <MessageBubble
-                currentUserId={currentUserId}
-                key={message.id}
-                message={message}
-              />
+              <MessageBubble currentUserId={currentUserId} key={message.id} message={message} />
             ))}
             {Object.entries(pendingClientMessages).map(([clientMessageId, text]) => (
               <PendingBubble key={clientMessageId} text={text} />
+            ))}
+            {Object.entries(failedClientMessages).map(([id, text]) => (
+              <article className="flex justify-end" key={id}>
+                <div className="max-w-[82%] rounded-[22px] border border-reality-border-secondary px-4 py-3">
+                  <p className="whitespace-pre-wrap break-words text-sm">{text}</p>
+                  <Button
+                    disabled={sending || activeThread?.is_closed}
+                    onClick={() => onRetryMessage(id, text)}
+                    variant="realitySecondary"
+                  >
+                    Retry message
+                  </Button>
+                </div>
+              </article>
             ))}
             <div ref={endRef} />
           </div>
@@ -628,12 +692,14 @@ function AvatarInitials({ label }: { label: string }) {
 }
 
 function getThreadTitle(thread: ConversationThread, currentUserId?: string) {
+  if (thread.service_quote) return thread.service_title || "Service request";
   const participant = thread.participants.find((item) => item.user !== currentUserId);
   const userId = participant?.user ?? thread.created_by;
   return userId ? `User ${shortId(userId)}` : "Conversation";
 }
 
 function getThreadContext(thread: ConversationThread) {
+  if (thread.service_quote) return "Service conversation";
   if (thread.application) return "Application request";
   if (thread.viewing) return "Viewing request";
   if (thread.inquiry) return "Property inquiry";

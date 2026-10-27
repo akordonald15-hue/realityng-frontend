@@ -1,5 +1,7 @@
 "use client";
 
+import { ServiceConversationButton } from "@/components/services/service-conversation-button";
+
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
@@ -84,6 +86,7 @@ export default function CustomerServicesDashboardPage() {
                         </p>
                       </div>
                       <QuoteRequestStatusBadge status={quote.status} />
+                      {quote.customer ? <ServiceConversationButton quoteId={quote.id} /> : null}
                     </div>
                   </div>
                 ))}

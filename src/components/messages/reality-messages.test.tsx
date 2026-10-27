@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,6 +9,8 @@ import {
 import { renderWithQueryClient } from "@/test/render";
 
 const mocks = vi.hoisted(() => ({
+  socketOptions: {} as Record<string, (payload?: unknown) => unknown>,
+  realtimeSend: vi.fn(() => false),
   getThread: vi.fn(),
   listThreadMessages: vi.fn(),
   listThreads: vi.fn(),
@@ -38,10 +40,10 @@ vi.mock("@/providers/auth-provider", () => ({
 }));
 
 vi.mock("@/hooks/use-message-socket", () => ({
-  useMessageSocket: () => ({
-    connectionState: "disconnected",
-    sendRealtimeMessage: () => false,
-  }),
+  useMessageSocket: (options: Record<string, (payload?: unknown) => unknown>) => {
+    mocks.socketOptions = options;
+    return { connectionState: "connected", sendRealtimeMessage: mocks.realtimeSend };
+  },
 }));
 
 vi.mock("@/lib/api/messages", () => ({
@@ -111,6 +113,7 @@ function messagePage(results = [message()], overrides = {}) {
 describe("Reality messages", () => {
   beforeEach(() => {
     vi.stubGlobal("crypto", { randomUUID: () => "client-message-1" });
+    mocks.realtimeSend.mockReset().mockReturnValue(false);
     mocks.getThread.mockReset();
     mocks.listThreadMessages.mockReset();
     mocks.listThreads.mockReset();
@@ -204,7 +207,9 @@ describe("Reality messages", () => {
     await user.type(composer, "Please confirm.");
     await user.click(screen.getByRole("button", { name: "Send" }));
 
-    expect(await screen.findByText("Message could not be sent. Please try again.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Message could not be sent. Please try again."),
+    ).toBeInTheDocument();
     expect(composer).toHaveValue("Please confirm.");
   });
 
@@ -237,5 +242,66 @@ describe("Reality messages", () => {
       "/dashboard/messages/thread-1",
     );
   });
-});
+  it("renders service context without a property", async () => {
+    mocks.listThreads.mockResolvedValue([
+      thread({
+        property: null,
+        inquiry: null,
+        service_quote: "quote-1",
+        service_title: "Kitchen repair",
+      }),
+    ]);
+    renderWithQueryClient(<MessagesInboxPageContent />);
+    expect(await screen.findByText("Kitchen repair")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Kitchen repair/ })).toHaveAttribute(
+      "href",
+      "/dashboard/messages/thread-1",
+    );
+  });
 
+  it("retries a rejected realtime message with its original deduplication ID", async () => {
+    const user = userEvent.setup();
+    mocks.realtimeSend.mockReturnValue(true);
+    renderWithQueryClient(<MessageThreadPageContent />);
+    await screen.findByText("Yes, 10 AM works.");
+    await user.type(screen.getByLabelText("Write a message"), "I will confirm shortly.");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    act(() =>
+      mocks.socketOptions.onError({ code: "rate_limited", client_message_id: "client-message-1" }),
+    );
+    await user.type(screen.getByLabelText("Write a message"), "New draft");
+    await user.click(screen.getByRole("button", { name: "Retry message" }));
+    await waitFor(() =>
+      expect(mocks.sendMessage).toHaveBeenCalledWith(
+        "thread-1",
+        "I will confirm shortly.",
+        "client-message-1",
+      ),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Retry message" })).not.toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText("Write a message")).toHaveValue("New draft");
+  });
+
+  it("drains all reconnect catch-up pages", async () => {
+    renderWithQueryClient(<MessageThreadPageContent />);
+    await screen.findByText("Yes, 10 AM works.");
+    mocks.listThreadMessages.mockResolvedValueOnce(
+      messagePage([message({ id: "message-3", thread_sequence: 3, body: "Missed one" })], {
+        next: "page-2",
+      }),
+    );
+    mocks.listThreadMessages.mockResolvedValueOnce(
+      messagePage([message({ id: "message-4", thread_sequence: 4, body: "Missed two" })]),
+    );
+    await act(async () => {
+      await mocks.socketOptions.onReconnect();
+    });
+    expect(await screen.findByText("Missed two")).toBeInTheDocument();
+    expect(mocks.listThreadMessages).toHaveBeenCalledWith("thread-1", {
+      after: "message-2",
+      page: 2,
+    });
+  });
+});

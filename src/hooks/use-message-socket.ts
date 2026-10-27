@@ -8,7 +8,7 @@ import { createRealityNgWebSocket } from "@/lib/realtime/socket";
 type MessageSocketEvent =
   | { type: "message.created"; message: Message }
   | { type: "message.accepted"; message_id: string; client_message_id?: string | null }
-  | { type: "error"; code: string; detail: unknown };
+  | { type: "error"; code: string; detail: unknown; client_message_id?: string | null };
 
 type ConnectionState = "idle" | "connecting" | "connected" | "disconnected";
 
@@ -17,12 +17,14 @@ export function useMessageSocket({
   onAccepted,
   onMessage,
   onReconnect,
+  onError,
   threadId,
 }: {
   enabled: boolean;
   onAccepted?: (payload: { message_id: string; client_message_id: string | null }) => void;
   onMessage: (message: Message) => void;
   onReconnect?: () => void;
+  onError?: (payload: { code: string; client_message_id: string | null }) => void;
   threadId: string;
 }) {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
@@ -32,12 +34,14 @@ export function useMessageSocket({
   const onAcceptedRef = useRef(onAccepted);
   const onMessageRef = useRef(onMessage);
   const onReconnectRef = useRef(onReconnect);
+  const onErrorRef = useRef(onError);
 
   useEffect(() => {
     onAcceptedRef.current = onAccepted;
     onMessageRef.current = onMessage;
     onReconnectRef.current = onReconnect;
-  }, [onAccepted, onMessage, onReconnect]);
+    onErrorRef.current = onError;
+  }, [onAccepted, onMessage, onReconnect, onError]);
 
   useEffect(() => {
     if (!enabled || !threadId) {
@@ -71,6 +75,12 @@ export function useMessageSocket({
         if (payload?.type === "message.accepted") {
           onAcceptedRef.current?.({
             message_id: payload.message_id,
+            client_message_id: payload.client_message_id ?? null,
+          });
+        }
+        if (payload?.type === "error") {
+          onErrorRef.current?.({
+            code: payload.code,
             client_message_id: payload.client_message_id ?? null,
           });
         }

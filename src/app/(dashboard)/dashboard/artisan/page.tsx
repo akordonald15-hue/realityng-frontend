@@ -1,5 +1,7 @@
 "use client";
 
+import { ServiceConversationButton } from "@/components/services/service-conversation-button";
+
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -211,6 +213,7 @@ export default function ArtisanDashboardPage() {
                         <p className="mt-1 text-sm text-reality-text-secondary">{quote.customer_name}</p>
                       </div>
                       <QuoteRequestStatusBadge status={quote.status} />
+                      {quote.customer ? <ServiceConversationButton quoteId={quote.id} /> : null}
                     </div>
                   </div>
                 ))}
