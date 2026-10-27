@@ -112,9 +112,11 @@ export default function NewVerificationRequestPage() {
               Submit Verification Request
             </h1>
 
-            <FormMessage tone="error">
-              {getApiErrorMessage(mutation.error)}
-            </FormMessage>
+            {mutation.isError ? (
+              <FormMessage tone="error">
+                {getApiErrorMessage(mutation.error)}
+              </FormMessage>
+            ) : null}
 
             <div className="grid gap-4">
               <label className="block text-sm font-medium text-reality-text-primary">

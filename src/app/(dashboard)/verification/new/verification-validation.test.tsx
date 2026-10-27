@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import NewVerificationRequestPage from "@/app/(dashboard)/verification/new/page";
 import { renderWithQueryClient } from "@/test/render";
@@ -128,4 +128,97 @@ describe("Verification Zod 4 integration", () => {
       expect(mocks.submit).not.toHaveBeenCalled();
     },
   );
+});
+
+describe("Verification submission messages", () => {
+  beforeEach(() => {
+    mocks.submit.mockReset();
+    mocks.submit.mockResolvedValue({ id: "test-only" });
+  });
+
+  function fillValidAgent() {
+    fillCommon();
+    fireEvent.change(screen.getByLabelText("Business or agency name"), {
+      target: { value: "Synthetic Agency" },
+    });
+    fireEvent.change(screen.getByLabelText("CAC registration number"), {
+      target: { value: "SYNTHETIC-CAC" },
+    });
+  }
+
+  it("does not show an error before any submission", () => {
+    renderWithQueryClient(<NewVerificationRequestPage />);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(mocks.submit).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Submit for review" })).toBeEnabled();
+  });
+
+  it("preserves loading and successful submission without an error banner", async () => {
+    let resolveSubmission!: (value: { id: string }) => void;
+    mocks.submit.mockReturnValueOnce(new Promise((resolve) => {
+      resolveSubmission = resolve;
+    }));
+    renderWithQueryClient(<NewVerificationRequestPage />);
+    fillValidAgent();
+    submit();
+
+    expect(await screen.findByRole("button", { name: "Submitting..." })).toBeDisabled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(mocks.submit).toHaveBeenCalledWith(expect.objectContaining({
+      verification_type: "agent",
+      business_name: "Synthetic Agency",
+      cac_registration_number: "SYNTHETIC-CAC",
+    }));
+
+    await act(async () => {
+      resolveSubmission({ id: "test-only" });
+    });
+    expect(await screen.findByRole("button", { name: "Submit for review" })).toBeEnabled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [
+      { isAxiosError: true, response: { data: { detail: "Verification is already under review." } } },
+      "Verification is already under review.",
+    ],
+    [{ isAxiosError: true, response: { data: {} } }, "The request could not be completed."],
+    [new Error("Network unavailable"), "Something went wrong. Please try again."],
+  ] as const)("shows an accessible genuine failure with the appropriate message %#", async (error, message) => {
+    mocks.submit.mockRejectedValueOnce(error);
+    renderWithQueryClient(<NewVerificationRequestPage />);
+    fillValidAgent();
+    submit();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(message);
+    expect(screen.getByRole("alert")).toHaveAttribute("aria-live", "assertive");
+    expect(screen.getByRole("button", { name: "Submit for review" })).toBeEnabled();
+    expect(screen.getByLabelText("Business or agency name")).toHaveValue("Synthetic Agency");
+  });
+
+  it("clears a failed submission's error during retry and after success", async () => {
+    let resolveRetry!: (value: { id: string }) => void;
+    mocks.submit.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { data: { detail: "Please retry your verification request." } },
+    }).mockReturnValueOnce(new Promise((resolve) => {
+      resolveRetry = resolve;
+    }));
+    renderWithQueryClient(<NewVerificationRequestPage />);
+    fillValidAgent();
+    submit();
+    expect(await screen.findByRole("alert")).toHaveTextContent("Please retry your verification request.");
+
+    submit();
+    expect(await screen.findByRole("button", { name: "Submitting..." })).toBeDisabled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(mocks.submit).toHaveBeenCalledTimes(2);
+    expect(mocks.submit.mock.calls[1][0]).toEqual(mocks.submit.mock.calls[0][0]);
+
+    await act(async () => {
+      resolveRetry({ id: "test-only" });
+    });
+    expect(await screen.findByRole("button", { name: "Submit for review" })).toBeEnabled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
 });
