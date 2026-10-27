@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import HomePage from "@/app/page";
@@ -142,21 +142,25 @@ describe("HomePage", () => {
     expect(screen.getAllByRole("link", { name: "Get Started" }).length).toBeGreaterThan(0);
   });
 
-  it("renders titled feature links with descriptions beneath the animated images", () => {
+  it("opens each step explanation with an appropriate next action", () => {
     renderWithQueryClient(<HomePage />);
-
-    for (const [name, destination] of [
-      ["Search", "/properties"],
-      ["Inspect", "/properties"],
-      ["Apply", "/properties"],
-      ["Payment", "/dashboard"],
+    for (const [name, action, href] of [
+      ["Search", "Browse properties", "/properties"],
+      ["Inspect", "Choose a property", "/properties"],
+      ["Apply", "Find a property to apply for", "/properties"],
+      ["Payment", "Open my dashboard", "/dashboard"],
     ]) {
-      const link = screen.getByRole("link", { name });
-      expect(link).toHaveAttribute("href", destination);
-      expect(link.querySelector("img")).toHaveAttribute("alt", "");
-      expect(link.textContent).toContain(name);
-      expect(link.querySelectorAll("span")).toHaveLength(3);
+      const trigger = screen.getByRole("button", { name });
+      expect(trigger.querySelector("img")).toHaveAttribute("alt", "");
+      fireEvent.click(trigger);
+      const dialog = screen.getByRole("dialog", { name });
+      expect(within(dialog).getByRole("link", { name: action })).toHaveAttribute("href", href);
+      if (name === "Payment") expect(dialog).toHaveTextContent("Live online checkout is not available here");
+      fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     }
+    expect(screen.getByRole("button", { name: "Payment" }).querySelector("img")?.getAttribute("src")).toContain("payment-debit-card.png");
+    expect(screen.getByRole("button", { name: "Inspect" }).querySelector("img")?.getAttribute("src")).toContain("inspect-flashlight.png");
   });
 
   it("keeps sparse approved inventory intentional without inventing listings", async () => {

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { StepExplanation } from "@/components/how-it-works/step-explanation";
 import { PublicAssistantWidget } from "@/components/assistant/public-assistant-widget";
 import { ProtectedActionLink } from "@/components/auth/protected-action-link";
 import { PublicShell } from "@/components/layout/public-shell";
@@ -45,27 +46,27 @@ const trustItems = [
 const steps = [
   {
     title: "Search",
+    guide: { explanation: "Browse available properties by location, type and price. Open a listing to see its details and choose your next step.", action: "Browse properties", href: "/properties" },
     description: "Explore homes, land, and stays by location, type, and price.",
     imageSrc: "/home/features/search.png",
-    href: "/properties",
   },
   {
     title: "Inspect",
+    guide: { explanation: "Choose a property first, then use its viewing options to request a suitable date. Sign in when prompted to arrange and track your viewing.", action: "Choose a property", href: "/properties" },
     description: "Take a closer look and arrange a viewing that works for you.",
     imageSrc: "/home/features/inspect-flashlight.png",
-    href: "/properties",
   },
   {
     title: "Apply",
+    guide: { explanation: "Open the property you want and review its details before applying. Sign in when prompted to submit an application and follow its progress.", action: "Find a property to apply for", href: "/properties" },
     description: "Save a place you love and take the next step with confidence.",
     imageSrc: "/home/features/apply.png",
-    href: "/properties",
   },
   {
     title: "Payment",
+    guide: { explanation: "For an existing property transaction, use your dashboard to track agreed payment milestones and upload payment evidence for review. Uploaded evidence is not confirmation that funds have moved. Live online checkout is not available here.", action: "Open my dashboard", href: "/dashboard", protected: true },
     description: "Keep your property journey organized in one place.",
-    imageSrc: "/home/features/payment-finance-house.png",
-    href: "/dashboard",
+    imageSrc: "/home/features/payment-debit-card.png",
   },
 ];
 
@@ -683,12 +684,12 @@ export default function HomePage() {
               </div>
               <div className="mt-8 grid grid-cols-2 items-start gap-x-3 gap-y-8 md:mt-12 md:grid-cols-4 md:gap-5">
                 {steps.map((step, index) => (
-                  <Link
-                    aria-label={step.title}
+                  <StepExplanation
+                    title={step.title}
+                    guide={step.guide}
                     className="feature-visual relative flex flex-col items-center rounded-[2rem] px-1 pb-2 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
                     data-feature={step.title.toLowerCase()}
                     data-motion-child
-                    href={step.href}
                     key={step.title}
                   >
                     <span
@@ -710,7 +711,7 @@ export default function HomePage() {
                     <span className="relative z-10 mt-2 block max-w-[260px] text-sm leading-6 text-reality-text-secondary md:text-base">
                       {step.description}
                     </span>
-                  </Link>
+                  </StepExplanation>
                 ))}
               </div>
             </StaggerReveal>
