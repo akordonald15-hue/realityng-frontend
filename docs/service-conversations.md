@@ -6,4 +6,4 @@ NEXT_PUBLIC_SERVICE_CONVERSATIONS_ENABLED defaults to false. Deploy reader compa
 
 Realtime rejection/interruption keeps message text available for retry with the same client-message ID. REST retry does not clear a separately typed draft. Reconnection drains paginated catch-up results; existing property messaging uses the same recovery path.
 
-No service checkout, registration fees, publication rights or verification promises are introduced. Audit findings in the unchanged main lockfile remain a release blocker requiring separate security remediation.
+No service checkout, registration fees, publication rights or verification promises are introduced. The exact required production dependency audit passes with zero vulnerabilities. A broader audit reports nine inherited development-tooling findings; track their remediation separately without changing this feature lockfile.
