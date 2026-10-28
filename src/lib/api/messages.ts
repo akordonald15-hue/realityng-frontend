@@ -20,7 +20,10 @@ export type Message = {
 
 export type ConversationThread = {
   id: string;
-  property: string;
+  property: string | null;
+  service_quote?: string | null;
+  service_title?: string;
+  service_provider_name?: string;
   inquiry: string | null;
   viewing: string | null;
   application: string | null;
@@ -38,7 +41,7 @@ export type CreateThreadPayload = {
   inquiry?: string;
   viewing?: string;
   application?: string;
-};
+} | { service_quote: string };
 
 type PaginatedResponse<T> = {
   count: number;

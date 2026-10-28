@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { FormMessage } from "@/components/forms/form-message";
 import { QuoteRequestStatusBadge } from "@/components/services/quote-request-status-badge";
+import { ServiceConversationButton } from "@/components/services/service-conversation-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getApiErrorMessage } from "@/lib/api/errors";
@@ -51,6 +52,9 @@ export function QuoteRequestsList({
       ) : null}
       {requests.map((request) => (
         <Card className="p-5" key={request.id}>
+          {mode !== "admin" && request.customer ? (
+            <ServiceConversationButton quoteId={request.id} />
+          ) : null}
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <QuoteRequestStatusBadge status={request.status} />
