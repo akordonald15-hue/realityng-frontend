@@ -11,6 +11,7 @@ import {
   type RefObject,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -89,6 +90,21 @@ export function MessageThreadPageContent() {
   const pendingRef = useRef<Record<string, string>>({});
   const [sendError, setSendError] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
+  const scopeRef = useRef({ threadId, generation: 0 });
+  const httpIntentRef = useRef<{
+    threadId: string;
+    generation: number;
+    text: string;
+    clientMessageId: string;
+  } | null>(null);
+  useLayoutEffect(() => {
+    scopeRef.current = { threadId, generation: scopeRef.current.generation + 1 };
+    httpIntentRef.current = null;
+    return () => {
+      scopeRef.current = { threadId: "", generation: scopeRef.current.generation + 1 };
+      httpIntentRef.current = null;
+    };
+  }, [threadId]);
 
   const threadsQuery = useQuery({
     queryKey: ["message-threads"],
@@ -146,6 +162,7 @@ export function MessageThreadPageContent() {
 
   const mergeMessageIntoCache = useCallback(
     (message: Message) => {
+      if (scopeRef.current.threadId !== threadId || message.thread !== threadId) return;
       if (message.client_message_id) clearPendingMessage(message.client_message_id);
       queryClient.setQueriesData<MessagePage>(
         { queryKey: ["message-thread-messages", threadId] },
@@ -171,6 +188,7 @@ export function MessageThreadPageContent() {
   );
 
   const syncMissedMessages = useCallback(async () => {
+    const scope = scopeRef.current;
     const lastMessage = loadedMessages.at(-1);
     if (!lastMessage) {
       void queryClient.invalidateQueries({
@@ -186,11 +204,13 @@ export function MessageThreadPageContent() {
           after: lastMessage.id,
           page: pageNumber,
         });
+        if (scopeRef.current !== scope) return;
         for (const message of page.results) mergeMessageIntoCache(message);
         more = Boolean(page.next);
         pageNumber += 1;
       }
     } catch {
+      if (scopeRef.current !== scope) return;
       void queryClient.invalidateQueries({
         queryKey: ["message-thread-messages", threadId],
       });
@@ -201,17 +221,33 @@ export function MessageThreadPageContent() {
     mutationFn: ({
       clientMessageId,
       text,
+      requestThreadId,
     }: {
       clientMessageId: string;
       text: string;
       retry?: boolean;
-    }) => sendMessage(threadId, text, clientMessageId),
+      requestThreadId: string;
+      generation: number;
+    }) => sendMessage(requestThreadId, text, clientMessageId),
     onSuccess: (message, variables) => {
-      if (!variables.retry) setBody("");
+      if (
+        scopeRef.current.threadId !== variables.requestThreadId ||
+        scopeRef.current.generation !== variables.generation
+      )
+        return;
+      if (httpIntentRef.current?.clientMessageId === variables.clientMessageId)
+        httpIntentRef.current = null;
+      if (!variables.retry)
+        setBody((current) => (current.trim() === variables.text ? "" : current));
       setSendError("");
       mergeMessageIntoCache(message);
     },
-    onError: () => {
+    onError: (_error, variables) => {
+      if (
+        scopeRef.current.threadId !== variables.requestThreadId ||
+        scopeRef.current.generation !== variables.generation
+      )
+        return;
       setSendError("Message could not be sent. Please try again.");
     },
   });
@@ -223,12 +259,14 @@ export function MessageThreadPageContent() {
       clearPendingMessage(client_message_id);
     },
     onError: ({ client_message_id }) => {
-      if (client_message_id && pendingRef.current[client_message_id]) {
-        const text = pendingRef.current[client_message_id];
-        delete pendingRef.current[client_message_id];
-        setPendingClientMessages({ ...pendingRef.current });
-        setFailedClientMessages((current) => ({ ...current, [client_message_id]: text }));
-      }
+      const rejected = client_message_id
+        ? pendingRef.current[client_message_id]
+          ? { [client_message_id]: pendingRef.current[client_message_id] }
+          : {}
+        : { ...pendingRef.current };
+      for (const id of Object.keys(rejected)) delete pendingRef.current[id];
+      setPendingClientMessages({ ...pendingRef.current });
+      setFailedClientMessages((current) => ({ ...current, ...rejected }));
       setSendError("Message could not be sent. Please retry the message.");
     },
     onMessage: mergeMessageIntoCache,
@@ -255,15 +293,26 @@ export function MessageThreadPageContent() {
     event?.preventDefault();
     const trimmed = body.trim();
     if (!trimmed || sendMutation.isPending || activeThread?.is_closed) return;
-    const clientMessageId = crypto.randomUUID();
+    const scope = scopeRef.current;
+    const intent = httpIntentRef.current;
+    const clientMessageId =
+      intent?.text === trimmed && intent.threadId === threadId
+        ? intent.clientMessageId
+        : crypto.randomUUID();
     setSendError("");
-    if (sendRealtimeMessage(trimmed, clientMessageId)) {
+    if (!intent && sendRealtimeMessage(trimmed, clientMessageId)) {
       pendingRef.current[clientMessageId] = trimmed;
       setPendingClientMessages({ ...pendingRef.current });
       setBody("");
       return;
     }
-    sendMutation.mutate({ clientMessageId, text: trimmed });
+    httpIntentRef.current = { ...scope, text: trimmed, clientMessageId };
+    sendMutation.mutate({
+      clientMessageId,
+      text: trimmed,
+      requestThreadId: threadId,
+      generation: scope.generation,
+    });
   }
 
   function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -312,7 +361,13 @@ export function MessageThreadPageContent() {
             pendingClientMessages={pendingClientMessages}
             failedClientMessages={failedClientMessages}
             onRetryMessage={(id, text) =>
-              sendMutation.mutate({ clientMessageId: id, text, retry: true })
+              sendMutation.mutate({
+                clientMessageId: id,
+                text,
+                retry: true,
+                requestThreadId: threadId,
+                generation: scopeRef.current.generation,
+              })
             }
             realtimeState={connectionState}
             sendError={sendError}

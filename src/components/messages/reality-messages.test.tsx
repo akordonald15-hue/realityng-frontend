@@ -304,4 +304,117 @@ describe("Reality messages", () => {
       page: 2,
     });
   });
+  it("an uncertain HTTP retry reuses the original message ID", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("crypto", {
+      randomUUID: vi
+        .fn()
+        .mockReturnValueOnce("11111111-1111-4111-8111-111111111111")
+        .mockReturnValueOnce("22222222-2222-4222-8222-222222222222"),
+    });
+    mocks.sendMessage.mockRejectedValueOnce(new Error("Committed server-side, response lost"));
+    renderWithQueryClient(<MessageThreadPageContent />);
+    await screen.findByText("Yes, 10 AM works.");
+    await user.type(screen.getByLabelText("Write a message"), "Uncertain delivery");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByText("Message could not be sent. Please try again.");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(mocks.sendMessage).toHaveBeenCalledTimes(2));
+    expect(mocks.sendMessage.mock.calls[1][2]).toBe(mocks.sendMessage.mock.calls[0][2]);
+  });
+
+  it("late catch-up results cannot enter a different conversation", async () => {
+    const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
+    const { CompareProvider } = await import("@/providers/compare-provider");
+    const { render } = await import("@testing-library/react");
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const ui = () => (
+      <QueryClientProvider client={client}>
+        <CompareProvider>
+          <MessageThreadPageContent />
+        </CompareProvider>
+      </QueryClientProvider>
+    );
+    const view = render(ui());
+    await screen.findByText("Yes, 10 AM works.");
+    let release!: (value: ReturnType<typeof messagePage>) => void;
+    mocks.listThreadMessages.mockReturnValueOnce(
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+    );
+    let sync: unknown;
+    act(() => {
+      sync = mocks.socketOptions.onReconnect();
+    });
+    mocks.threadId = "thread-2";
+    mocks.getThread.mockResolvedValue(thread({ id: "thread-2" }));
+    mocks.listThreadMessages.mockResolvedValue(
+      messagePage([
+        message({ id: "other-message", thread: "thread-2", body: "Second conversation" }),
+      ]),
+    );
+    view.rerender(ui());
+    await screen.findByText("Second conversation");
+    await act(async () => {
+      release(
+        messagePage([
+          message({ id: "late-first-message", body: "PRIVATE FIRST THREAD", thread_sequence: 3 }),
+        ]),
+      );
+      await sync;
+    });
+    expect(screen.queryByText("PRIVATE FIRST THREAD")).not.toBeInTheDocument();
+  });
+
+  it("old-backend errors without correlation still offer safe retry", async () => {
+    const user = userEvent.setup();
+    mocks.realtimeSend.mockReturnValue(true);
+    renderWithQueryClient(<MessageThreadPageContent />);
+    await screen.findByText("Yes, 10 AM works.");
+    await user.type(screen.getByLabelText("Write a message"), "Legacy server rejection");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    act(() => mocks.socketOptions.onError({ code: "rate_limited", client_message_id: null }));
+    expect(screen.getByRole("button", { name: "Retry message" })).toBeInTheDocument();
+  });
+  it("ignores send completion after changing conversations and preserves the new draft", async () => {
+    const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
+    const { CompareProvider } = await import("@/providers/compare-provider");
+    const { render } = await import("@testing-library/react");
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const ui = () => (
+      <QueryClientProvider client={client}>
+        <CompareProvider>
+          <MessageThreadPageContent />
+        </CompareProvider>
+      </QueryClientProvider>
+    );
+    let release!: (value: ReturnType<typeof message>) => void;
+    mocks.sendMessage.mockReturnValueOnce(
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+    );
+    const view = render(ui());
+    const user = userEvent.setup();
+    await screen.findByText("Yes, 10 AM works.");
+    await user.type(screen.getByLabelText("Write a message"), "First conversation reply");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    mocks.threadId = "thread-2";
+    mocks.getThread.mockResolvedValue(thread({ id: "thread-2" }));
+    mocks.listThreadMessages.mockResolvedValue(
+      messagePage([
+        message({ id: "other-message", thread: "thread-2", body: "Second conversation" }),
+      ]),
+    );
+    view.rerender(ui());
+    await screen.findByText("Second conversation");
+    await user.clear(screen.getByLabelText("Write a message"));
+    await user.type(screen.getByLabelText("Write a message"), "Second draft");
+    await act(async () => {
+      release(message({ id: "old-send", body: "First conversation reply" }));
+    });
+    expect(screen.queryByText("First conversation reply")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Write a message")).toHaveValue("Second draft");
+  });
 });
