@@ -380,13 +380,14 @@ export function MessageThreadPageContent() {
 }
 
 function MessagesShell({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   return (
     <main className="min-h-screen bg-reality-canvas pb-20 pt-8 text-reality-text-primary [color-scheme:light] lg:pt-10">
       <PageContainer>
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm font-semibold">
           <Link
             className="text-reality-text-tertiary transition hover:text-reality-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
-            href="/dashboard"
+            href={user?.is_beta_test_account ? "/management-demo" : "/dashboard"}
           >
             Dashboard
           </Link>
@@ -428,6 +429,7 @@ function ThreadRow({
   currentUserId?: string;
   thread: ConversationThread;
 }) {
+  const { user } = useAuth();
   const title = getThreadTitle(thread, currentUserId);
   const context = getThreadContext(thread);
   const preview = thread.last_message?.body ?? context;
@@ -442,7 +444,7 @@ function ThreadRow({
           ? "border-reality-brand-300 bg-reality-surfaceBrand shadow-reality-xs"
           : "border-reality-border-secondary",
       )}
-      href={`/dashboard/messages/${thread.id}`}
+      href={`${user?.is_beta_test_account ? "/management-demo" : "/dashboard"}/messages/${thread.id}`}
     >
       <AvatarInitials label={title} />
       <div className="min-w-0 flex-1">
@@ -518,6 +520,7 @@ function ConversationPanel({
   sendError: string;
   sending: boolean;
 }) {
+  const { user } = useAuth();
   if (isThreadError) {
     return (
       <Card className="min-h-[420px] p-8" variant="realityElevated">
@@ -526,7 +529,7 @@ function ConversationPanel({
           <Button onClick={onRetry} variant="reality">
             Retry
           </Button>
-          <Link className={buttonClasses("realitySecondary")} href="/dashboard/messages">
+          <Link className={buttonClasses("realitySecondary")} href={user?.is_beta_test_account ? "/management-demo" : "/dashboard/messages"}>
             Back to messages
           </Link>
         </div>

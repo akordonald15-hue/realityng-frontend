@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   isAdmin,
+  getRoleDashboardPath,
   isApprovedProfessional,
   isApprovedSupplyUser,
 } from "@/lib/auth/permissions";
@@ -19,6 +20,12 @@ function userWithRole(roleName: string, status: "pending" | "approved" | "reject
 }
 
 describe("role permissions", () => {
+  it("sends sealed beta roles to the private portal", () => {
+    for (const role of ["buyer", "agent", "landlord", "artisan", "admin"]) {
+      expect(getRoleDashboardPath({ ...userWithRole(role), is_beta_test_account: true })).toBe("/management-demo");
+    }
+    expect(getRoleDashboardPath(userWithRole("admin"))).toBe("/admin");
+  });
   it("treats only approved agents and landlords as supply users", () => {
     expect(isApprovedSupplyUser(userWithRole("agent"))).toBe(true);
     expect(isApprovedSupplyUser(userWithRole("landlord"))).toBe(true);

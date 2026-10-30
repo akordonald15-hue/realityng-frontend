@@ -19,6 +19,7 @@ export function isApprovedSupplyUser(user: User | null): boolean {
 }
 
 export function getRoleDashboardPath(user: User | null): string {
+  if (user?.is_beta_test_account) return "/management-demo";
   if (isAdmin(user)) {
     return "/admin";
   }

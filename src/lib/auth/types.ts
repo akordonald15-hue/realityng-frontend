@@ -38,6 +38,7 @@ export type User = {
   is_phone_verified: boolean;
   is_active: boolean;
   is_suspended: boolean;
+  is_beta_test_account?: boolean;
   last_login_at: string | null;
   created_at: string;
   updated_at: string;
