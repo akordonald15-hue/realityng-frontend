@@ -42,7 +42,42 @@ describe("isolated management demo", () => {
   it("shows an accessible access failure without exposing payment controls", async () => {
     vi.mocked(apiClient.get).mockRejectedValue(new Error("forbidden"));
     render(<ManagementDemo />);
-    expect(await screen.findByRole("alert")).toHaveTextContent("Demo access unavailable");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Beta demo is disabled");
+    expect(screen.queryByRole("button", { name: /checkout/ })).not.toBeInTheDocument();
+  });
+  it("requires password rotation before exposing workflows and never retains password retries", async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ data: { ...dashboard, require_password_change: true } });
+    vi.mocked(apiClient.post).mockRejectedValueOnce(new Error("invalid"));
+    render(<ManagementDemo />);
+    fireEvent.change(await screen.findByLabelText("Current password"), { target: { value: "synthetic-current" } });
+    fireEvent.change(screen.getByLabelText("New password"), { target: { value: "synthetic-new-strong" } });
+    expect(screen.queryByRole("button", { name: /starter checkout/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Change beta password" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Password change failed");
+    expect(screen.queryByRole("button", { name: "Retry same request" })).not.toBeInTheDocument();
+  });
+  it("removes controls and retry intent immediately after server-side disable", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({ response: { status: 403 } });
+    render(<ManagementDemo />);
+    fireEvent.click(await screen.findByRole("button", { name: "Simulate starter checkout" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("disabled or your access was revoked");
+    expect(screen.queryByRole("button", { name: /starter checkout/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry same request" })).not.toBeInTheDocument();
+  });
+  it("offers customer messaging only for scoped synthetic listings", async () => {
+    const listing = { id: "synthetic-id", title: "Synthetic home", state: "published", participant_id: 7, assigned_agent_id: 8, expires_at: "2026-12-01T00:00:00Z", premium_until: null, needs_review: false };
+    vi.mocked(apiClient.get).mockResolvedValue({ data: { ...dashboard, role: "customer", member_id: 9, listings: [listing], threads: [{ id: "synthetic-thread", demo_binding__listing__title: "Synthetic home" }] } });
+    render(<ManagementDemo />);
+    fireEvent.click(await screen.findByRole("button", { name: "Message synthetic agent" }));
+    await waitFor(() => expect(apiClient.post).toHaveBeenCalledWith("/management-demo/", { action: "start-conversation", listing_id: "synthetic-id", target: "agent" }));
+    // The link stays inside the fenced demo rather than the real customer dashboard.
+    vi.mocked(apiClient.get).mockResolvedValue({ data: dashboard });
+  });
+  it("displays private conversation links and no production-admin controls", async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ data: { ...dashboard, role: "admin", threads: [{ id: "synthetic-thread", demo_binding__listing__title: "Synthetic home" }] } });
+    render(<ManagementDemo />);
+    expect(await screen.findByText(/no production administrator privileges/)).toBeVisible();
+    expect(screen.getByRole("link", { name: /Synthetic home/ })).toHaveAttribute("href", "/management-demo/messages/synthetic-thread");
     expect(screen.queryByRole("button", { name: /checkout/ })).not.toBeInTheDocument();
   });
 });

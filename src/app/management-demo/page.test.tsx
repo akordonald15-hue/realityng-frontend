@@ -27,3 +27,10 @@ it("refuses insecure remote demo APIs", () => {
   vi.stubEnv("MANAGEMENT_DEMO_API_ORIGIN", "http://demo-api.example.test");
   expect(() => Page()).toThrow("404");
 });
+it("allows the existing beta origin only with explicit server-side approval", () => {
+  vi.stubEnv("MANAGEMENT_DEMO_UI_ENABLED", "true");
+  vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "https://api.realityng.com/api/v1");
+  vi.stubEnv("MANAGEMENT_DEMO_API_ORIGIN", "https://api.realityng.com");
+  vi.stubEnv("MANAGEMENT_DEMO_ALLOW_BETA_ORIGIN", "true");
+  expect(Page()).toBeTruthy();
+});

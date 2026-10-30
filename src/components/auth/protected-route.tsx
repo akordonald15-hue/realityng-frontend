@@ -21,6 +21,10 @@ export function ProtectedRoute({
       router.replace(`/auth/sign-in?next=${encodeURIComponent(pathname)}`);
       return;
     }
+    if (user?.is_beta_test_account && !pathname.startsWith("/management-demo")) {
+      router.replace("/management-demo");
+      return;
+    }
 
     if (requireAdmin && !isAdmin(user)) {
       router.replace(getRoleDashboardPath(user));
@@ -34,6 +38,7 @@ export function ProtectedRoute({
   if (!isAuthenticated) {
     return null;
   }
+  if (user?.is_beta_test_account && !pathname.startsWith("/management-demo")) return null;
 
   if (requireAdmin && !isAdmin(user)) {
     return null;
