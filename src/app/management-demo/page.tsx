@@ -1,0 +1,13 @@
+import { notFound } from "next/navigation";
+
+import { ManagementDemo } from "./management-demo";
+
+export default function ManagementDemoPage() {
+  const api = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const expectedOrigin = process.env.MANAGEMENT_DEMO_API_ORIGIN;
+  if (process.env.MANAGEMENT_DEMO_UI_ENABLED !== "true" || !api || !expectedOrigin) notFound();
+  let origin: URL;
+  try { origin = new URL(api); } catch { notFound(); }
+  if (origin.origin !== expectedOrigin || ["api.realityng.com", "realityng.com", "www.realityng.com"].includes(origin.hostname)) notFound();
+  return <ManagementDemo />;
+}
