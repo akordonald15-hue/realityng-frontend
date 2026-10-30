@@ -21,3 +21,9 @@ it("renders only for the explicitly matched demo origin", () => {
   vi.stubEnv("MANAGEMENT_DEMO_API_ORIGIN", "http://127.0.0.1:8040");
   expect(Page()).toBeTruthy();
 });
+it("refuses insecure remote demo APIs", () => {
+  vi.stubEnv("MANAGEMENT_DEMO_UI_ENABLED", "true");
+  vi.stubEnv("NEXT_PUBLIC_API_BASE_URL", "http://demo-api.example.test/api/v1");
+  vi.stubEnv("MANAGEMENT_DEMO_API_ORIGIN", "http://demo-api.example.test");
+  expect(() => Page()).toThrow("404");
+});

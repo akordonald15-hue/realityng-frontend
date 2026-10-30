@@ -9,5 +9,6 @@ export default function ManagementDemoPage() {
   let origin: URL;
   try { origin = new URL(api); } catch { notFound(); }
   if (origin.origin !== expectedOrigin || ["api.realityng.com", "realityng.com", "www.realityng.com"].includes(origin.hostname)) notFound();
+  if (origin.protocol !== "https:" && !["127.0.0.1", "localhost"].includes(origin.hostname)) notFound();
   return <ManagementDemo />;
 }
