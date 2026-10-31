@@ -39,6 +39,8 @@ export type User = {
   is_active: boolean;
   is_suspended: boolean;
   is_beta_test_account?: boolean;
+  beta_native_enabled?: boolean;
+  beta_native_role?: string | null;
   last_login_at: string | null;
   created_at: string;
   updated_at: string;

@@ -38,6 +38,7 @@ export type ConversationThread = {
 
 export type CreateThreadPayload = {
   property: string;
+  target?: "owner" | "agent";
   inquiry?: string;
   viewing?: string;
   application?: string;

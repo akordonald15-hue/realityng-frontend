@@ -387,7 +387,7 @@ function MessagesShell({ children }: { children: ReactNode }) {
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm font-semibold">
           <Link
             className="text-reality-text-tertiary transition hover:text-reality-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brand-500"
-            href={user?.is_beta_test_account ? "/management-demo" : "/dashboard"}
+            href={user?.is_beta_test_account && !user.beta_native_enabled ? "/management-demo" : "/dashboard"}
           >
             Dashboard
           </Link>
@@ -444,7 +444,7 @@ function ThreadRow({
           ? "border-reality-brand-300 bg-reality-surfaceBrand shadow-reality-xs"
           : "border-reality-border-secondary",
       )}
-      href={`${user?.is_beta_test_account ? "/management-demo" : "/dashboard"}/messages/${thread.id}`}
+      href={`${user?.is_beta_test_account && !user.beta_native_enabled ? "/management-demo" : "/dashboard"}/messages/${thread.id}`}
     >
       <AvatarInitials label={title} />
       <div className="min-w-0 flex-1">
@@ -529,7 +529,7 @@ function ConversationPanel({
           <Button onClick={onRetry} variant="reality">
             Retry
           </Button>
-          <Link className={buttonClasses("realitySecondary")} href={user?.is_beta_test_account ? "/management-demo" : "/dashboard/messages"}>
+          <Link className={buttonClasses("realitySecondary")} href={user?.is_beta_test_account && !user.beta_native_enabled ? "/management-demo" : "/dashboard/messages"}>
             Back to messages
           </Link>
         </div>

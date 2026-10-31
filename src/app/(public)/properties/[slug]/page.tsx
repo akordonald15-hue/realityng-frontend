@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NativePropertyContact } from "@/components/beta/native-property-actions";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -195,7 +196,8 @@ function ActionRail({ property }: { property: Property }) {
         <Link className={buttonClasses("realitySecondary", "w-full")} href="#property-showcase">
           Video showcase
         </Link>
-        <ShowInterestButton
+        <NativePropertyContact property={property} />
+      <ShowInterestButton
           className="mt-0"
           listingType={property.listing_type}
           propertyId={property.id}

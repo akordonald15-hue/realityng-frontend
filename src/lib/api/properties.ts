@@ -37,6 +37,8 @@ export type PropertyType =
 export type PropertyStatus = "draft" | "pending_review" | "approved" | "rejected" | "archived";
 
 export type Property = {
+  beta_is_owner?: boolean;
+  beta_agent_available?: boolean;
   id: string;
   title: string;
   slug: string;

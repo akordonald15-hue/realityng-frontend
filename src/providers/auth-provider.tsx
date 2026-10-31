@@ -67,6 +67,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
    */
   const establishSession = useCallback(
     (response: AuthTokens & { user: User }, redirectTo?: string | null) => {
+      queryClient.clear();
       setTokens(response.access, response.refresh);
       setUser(response.user);
       reconcileShortlist();
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
         router.push(redirectTo || getRoleDashboardPath(response.user));
       }
     },
-    [reconcileShortlist, router],
+    [reconcileShortlist, router, queryClient],
   );
 
   const signIn = useCallback(
@@ -103,10 +104,11 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
       }
     } finally {
       clearTokens();
+      queryClient.clear();
       setUser(null);
       router.push("/auth/sign-in");
     }
-  }, [router]);
+  }, [router, queryClient]);
 
   const value = useMemo(
     () => ({
