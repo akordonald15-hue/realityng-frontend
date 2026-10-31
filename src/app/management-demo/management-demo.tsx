@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
+import { getRoleDashboardPath } from "@/lib/auth/permissions";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -23,6 +24,11 @@ const money = (value: number) => new Intl.NumberFormat("en-NG", { style: "curren
 
 export function ManagementDemo() {
   const { user, isAuthenticated, isLoading, signIn, signOut } = useAuth();
+  useEffect(() => {
+    if (user?.is_beta_test_account && user.beta_native_enabled) {
+      window.location.replace(getRoleDashboardPath(user));
+    }
+  }, [user]);
   const [data, setData] = useState<Dashboard | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -63,6 +69,7 @@ export function ManagementDemo() {
     void execute(command);
   }
   const publisher = data && ["owner", "agent", "developer"].includes(data.role);
+  if (user?.is_beta_test_account && user.beta_native_enabled) return <p role="status">Opening your RealityNG workspace…</p>;
   if (isLoading) return <p role="status">Loading demo session…</p>;
   return <main className="mx-auto min-h-screen max-w-5xl space-y-6 px-4 py-8 text-emerald-950">
     <aside className="sticky top-0 z-20 rounded-lg border border-amber-300 bg-amber-100 px-4 py-3 font-bold text-amber-950">DEMO PAYMENT — NO MONEY CHARGED</aside>

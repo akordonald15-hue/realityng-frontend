@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { FormMessage } from "@/components/forms/form-message";
 import { PageContainer } from "@/components/layout/page-container";
+import { NativeAgentAssignment } from "@/components/beta/native-property-actions";
 import { PropertyForm } from "@/components/properties/property-form";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -55,5 +56,5 @@ export default function EditPropertyPage() {
     );
   }
 
-  return <PropertyForm initialProperty={propertyQuery.data} mode="edit" />;
+  return <><NativeAgentAssignment propertySlug={propertySlug} /><PropertyForm initialProperty={propertyQuery.data} mode="edit" /></>;
 }

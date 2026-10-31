@@ -7,7 +7,7 @@ export function hasApprovedRole(user: User | null, roleName: string): boolean {
 }
 
 export function isAdmin(user: User | null): boolean {
-  return hasApprovedRole(user, "admin") || hasApprovedRole(user, "super_admin");
+  return Boolean(user?.is_beta_test_account && user.beta_native_enabled && user.beta_native_role === "admin") || hasApprovedRole(user, "admin") || hasApprovedRole(user, "super_admin");
 }
 
 export function isApprovedProfessional(user: User | null): boolean {
@@ -19,7 +19,7 @@ export function isApprovedSupplyUser(user: User | null): boolean {
 }
 
 export function getRoleDashboardPath(user: User | null): string {
-  if (user?.is_beta_test_account) return "/management-demo";
+  if (user?.is_beta_test_account && !user.beta_native_enabled) return "/management-demo";
   if (isAdmin(user)) {
     return "/admin";
   }

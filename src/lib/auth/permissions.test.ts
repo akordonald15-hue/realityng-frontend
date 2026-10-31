@@ -20,6 +20,13 @@ function userWithRole(roleName: string, status: "pending" | "approved" | "reject
 }
 
 describe("role permissions", () => {
+  it("routes server-approved native beta accounts through normal dashboards", () => {
+    for (const role of ["buyer", "landlord", "agent", "artisan"]) {
+      expect(getRoleDashboardPath({ ...userWithRole(role), is_beta_test_account: true, beta_native_enabled: true })).toBe("/dashboard");
+    }
+    expect(getRoleDashboardPath({ ...userWithRole("buyer"), is_beta_test_account: true, beta_native_enabled: true, beta_native_role: "admin" })).toBe("/admin");
+    expect(isAdmin({ ...userWithRole("buyer"), beta_native_role: "admin" })).toBe(false);
+  });
   it("sends sealed beta roles to the private portal", () => {
     for (const role of ["buyer", "agent", "landlord", "artisan", "admin"]) {
       expect(getRoleDashboardPath({ ...userWithRole(role), is_beta_test_account: true })).toBe("/management-demo");

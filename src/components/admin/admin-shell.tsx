@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 
+import { useOptionalAuth } from "@/providers/auth-provider";
 import { Navbar } from "@/components/layout/navbar";
 
 const adminSections = [
@@ -22,6 +23,8 @@ function isActive(pathname: string, href: string) {
 
 export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname()!;
+  const user = useOptionalAuth()?.user;
+  const sections = user?.beta_native_enabled ? [adminSections[0], { href: "/admin/services/providers", label: "Providers" }, { href: "/dashboard/messages", label: "Messages" }] : adminSections;
 
   return (
     <div className="min-h-screen bg-reality-canvas">
@@ -40,7 +43,7 @@ export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>
       <nav aria-label="Admin sections" className="border-b border-reality-border-secondary bg-white">
         <div className="mx-auto max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-max gap-1 py-2">
-            {adminSections.map((item) => {
+            {sections.map((item) => {
               const active = isActive(pathname, item.href);
               return (
                 <Link

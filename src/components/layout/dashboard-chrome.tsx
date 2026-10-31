@@ -125,6 +125,9 @@ export function DashboardChrome({ children }: { children: React.ReactNode }) {
             </div>
           </nav>
         ) : null}
+        {user?.is_beta_test_account && user.beta_native_enabled && <div className="mx-auto max-w-reality px-6 py-3 text-sm">
+          <span>Synthetic beta workspace · </span><Link className="underline" href="/dashboard/listing-payments">Listing packages and payments</Link>
+        </div>}
         {children}
       </div>
       {showBuyerNavigation ? (

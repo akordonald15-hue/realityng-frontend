@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { NativeBetaGate } from "@/components/beta/native-beta-gate";
 import { useAuth } from "@/providers/auth-provider";
 import { isAdmin, getRoleDashboardPath } from "@/lib/auth/permissions";
 
@@ -21,7 +22,7 @@ export function ProtectedRoute({
       router.replace(`/auth/sign-in?next=${encodeURIComponent(pathname)}`);
       return;
     }
-    if (user?.is_beta_test_account && !pathname.startsWith("/management-demo")) {
+    if (user?.is_beta_test_account && !user.beta_native_enabled && !pathname.startsWith("/management-demo")) {
       router.replace("/management-demo");
       return;
     }
@@ -38,12 +39,12 @@ export function ProtectedRoute({
   if (!isAuthenticated) {
     return null;
   }
-  if (user?.is_beta_test_account && !pathname.startsWith("/management-demo")) return null;
+  if (user?.is_beta_test_account && !user.beta_native_enabled && !pathname.startsWith("/management-demo")) return null;
 
   if (requireAdmin && !isAdmin(user)) {
     return null;
   }
 
-  return <>{children}</>;
+  return <NativeBetaGate>{children}</NativeBetaGate>;
 }
 

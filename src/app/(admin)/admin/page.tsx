@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+import { NativeModerationQueue } from "@/components/beta/native-property-actions";
 import { Badge } from "@/components/ui/badge";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -68,6 +69,7 @@ function AdminContent() {
         ))}
       </div>
 
+      <NativeModerationQueue />
       <section className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="p-5">
           <h2 className="font-display text-2xl font-semibold text-reality-text-primary">
