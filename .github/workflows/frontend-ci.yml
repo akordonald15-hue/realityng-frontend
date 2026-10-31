@@ -60,5 +60,21 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Install Chromium for isolated layout regression
+        run: npx playwright install --with-deps chromium
+
+      - name: Property detail responsive regression
+        run: npx playwright test --config=playwright.layout.config.ts
+
+      - name: Upload isolated layout evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: property-detail-layout
+          path: |
+            test-results/layout/
+            playwright-report/layout/
+          if-no-files-found: ignore
+
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
