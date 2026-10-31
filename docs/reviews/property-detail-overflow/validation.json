@@ -1,0 +1,41 @@
+{
+  "measurements": [
+    {
+      "viewport": 320,
+      "width": 320
+    },
+    {
+      "viewport": 360,
+      "width": 360
+    },
+    {
+      "viewport": 375,
+      "width": 375
+    },
+    {
+      "viewport": 390,
+      "width": 390
+    },
+    {
+      "viewport": 768,
+      "width": 768
+    },
+    {
+      "viewport": 1024,
+      "width": 1024
+    },
+    {
+      "viewport": 1440,
+      "width": 1440
+    }
+  ],
+  "desktop_pixel_identical": true,
+  "desktop_before_dimensions": [
+    1440,
+    4540
+  ],
+  "desktop_after_dimensions": [
+    1440,
+    4540
+  ]
+}

@@ -468,7 +468,7 @@ export default function PropertyDetailPage() {
         </PageContainer>
 
         <PageContainer className="mt-8 grid gap-10 lg:mt-12 lg:grid-cols-[minmax(0,700px)_360px] lg:items-start">
-          <StaggerReveal className="space-y-10" stagger={0.06} y={18}>
+          <StaggerReveal className="min-w-0 space-y-10" stagger={0.06} y={18}>
             <section data-motion-child>
               <p className="text-sm font-medium text-reality-text-muted">
                 For {formatListingType(property.listing_type)}
