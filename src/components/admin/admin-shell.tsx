@@ -24,7 +24,7 @@ function isActive(pathname: string, href: string) {
 export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname()!;
   const user = useOptionalAuth()?.user;
-  const sections = user?.beta_native_enabled ? [adminSections[0], { href: "/dashboard/messages", label: "Messages" }] : adminSections;
+  const sections = user?.beta_native_enabled ? [adminSections[0], { href: "/admin/services/providers", label: "Providers" }, { href: "/dashboard/messages", label: "Messages" }] : adminSections;
 
   return (
     <div className="min-h-screen bg-reality-canvas">
