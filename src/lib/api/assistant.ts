@@ -9,6 +9,7 @@ export type AIMessageRole = "user" | "assistant" | "system";
 export type AssistantProviderMode = "disabled" | "demo" | "anthropic";
 
 export type AssistantConfig = {
+  knowledge_enabled?: boolean;
   enabled: boolean;
   provider_mode: AssistantProviderMode;
   label: string;
@@ -27,6 +28,7 @@ export type ComparePropertiesResult = {
 };
 
 export type NavigateResult = {
+  knowledge?: KnowledgeAnswer;
   target: string;
   property_id: string | null;
   path: string | null;
@@ -61,6 +63,7 @@ export type AIConversationDetail = AIConversation & {
 };
 
 export type SendMessageResponse = {
+  knowledge?: KnowledgeAnswer;
   user_message: AIMessage;
   assistant_message: AIMessage;
   provider_metadata?: {
@@ -172,7 +175,7 @@ export async function sendMessage({
   }
   const response = await apiClient.post<SendMessageResponse>(
     `/conversations/${conversationId}/messages/`,
-    { content },
+    { content, knowledge_only: true },
   );
   return response.data;
 }
@@ -182,5 +185,20 @@ export async function searchWithAssistant(query: string): Promise<AISearchResult
     return { query, extracted_filters: {}, result_count: 0, results: [] };
   }
   const response = await apiClient.post<AISearchResult>("/assistant/search/", { query });
+  return response.data;
+}
+
+
+export type KnowledgeAnswer = {
+  intent: string;
+  content: string;
+  sources: { id: string; title: string; version: string }[];
+  links: { label: string; path: string }[];
+  knowledge_version: string;
+  status: string;
+};
+
+export async function answerAssistant(query: string): Promise<KnowledgeAnswer> {
+  const response = await apiClient.post<KnowledgeAnswer>("/assistant/answer/", { query });
   return response.data;
 }
