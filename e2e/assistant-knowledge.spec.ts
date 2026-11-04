@@ -51,6 +51,8 @@ for (const route of ["/", "/for-professionals"]) {
     await page.getByRole("button", { name: "Ask", exact: true }).click();
     await expect(page.getByText(/Source: Find properties/)).toBeVisible();
     const panel = page.getByRole("region", { name: "RealityNG AI assistant" });
+    await panel.locator("[data-assistant-avatar] img").evaluate(image => (image as HTMLImageElement).decode());
+    expect(await panel.locator("[data-assistant-avatar] img").evaluate(image => getComputedStyle(image).transitionDuration)).toBe("0s");
     const box = await panel.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);
@@ -151,13 +153,13 @@ test("authenticated assistant uses knowledge-only answers above mobile navigatio
     await route.fulfill({ status: 200, headers, json: body });
   });
   await page.goto("/saved-properties");
-  await page.getByRole("button", { name: "Open RealityNG assistant", exact: true }).click();
+  await page.getByRole("button", { name: "Open RealityNG AI assistant", exact: true }).click();
   const input = page.getByLabel("Ask RealityNG assistant", { exact: true });
   await expect(input).toBeEnabled();
   await input.fill("inspection");
   await input.press("Enter");
   await expect(page.getByText(/Source: Request an inspection/)).toBeVisible();
-  const panel = page.getByRole("region", { name: "RealityNG assistant", exact: true });
+  const panel = page.getByRole("region", { name: "RealityNG AI assistant", exact: true });
   const box = await panel.boundingBox();
   expect(box!.x).toBeGreaterThanOrEqual(0);
   expect(box!.x + box!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
@@ -165,14 +167,14 @@ test("authenticated assistant uses knowledge-only answers above mobile navigatio
     page.viewportSize()!.height - (page.viewportSize()!.width < 640 ? 64 : 0),
   );
   const scan = await new AxeBuilder({ page })
-    .include('[aria-label="RealityNG assistant"]')
+    .include('[aria-label="RealityNG AI assistant"]')
     .analyze();
   expect(scan.violations).toEqual([]);
   await page.screenshot({ path: testInfo.outputPath("authenticated-assistant.png") });
   await input.focus();
   await page.keyboard.press("Escape");
   await expect(
-    page.getByRole("button", { name: "Open RealityNG assistant", exact: true }),
+    page.getByRole("button", { name: "Open RealityNG AI assistant", exact: true }),
   ).toBeFocused();
 });
 
@@ -295,3 +297,51 @@ for (const destination of ["/", "/for-professionals", "/saved-properties"]) {
     await expect(launch).toBeFocused();
   });
 }
+
+
+test.describe("portrait motion preferences", () => {
+  test.use({ contextOptions: { reducedMotion: "no-preference" } });
+  test("portrait uses hover transition without simulated talking", async ({ page }, testInfo) => {
+    await page.route("**/api/v1/**", async (route) => {
+      const headers = {
+        "Access-Control-Allow-Origin": route.request().headers().origin ?? "*",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Headers": "content-type,x-request-id,authorization",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      };
+      if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+      const path = new URL(route.request().url()).pathname;
+      await route.fulfill({
+        status: path.endsWith("/users/me/") ? 401 : 200,
+        headers,
+        json: path.endsWith("/assistant/config/")
+          ? { enabled: true, knowledge_enabled: true, suggested_prompts: [] }
+          : { results: [], count: 0 },
+      });
+    });
+    const optimizedImages: import("@playwright/test").Response[] = [];
+    page.on("response", (response) => {
+      if (response.url().includes("/_next/image?") && response.url().includes("concierge-portrait"))
+        optimizedImages.push(response);
+    });
+    await page.goto("/");
+    const launcher = page.getByRole("button", { name: "Open RealityNG AI", exact: true });
+    await expect(launcher).toBeVisible();
+    const portrait = launcher.locator("[data-assistant-avatar] img");
+    await portrait.evaluate((image) => (image as HTMLImageElement).decode());
+    const response = optimizedImages[0];
+    expect(response).toBeTruthy();
+    const bytes = (await response.body()).length;
+    expect(bytes).toBeLessThan(100_000);
+    await testInfo.attach("portrait-image-delivery", {
+      body: JSON.stringify({ bytes, contentType: response.headers()["content-type"] }),
+      contentType: "application/json",
+    });
+    await launcher.hover();
+    await expect
+      .poll(() => portrait.evaluate((image) => getComputedStyle(image).transitionDuration))
+      .toBe("0.15s");
+    expect(await portrait.evaluate((image) => getComputedStyle(image).animationName)).toBe("none");
+    await expect(launcher.getByText("AI", { exact: true })).toBeVisible();
+  });
+});

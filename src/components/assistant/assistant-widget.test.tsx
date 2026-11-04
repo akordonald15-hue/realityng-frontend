@@ -72,7 +72,7 @@ describe("AssistantWidget", () => {
     });
 
     renderWithQueryClient(<AssistantWidget />);
-    await userEvent.click(screen.getByRole("button", { name: /open realityng assistant/i }));
+    await userEvent.click(screen.getByRole("button", { name: /open realityng ai assistant/i }));
 
     expect(await screen.findByText("RealityNG Demo Assistant")).toBeInTheDocument();
     expect(screen.getByText("Approved platform guidance")).toBeInTheDocument();
@@ -97,7 +97,7 @@ describe("AssistantWidget", () => {
     );
 
     renderWithQueryClient(<AssistantWidget />);
-    await userEvent.click(screen.getByRole("button", { name: /open realityng assistant/i }));
+    await userEvent.click(screen.getByRole("button", { name: /open realityng ai assistant/i }));
     await waitFor(() => expect(api.createConversation).toHaveBeenCalledTimes(1));
 
     const input = screen.getByPlaceholderText("Ask about a property...");
@@ -134,18 +134,18 @@ describe("AssistantWidget", () => {
   it("does not create a conversation against disabled or older knowledge config", async () => {
     api.getAssistantConfig.mockResolvedValue({ enabled: true, label: "RealityNG Assistant" });
     renderWithQueryClient(<AssistantWidget />);
-    await userEvent.click(screen.getByRole("button", { name: /open realityng assistant/i }));
+    await userEvent.click(screen.getByRole("button", { name: /open realityng ai assistant/i }));
     expect(screen.getByText(/temporarily unavailable/)).toBeInTheDocument();
     expect(api.createConversation).not.toHaveBeenCalled();
   });
 
   it("closes with Escape and restores launcher focus", async () => {
     renderWithQueryClient(<AssistantWidget />);
-    await userEvent.click(screen.getByRole("button", { name: /open realityng assistant/i }));
+    await userEvent.click(screen.getByRole("button", { name: /open realityng ai assistant/i }));
     await waitFor(() => expect(screen.getByLabelText("Ask RealityNG assistant")).toHaveFocus());
     await userEvent.keyboard("{Escape}");
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /open realityng assistant/i })).toHaveFocus(),
+      expect(screen.getByRole("button", { name: /open realityng ai assistant/i })).toHaveFocus(),
     );
   });
 
@@ -162,7 +162,7 @@ describe("AssistantWidget", () => {
     ]);
     api.getConversation.mockResolvedValue({ id: "conversation-b", messages: [] });
     renderWithQueryClient(<AssistantWidget />);
-    await userEvent.click(screen.getByRole("button", { name: /open realityng assistant/i }));
+    await userEvent.click(screen.getByRole("button", { name: /open realityng ai assistant/i }));
     await waitFor(() => expect(api.createConversation).toHaveBeenCalled());
     await userEvent.type(screen.getByLabelText("Ask RealityNG assistant"), "Question A");
     await userEvent.click(screen.getByRole("button", { name: "Send" }));

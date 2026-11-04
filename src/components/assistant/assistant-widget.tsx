@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
-import { AssistantOrb } from "@/components/assistant/assistant-orb";
+import { AssistantAvatar } from "@/components/assistant/assistant-avatar";
 import { useOptionalAuth } from "@/providers/auth-provider";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -182,9 +182,9 @@ export function AssistantWidget({
           "group fixed right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#062820]",
           mobileNavigationOffset ? "bottom-24 sm:bottom-6" : "bottom-6",
         )}
-        aria-label="Open RealityNG assistant"
+        aria-label="Open RealityNG AI assistant"
       >
-        <AssistantOrb state="idle" size="md" />
+        <AssistantAvatar state="idle" size="md" />
         <span className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-full border border-cyan-100/20 bg-[#062820]/88 px-3 py-1.5 text-xs font-semibold text-cyan-50 opacity-0 shadow-reality-sm backdrop-blur-md transition group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
           Ask Reality AI
         </span>
@@ -194,7 +194,7 @@ export function AssistantWidget({
 
   return (
     <Card
-      aria-label="RealityNG assistant"
+      aria-label="RealityNG AI assistant"
       className={clsx(
         "assistant-fade-scale assistant-glass-panel fixed left-4 right-4 z-50 flex w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]",
         mobileNavigationOffset
@@ -212,7 +212,7 @@ export function AssistantWidget({
     >
       <div className="flex items-center justify-between border-b border-brand-secondary/20 bg-reality-bg-subtle px-4 py-3">
         <div className="flex items-center gap-3">
-          <AssistantOrb state={send.isPending ? "thinking" : "idle"} size="sm" />
+          <AssistantAvatar state={send.isPending ? "thinking" : "idle"} size="sm" />
           <div>
             <h2 className="font-display text-sm font-semibold text-reality-text-primary">
               {assistantConfig.data?.label ?? "RealityNG Assistant"}
