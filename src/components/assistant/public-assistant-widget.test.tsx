@@ -42,7 +42,7 @@ describe("Shared public assistant", () => {
     api.getAssistantConfig.mockResolvedValue({
       enabled: true,
       knowledge_enabled: true,
-      suggested_prompts: [],
+      suggested_prompts: ["Walk me through RealityNG"],
     });
     api.answerAssistant.mockResolvedValue(response);
   });
@@ -74,6 +74,9 @@ describe("Shared public assistant", () => {
     render(<PublicAssistantWidget />);
     await open();
     expect(screen.queryByText(/find verified properties/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Walk me through RealityNG", exact: true }),
+    ).toBeInTheDocument();
     await act(async () => {
       submit();
     });
