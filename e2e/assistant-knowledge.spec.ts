@@ -290,6 +290,7 @@ for (const destination of ["/", "/for-professionals", "/saved-properties"]) {
       }),
     ).toHaveAttribute("href", "/dashboard");
     expect(sent).toEqual([authenticated ? "authenticated-demo" : "public-demo"]);
+    await input.focus();
     await page.keyboard.press("Escape");
     await expect(launch).toBeFocused();
   });
