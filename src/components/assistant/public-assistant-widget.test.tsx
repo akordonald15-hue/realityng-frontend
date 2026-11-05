@@ -74,9 +74,7 @@ describe("Shared public assistant", () => {
     render(<PublicAssistantWidget />);
     await open();
     expect(screen.queryByText(/find verified properties/i)).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Walk me through RealityNG", exact: true }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Walk me through RealityNG" })).toBeInTheDocument();
     await act(async () => {
       submit();
     });

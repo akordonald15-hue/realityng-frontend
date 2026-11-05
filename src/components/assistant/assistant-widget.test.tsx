@@ -81,7 +81,7 @@ describe("AssistantWidget", () => {
     expect(screen.getByText("Your RealityNG property assistant")).toBeInTheDocument();
     expect(screen.getByText("Property search guidance")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Hello, what can you help me with?", exact: true }),
+      screen.getByRole("button", { name: "Hello, what can you help me with?" }),
     ).toBeInTheDocument();
 
     await waitFor(() => expect(api.createConversation).toHaveBeenCalledTimes(1));
