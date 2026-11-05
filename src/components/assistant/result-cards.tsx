@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KnowledgeSources } from "./knowledge-sources";
 import { PropertyCard } from "@/components/properties/property-card";
 import type { ToolResult } from "@/lib/api/assistant";
 
@@ -51,6 +52,7 @@ function NavigateResultCard({
 }: {
   result: Extract<ToolResult, { tool: "navigate" }>["result"];
 }) {
+  if (result.knowledge) return <KnowledgeSources answer={result.knowledge} />;
   if (!result.path) {
     return null;
   }

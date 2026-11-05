@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import {
+  answerAssistant,
+  getAssistantConfig,
+  getAssistantResponseMode,
+  type AssistantConfig,
+  type KnowledgeAnswer,
+} from "@/lib/api/assistant";
+import { KnowledgeSources } from "@/components/assistant/knowledge-sources";
 import { AssistantOrb } from "@/components/assistant/assistant-orb";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +21,7 @@ type PublicMessage = {
   id: string;
   role: "assistant" | "user";
   content: string;
+  answer?: KnowledgeAnswer;
 };
 
 const suggestions = [
@@ -33,81 +42,34 @@ function createMessageId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function publicAssistantReply(input: string, isAuthenticated: boolean) {
-  const text = input.toLowerCase();
-
-  if (text.includes("walk") || text.includes("start") || text.includes("help")) {
-    return [
-      "Start by browsing approved listings without signing up.",
-      "When you want to save, compare, show interest, request a viewing, apply, or list a property, RealityNG will guide you into an account flow.",
-      isAuthenticated
-        ? "Because you are signed in, your dashboard can also track saved properties, inquiries, viewings, applications, and verification progress."
-        : "If you create an account later, your assistant can become more useful inside your dashboard.",
-    ].join(" ");
-  }
-
-  if (text.includes("search") || text.includes("find") || text.includes("browse")) {
-    return "Use the search tabs for Buy, Rent, Shortlets, Apartment Share, Land, or Commercial, then add a city, property type, or price range. You can browse results before creating an account.";
-  }
-
-  if (text.includes("verify") || text.includes("verification") || text.includes("trust")) {
-    return "RealityNG separates public listing approval from deeper verification. You can read the verification standards publicly, then sign in when you need to submit identity, professional, or property evidence.";
-  }
-
-  if (text.includes("list") || text.includes("landlord") || text.includes("agent")) {
-    return "To list property, create an account as a landlord or agent, complete your profile, create a draft listing, add details and media, then submit it for review.";
-  }
-
-  if (text.includes("viewing") || text.includes("tour") || text.includes("inspection")) {
-    return "Open a property, show interest first, then use the dashboard workflow to request a physical or virtual viewing when the inquiry is active.";
-  }
-
-  if (text.includes("apply") || text.includes("application") || text.includes("rent")) {
-    return "Rental applications happen after you choose a property and are ready to provide application details. The dashboard keeps your application status visible.";
-  }
-
-  if (text.includes("contact") || text.includes("support")) {
-    return "For platform help, safety concerns, or partnerships, use the Contact page. For a specific property, use the structured Show Interest flow on the property page.";
-  }
-
-  return "I can help with a RealityNG walkthrough, property search guidance, verification guidance, listing steps, viewing requests, rental applications, and support routes. I do not provide legal advice, prices, availability, or private account data from this public assistant.";
-}
-
 export function PublicAssistantWidget() {
   const auth = useOptionalAuth();
   const [hasAppeared, setHasAppeared] = useState(false);
   const [showGreeting, setShowGreeting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState("");
-  const [isInputFocused, setIsInputFocused] = useState(false);
   const [isResponding, setIsResponding] = useState(false);
   const [messages, setMessages] = useState<PublicMessage[]>([
     {
       id: "intro",
       role: "assistant",
       content:
-        "Welcome to RealityNG. I'm your AI property assistant. I can help you find verified properties, answer your questions, guide you through buying or renting, and make navigating the platform easier.",
+        "Welcome to RealityNG. I'm your AI property assistant. Ask me for approved guidance about the platform. Listing approval and professional verification are separate.",
     },
   ]);
   const hasInteractedRef = useRef(false);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const responseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isAuthenticated = Boolean(auth?.isAuthenticated);
-  const helperText = useMemo(
-    () =>
-      isAuthenticated
-        ? "Signed-in users get richer dashboard guidance."
-        : "Public walkthrough. No account required.",
-    [isAuthenticated],
-  );
-  const orbState = isResponding
-    ? "thinking"
-    : isInputFocused || isOpen
-      ? "listening"
-      : showGreeting
-        ? "thinking"
-        : "idle";
+  const generation = useRef(0);
+  const busy = useRef(false);
+  const [config, setConfig] = useState<AssistantConfig | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+  const responseMode = getAssistantResponseMode(config);
+  const helperText =
+    responseMode === "demo"
+      ? "Guided demo mode. No live model."
+      : "Approved platform guidance. No live model.";
+  const orbState = isResponding ? "thinking" : "idle";
 
   useEffect(() => {
     const appearTimer = setTimeout(() => {
@@ -127,33 +89,71 @@ export function PublicAssistantWidget() {
     return () => {
       clearTimeout(appearTimer);
       clearTimeout(minimizeTimer);
-      if (responseTimerRef.current) {
-        clearTimeout(responseTimerRef.current);
-      }
+      generation.current += 1;
     };
   }, []);
 
-  function submitMessage(content: string) {
-    const value = content.trim();
-    if (!value) return;
+  useEffect(() => {
+    let active = true;
+    generation.current += 1;
+    busy.current = false;
+    setMessages((previous) => previous.slice(0, 1));
+    setDraft("");
+    setIsResponding(false);
+    void getAssistantConfig()
+      .then((value) => {
+        if (active) setConfig(value);
+      })
+      .catch(() => {
+        if (active) setConfig(null);
+      });
+    return () => {
+      active = false;
+      generation.current += 1;
+    };
+  }, [auth?.user?.id]);
 
+  async function submitMessage(content: string) {
+    const value = content.trim();
+    if (!value || busy.current) return;
+    if (!responseMode) {
+      setUnavailable(true);
+      return;
+    }
+    const request = ++generation.current;
+    busy.current = true;
     hasInteractedRef.current = true;
     setShowGreeting(false);
     setIsResponding(true);
-    if (responseTimerRef.current) {
-      clearTimeout(responseTimerRef.current);
-    }
-    responseTimerRef.current = setTimeout(() => setIsResponding(false), 1200);
-    setMessages((previous) => [
-      ...previous,
-      { id: createMessageId("user"), role: "user", content: value },
-      {
-        id: createMessageId("assistant"),
-        role: "assistant",
-        content: publicAssistantReply(value, isAuthenticated),
-      },
-    ]);
+    setUnavailable(false);
     setDraft("");
+    try {
+      const answer = await answerAssistant(value, responseMode);
+      if (request !== generation.current) return;
+      // Do not echo sensitive input when the shared service flags it.
+      setMessages((previous) => [
+        ...previous,
+        ...(answer.intent === "privacy"
+          ? []
+          : [{ id: createMessageId("user"), role: "user" as const, content: value }]),
+        { id: createMessageId("assistant"), role: "assistant", content: answer.content, answer },
+      ]);
+    } catch {
+      if (request === generation.current) setUnavailable(true);
+    } finally {
+      if (request === generation.current) {
+        busy.current = false;
+        setIsResponding(false);
+      }
+    }
+  }
+
+  function closeAssistant() {
+    generation.current += 1;
+    busy.current = false;
+    setIsResponding(false);
+    setIsOpen(false);
+    window.setTimeout(() => launcherRef.current?.focus(), 0);
   }
 
   function openAssistant() {
@@ -199,12 +199,24 @@ export function PublicAssistantWidget() {
   }
 
   return (
-    <Card aria-label="RealityNG AI assistant" className="assistant-fade-scale assistant-glass-panel fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-4 right-4 z-50 flex max-h-[min(35rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-2xl p-0 sm:left-auto sm:right-6 sm:w-[24rem]" role="region">
+    <Card
+      aria-label="RealityNG AI assistant"
+      className="assistant-fade-scale assistant-glass-panel fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-4 right-4 z-50 flex max-h-[min(35rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-2xl p-0 sm:left-auto sm:right-6 sm:w-[24rem]"
+      role="region"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          closeAssistant();
+        }
+      }}
+    >
       <div className="flex items-start justify-between gap-3 border-b border-reality-border-secondary bg-reality-surfaceBrand px-4 py-3">
         <div className="flex items-center gap-3">
           <AssistantOrb state={orbState} size="sm" />
           <div>
-            <h2 className="font-display text-lg font-semibold text-reality-text-primary">RealityNG AI</h2>
+            <h2 className="font-display text-lg font-semibold text-reality-text-primary">
+              RealityNG AI
+            </h2>
             <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
               {helperText}
             </p>
@@ -213,20 +225,32 @@ export function PublicAssistantWidget() {
         <button
           aria-label="Close RealityNG AI"
           className="flex h-10 w-10 items-center justify-center rounded-full text-reality-text-primary transition hover:bg-reality-surfaceMuted focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brandEmphasis"
-          onClick={() => {
-            setIsOpen(false);
-            window.setTimeout(() => launcherRef.current?.focus(), 0);
-          }}
+          onClick={closeAssistant}
           type="button"
         >
-          <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" /></svg>
+          <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <path
+              d="M5 5l14 14M19 5 5 19"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="1.8"
+            />
+          </svg>
         </button>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto bg-reality-canvas px-4 py-3">
+      <div
+        role="log"
+        aria-label="Assistant messages"
+        aria-live="polite"
+        aria-relevant="additions"
+        className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-reality-canvas px-4 py-3"
+      >
         {messages.map((message) => (
           <div
-            className={message.role === "user" ? "flex justify-end" : "flex justify-start"}
+            className={
+              message.role === "user" ? "flex flex-col items-end" : "flex flex-col items-start"
+            }
             key={message.id}
           >
             <p
@@ -238,13 +262,15 @@ export function PublicAssistantWidget() {
             >
               {message.content}
             </p>
+            <KnowledgeSources answer={message.answer} />
           </div>
         ))}
 
         <div className="flex flex-wrap gap-2">
-          {suggestions.map((suggestion) => (
+          {(config?.suggested_prompts ?? suggestions).map((suggestion) => (
             <button
               className="rounded-xl border border-reality-border-primary bg-reality-surface px-3 py-1.5 text-xs font-semibold text-reality-brandEmphasis transition hover:bg-reality-surfaceBrand focus:outline-none focus-visible:ring-2 focus-visible:ring-reality-brandEmphasis"
+              disabled={isResponding}
               key={suggestion}
               onClick={() => submitMessage(suggestion)}
               type="button"
@@ -254,6 +280,16 @@ export function PublicAssistantWidget() {
           ))}
         </div>
 
+        {isResponding && <p role="status">Finding approved guidance…</p>}
+        {unavailable && (
+          <p role="status">
+            Approved guidance is currently unavailable.{" "}
+            <Link href="/contact" className="underline">
+              Contact RealityNG
+            </Link>{" "}
+            or use the standard navigation.
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-2">
           {navLinks.map((link) => (
             <Link
@@ -277,14 +313,12 @@ export function PublicAssistantWidget() {
         <Input
           aria-label="Ask RealityNG AI"
           className="flex-1"
-          onBlur={() => setIsInputFocused(false)}
           onChange={(event) => setDraft(event.target.value)}
-          onFocus={() => setIsInputFocused(true)}
           placeholder="Ask how RealityNG works..."
           ref={inputRef}
           value={draft}
         />
-        <Button disabled={!draft.trim()} type="submit">
+        <Button disabled={!draft.trim() || isResponding} type="submit">
           Ask
         </Button>
       </form>

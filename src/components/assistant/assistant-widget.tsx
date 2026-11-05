@@ -4,11 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import { AssistantOrb } from "@/components/assistant/assistant-orb";
+import { useOptionalAuth } from "@/providers/auth-provider";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   createConversation,
+  getAssistantResponseMode,
+  type AssistantResponseMode,
   getAssistantConfig,
   sendMessage,
   listConversations,
@@ -22,7 +25,12 @@ function createMockId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavigationOffset?: boolean }) {
+export function AssistantWidget({
+  mobileNavigationOffset = false,
+}: {
+  mobileNavigationOffset?: boolean;
+}) {
+  const auth = useOptionalAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AIMessage[]>([]);
@@ -31,49 +39,78 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
   const scrollRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const generation = useRef(0);
   const [showHistory, setShowHistory] = useState(false);
-  const [isInputFocused, setIsInputFocused] = useState(false);
   const assistantConfig = useQuery({
     queryKey: ["assistant-config"],
     queryFn: getAssistantConfig,
   });
+  const responseMode = getAssistantResponseMode(assistantConfig.data);
   const conversationHistory = useQuery({
-    queryKey: ["assistant-conversations"],
+    queryKey: ["assistant-conversations", auth?.user?.id],
     queryFn: listConversations,
     enabled: showHistory,
   });
 
+  useEffect(() => {
+    generation.current += 1;
+    setConversationId(null);
+    setMessages([]);
+    setDraft("");
+    setIsOpen(false);
+  }, [auth?.user?.id]);
+
   async function loadConversation(id: string) {
-    const conversation = await getConversation(id);
-    setConversationId(conversation.id);
-    setMessages(conversation.messages);
-    setShowHistory(false);
+    const request = ++generation.current;
+    setConversationId(null);
+    setMessages([]);
+    try {
+      const conversation = await getConversation(id);
+      if (request !== generation.current) return;
+      setConversationId(conversation.id);
+      setMessages(conversation.messages);
+      setShowHistory(false);
+    } catch {
+      if (request === generation.current) setUnavailable(true);
+    }
   }
 
   function startNewConversation() {
+    const request = ++generation.current;
     setConversationId(null);
     setMessages([]);
     setShowHistory(false);
     setUnavailable(false);
-    if (!ensureConversation.isPending) {
-      ensureConversation.mutate();
+    if (responseMode && !ensureConversation.isPending) {
+      ensureConversation.mutate(request);
     }
   }
 
   const ensureConversation = useMutation({
-    mutationFn: createConversation,
-    onSuccess: (conversation) => {
+    mutationFn: (_request: number) => createConversation(),
+    onSuccess: (conversation, request) => {
+      if (request !== generation.current) return;
       setConversationId(conversation.id);
       setUnavailable(false);
     },
-    onError: () => {
-      setUnavailable(true);
+    onError: (_error, request) => {
+      if (request === generation.current) setUnavailable(true);
     },
   });
 
   const send = useMutation({
-    mutationFn: sendMessage,
-    onMutate: async ({ content }) => {
+    mutationFn: ({
+      conversationId,
+      content,
+      mode,
+    }: {
+      conversationId: string;
+      content: string;
+      request: number;
+      mode: AssistantResponseMode;
+    }) => sendMessage({ conversationId, content, mode }),
+    onMutate: async ({ content, request }) => {
+      if (request !== generation.current) return;
       const optimisticUserMessage: AIMessage = {
         id: createMockId("optimistic"),
         role: "user",
@@ -86,7 +123,8 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
       setMessages((prev) => [...prev, optimisticUserMessage]);
       setDraft("");
     },
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
+      if (variables.request !== generation.current) return;
       setMessages((prev) => [
         ...prev.filter((m) => !m.id.startsWith("optimistic-")),
         response.user_message,
@@ -94,7 +132,11 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
       ]);
       setUnavailable(false);
     },
-    onError: () => {
+    onError: (_error, variables) => {
+      if (variables.request !== generation.current) return;
+      setMessages((previous) =>
+        previous.filter((message) => !message.id.startsWith("optimistic-")),
+      );
       setUnavailable(true);
     },
   });
@@ -113,21 +155,21 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
 
   function handleOpen() {
     setIsOpen(true);
-    if (assistantConfig.data?.enabled === false) {
+    if (!responseMode) {
       setUnavailable(true);
       return;
     }
     if (!conversationId && !ensureConversation.isPending) {
-      ensureConversation.mutate();
+      ensureConversation.mutate(generation.current);
     }
   }
 
   function handleSend() {
     const content = draft.trim();
-    if (!content || !conversationId || send.isPending) {
+    if (!content || !conversationId || send.isPending || !responseMode) {
       return;
     }
-    send.mutate({ conversationId, content });
+    send.mutate({ conversationId, content, request: generation.current, mode: responseMode });
   }
 
   if (!isOpen) {
@@ -151,25 +193,33 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
   }
 
   return (
-    <Card aria-label="RealityNG assistant" className={clsx(
-      "assistant-fade-scale assistant-glass-panel fixed left-4 right-4 z-50 flex w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]",
-      mobileNavigationOffset
-        ? "bottom-24 h-[min(32rem,calc(100svh-7rem))]"
-        : "bottom-4 h-[min(32rem,calc(100svh-2rem))]",
-    )} role="region">
+    <Card
+      aria-label="RealityNG assistant"
+      className={clsx(
+        "assistant-fade-scale assistant-glass-panel fixed left-4 right-4 z-50 flex w-auto flex-col rounded-2xl p-0 sm:bottom-6 sm:left-auto sm:right-6 sm:h-[32rem] sm:w-[23rem]",
+        mobileNavigationOffset
+          ? "bottom-24 h-[min(32rem,calc(100svh-7rem))]"
+          : "bottom-4 h-[min(32rem,calc(100svh-2rem))]",
+      )}
+      role="region"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          setIsOpen(false);
+          window.setTimeout(() => launcherRef.current?.focus(), 0);
+        }
+      }}
+    >
       <div className="flex items-center justify-between border-b border-brand-secondary/20 bg-reality-bg-subtle px-4 py-3">
         <div className="flex items-center gap-3">
-          <AssistantOrb
-            state={send.isPending ? "thinking" : isInputFocused ? "listening" : "idle"}
-            size="sm"
-          />
+          <AssistantOrb state={send.isPending ? "thinking" : "idle"} size="sm" />
           <div>
             <h2 className="font-display text-sm font-semibold text-reality-text-primary">
               {assistantConfig.data?.label ?? "RealityNG Assistant"}
             </h2>
             {assistantConfig.data?.provider_mode === "demo" ? (
               <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
-                Guided demo mode
+                {responseMode === "demo" ? "Guided demo mode" : "Approved platform guidance"}
               </p>
             ) : null}
           </div>
@@ -210,7 +260,9 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
             <p className="text-sm text-reality-text-secondary">Loading conversations...</p>
           )}
           {conversationHistory.isError && (
-            <p className="text-sm text-reality-text-secondary">Could not load conversation history.</p>
+            <p className="text-sm text-reality-text-secondary">
+              Could not load conversation history.
+            </p>
           )}
           {conversationHistory.data?.length === 0 && (
             <p className="text-sm text-reality-text-secondary">No previous conversations yet.</p>
@@ -232,13 +284,20 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
       )}
 
       {!showHistory && (
-        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+        <div
+          ref={scrollRef}
+          role="log"
+          aria-label="Assistant messages"
+          aria-live="polite"
+          aria-relevant="additions"
+          className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3"
+        >
           {messages.length === 0 && !ensureConversation.isPending && (
             <div className="space-y-2">
               <p className="text-sm text-reality-text-secondary">
                 {assistantConfig.data?.provider_mode === "demo"
-                  ? "I can guide you through selected RealityNG workflows while live AI approval is pending."
-                  : "Ask me to find a property, compare listings, or answer questions about RealityNG."}
+                  ? "I provide approved RealityNG guidance without live model synthesis."
+                  : "Ask for approved RealityNG workflow guidance. I cannot access private account records."}
               </p>
               {assistantConfig.data?.supported_topics?.length ? (
                 <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-3">
@@ -276,7 +335,9 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
           ))}
 
           {send.isPending && (
-            <p className="text-sm text-reality-text-secondary">Thinking...</p>
+            <p role="status" className="text-sm text-reality-text-secondary">
+              Finding approved guidance...
+            </p>
           )}
 
           {unavailable && (
@@ -289,29 +350,27 @@ export function AssistantWidget({ mobileNavigationOffset = false }: { mobileNavi
             </div>
           )}
         </div>
-
       )}
       <div className="flex items-center gap-2 border-t border-reality-border-secondary p-3">
         <Input
           value={draft}
-          onBlur={() => setIsInputFocused(false)}
           onChange={(e) => setDraft(e.target.value)}
-          onFocus={() => setIsInputFocused(true)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               handleSend();
             }
           }}
+          aria-label="Ask RealityNG assistant"
           placeholder="Ask about a property..."
           ref={inputRef}
-          disabled={!conversationId || send.isPending}
+          disabled={!conversationId || send.isPending || !responseMode}
           className="flex-1"
         />
         <Button
           type="button"
           onClick={handleSend}
-          disabled={!draft.trim() || !conversationId || send.isPending}
+          disabled={!draft.trim() || !conversationId || send.isPending || !responseMode}
         >
           Send
         </Button>
