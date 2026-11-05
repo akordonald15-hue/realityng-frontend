@@ -1,6 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import {
+  ASSISTANT_TITLE,
+  ASSISTANT_SUBTITLE,
+  ASSISTANT_PLACEHOLDER,
+  ASSISTANT_WELCOME,
+  assistantDisplayText,
+} from "./assistant-copy";
+
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -53,8 +61,7 @@ export function PublicAssistantWidget() {
     {
       id: "intro",
       role: "assistant",
-      content:
-        "Welcome to RealityNG. I'm your AI property assistant. Ask me for approved guidance about the platform. Listing approval and professional verification are separate.",
+      content: ASSISTANT_WELCOME,
     },
   ]);
   const hasInteractedRef = useRef(false);
@@ -65,10 +72,7 @@ export function PublicAssistantWidget() {
   const [config, setConfig] = useState<AssistantConfig | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const responseMode = getAssistantResponseMode(config);
-  const helperText =
-    responseMode === "demo"
-      ? "Guided demo mode. No live model."
-      : "Approved platform guidance. No live model.";
+  const helperText = ASSISTANT_SUBTITLE;
   const orbState = isResponding ? "thinking" : "idle";
 
   useEffect(() => {
@@ -177,7 +181,7 @@ export function PublicAssistantWidget() {
       >
         {showGreeting ? (
           <div className="assistant-fade-scale assistant-glass-panel pointer-events-none max-w-[min(18rem,calc(100vw-6rem))] rounded-2xl p-4 text-sm leading-6 text-reality-text-primary sm:max-w-xs">
-            <p className="font-semibold text-reality-brandEmphasis">RealityNG AI</p>
+            <p className="font-semibold text-reality-brandEmphasis">{ASSISTANT_TITLE}</p>
             <p className="mt-2 text-reality-text-secondary">{messages[0].content}</p>
           </div>
         ) : null}
@@ -215,7 +219,7 @@ export function PublicAssistantWidget() {
           <AssistantAvatar state={orbState} size="sm" />
           <div>
             <h2 className="font-display text-lg font-semibold text-reality-text-primary">
-              RealityNG AI
+              {ASSISTANT_TITLE}
             </h2>
             <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
               {helperText}
@@ -257,10 +261,12 @@ export function PublicAssistantWidget() {
               className={
                 message.role === "user"
                   ? "max-w-[86%] rounded-xl bg-reality-surfaceBrand px-3 py-2 text-sm leading-6 text-reality-text-primary"
-                  : "max-w-[92%] rounded-xl border border-reality-border-secondary bg-reality-surface px-3 py-2 text-sm leading-6 text-reality-text-secondary"
+                  : "whitespace-pre-line max-w-[92%] rounded-xl border border-reality-border-secondary bg-reality-surface px-3 py-2 text-sm leading-6 text-reality-text-secondary"
               }
             >
-              {message.content}
+              {message.role === "assistant"
+                ? assistantDisplayText(message.content)
+                : message.content}
             </p>
             <KnowledgeSources answer={message.answer} />
           </div>
@@ -314,7 +320,7 @@ export function PublicAssistantWidget() {
           aria-label="Ask RealityNG AI"
           className="flex-1"
           onChange={(event) => setDraft(event.target.value)}
-          placeholder="Ask how RealityNG works..."
+          placeholder={ASSISTANT_PLACEHOLDER}
           ref={inputRef}
           value={draft}
         />

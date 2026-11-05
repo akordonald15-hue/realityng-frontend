@@ -1,3 +1,6 @@
+import { ASSISTANT_WELCOME, ASSISTANT_UNSUPPORTED } from "./assistant-copy";
+const LEGACY_UNSUPPORTED =
+  "I am currently a guided demo assistant. I can help with property search guidance, viewing requests, rental applications, verification, support, and approved app navigation. I cannot answer unsupported questions or fabricate private, legal, pricing, or listing details.";
 import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -48,7 +51,7 @@ describe("AssistantWidget", () => {
     });
   });
 
-  it("renders backend-provided demo assistant label, topics, and response", async () => {
+  it("renders customer-facing copy, existing topics, and response", async () => {
     api.sendMessage.mockResolvedValue({
       user_message: {
         id: "user-message-1",
@@ -74,19 +77,45 @@ describe("AssistantWidget", () => {
     renderWithQueryClient(<AssistantWidget />);
     await userEvent.click(screen.getByRole("button", { name: /open realityng ai assistant/i }));
 
-    expect(await screen.findByText("RealityNG Demo Assistant")).toBeInTheDocument();
-    expect(screen.getByText("Approved platform guidance")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "RealityNG AI" })).toBeInTheDocument();
+    expect(screen.getByText("Your RealityNG property assistant")).toBeInTheDocument();
     expect(screen.getByText("Property search guidance")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Hello, what can you help me with?" }),
+    ).toBeInTheDocument();
 
     await waitFor(() => expect(api.createConversation).toHaveBeenCalledTimes(1));
-    await userEvent.type(screen.getByPlaceholderText("Ask about a property..."), "Hello");
+    await userEvent.type(screen.getByPlaceholderText("Ask me about RealityNG..."), "Hello");
     await userEvent.click(screen.getByRole("button", { name: "Send" }));
 
     expect(
-      await screen.findByText("Hello, I am the RealityNG Demo Assistant."),
+      await screen.findByText("Hi! I'm your RealityNG property assistant."),
     ).toBeInTheDocument();
   });
 
+  it("shows the approved welcome and presents saved unsupported replies without rewriting user text", async () => {
+    renderWithQueryClient(<AssistantWidget />);
+    await userEvent.click(screen.getByRole("button", { name: /open realityng ai assistant/i }));
+    expect(await screen.findByText(/Hi! Welcome to RealityNG/)).toHaveTextContent(
+      "What would you like help with?",
+    );
+    expect(screen.getByText(/Hi! Welcome to RealityNG/).textContent).toBe(ASSISTANT_WELCOME);
+    expect(screen.getByPlaceholderText("Ask me about RealityNG...")).toBeInTheDocument();
+    api.getConversation.mockResolvedValue({
+      id: "conversation-2",
+      messages: [
+        { id: "user", role: "user", content: "Tell me about demo mode" },
+        { id: "assistant", role: "assistant", content: LEGACY_UNSUPPORTED },
+      ],
+    });
+    api.listConversations.mockResolvedValue([
+      { id: "conversation-2", title: "Saved guidance", updated_at: "2026-11-05T00:00:00Z" },
+    ]);
+    await userEvent.click(screen.getByRole("button", { name: "Show conversation history" }));
+    await userEvent.click(await screen.findByRole("button", { name: /Saved guidance/ }));
+    expect(await screen.findByText(ASSISTANT_UNSUPPORTED)).toBeInTheDocument();
+    expect(screen.getByText("Tell me about demo mode")).toBeInTheDocument();
+  });
   it("prevents duplicate sends while a message is pending", async () => {
     let resolveSend: (value: unknown) => void = () => undefined;
     api.sendMessage.mockImplementation(
@@ -100,7 +129,7 @@ describe("AssistantWidget", () => {
     await userEvent.click(screen.getByRole("button", { name: /open realityng ai assistant/i }));
     await waitFor(() => expect(api.createConversation).toHaveBeenCalledTimes(1));
 
-    const input = screen.getByPlaceholderText("Ask about a property...");
+    const input = screen.getByPlaceholderText("Ask me about RealityNG...");
     await userEvent.type(input, "How do I request a viewing?");
     const sendButton = screen.getByRole("button", { name: "Send" });
     await userEvent.click(sendButton);
@@ -209,6 +238,6 @@ describe("AssistantWidget", () => {
       content: "Hello",
       mode: "demo",
     });
-    expect(screen.getByText("Guided demo mode")).toBeInTheDocument();
+    expect(screen.getByText("Your RealityNG property assistant")).toBeInTheDocument();
   });
 });
