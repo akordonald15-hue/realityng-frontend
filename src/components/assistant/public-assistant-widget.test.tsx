@@ -1,3 +1,6 @@
+import { ASSISTANT_WELCOME, ASSISTANT_UNSUPPORTED } from "./assistant-copy";
+const LEGACY_UNSUPPORTED =
+  "I am currently a guided demo assistant. I can help with property search guidance, viewing requests, rental applications, verification, support, and approved app navigation. I cannot answer unsupported questions or fabricate private, legal, pricing, or listing details.";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PublicAssistantWidget } from "./public-assistant-widget";
@@ -46,6 +49,26 @@ describe("Shared public assistant", () => {
   afterEach(() => {
     vi.clearAllTimers();
     vi.useRealTimers();
+  });
+  it("shows the approved header, welcome and placeholder without internal terminology", async () => {
+    render(<PublicAssistantWidget />);
+    await open();
+    expect(screen.getByRole("heading", { name: "RealityNG AI" })).toBeInTheDocument();
+    expect(screen.getByText("Your RealityNG property assistant")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Ask me about RealityNG...")).toBeInTheDocument();
+    expect(screen.getByText(/Hi! Welcome to RealityNG/).textContent).toBe(ASSISTANT_WELCOME);
+    expect(screen.queryByText(/guided demo|live model|synthesis/i)).not.toBeInTheDocument();
+  });
+  it("presents an unsupported reply helpfully without mutating the API response", async () => {
+    const payload = { ...response, intent: "unsupported", content: LEGACY_UNSUPPORTED };
+    api.answerAssistant.mockResolvedValue(payload);
+    render(<PublicAssistantWidget />);
+    await open();
+    await act(async () => {
+      submit();
+    });
+    expect(screen.getByText(ASSISTANT_UNSUPPORTED)).toBeInTheDocument();
+    expect(payload.content).toBe(LEGACY_UNSUPPORTED);
   });
   it("uses the shared service and renders grounding without verified-property promises", async () => {
     render(<PublicAssistantWidget />);
@@ -146,7 +169,7 @@ describe("Shared public assistant", () => {
     });
     expect(api.answerAssistant).toHaveBeenCalledWith("search", "demo");
     expect(screen.getByText("Existing guided demo reply")).toBeInTheDocument();
-    expect(screen.getByText("Guided demo mode. No live model.")).toBeInTheDocument();
+    expect(screen.getByText("Your RealityNG property assistant")).toBeInTheDocument();
     expect(screen.queryByText(/Source:/)).not.toBeInTheDocument();
   });
 });

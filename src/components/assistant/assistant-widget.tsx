@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  ASSISTANT_TITLE,
+  ASSISTANT_SUBTITLE,
+  ASSISTANT_PLACEHOLDER,
+  ASSISTANT_WELCOME,
+  assistantDisplayText,
+} from "./assistant-copy";
+
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { clsx } from "clsx";
@@ -215,13 +223,11 @@ export function AssistantWidget({
           <AssistantAvatar state={send.isPending ? "thinking" : "idle"} size="sm" />
           <div>
             <h2 className="font-display text-sm font-semibold text-reality-text-primary">
-              {assistantConfig.data?.label ?? "RealityNG Assistant"}
+              {ASSISTANT_TITLE}
             </h2>
-            {assistantConfig.data?.provider_mode === "demo" ? (
-              <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
-                {responseMode === "demo" ? "Guided demo mode" : "Approved platform guidance"}
-              </p>
-            ) : null}
+            <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
+              {ASSISTANT_SUBTITLE}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -294,10 +300,8 @@ export function AssistantWidget({
         >
           {messages.length === 0 && !ensureConversation.isPending && (
             <div className="space-y-2">
-              <p className="text-sm text-reality-text-secondary">
-                {assistantConfig.data?.provider_mode === "demo"
-                  ? "I provide approved RealityNG guidance without live model synthesis."
-                  : "Ask for approved RealityNG workflow guidance. I cannot access private account records."}
+              <p className="whitespace-pre-line text-sm text-reality-text-secondary">
+                {ASSISTANT_WELCOME}
               </p>
               {assistantConfig.data?.supported_topics?.length ? (
                 <div className="rounded-md border border-reality-border-secondary bg-reality-bg-subtle p-3">
@@ -362,7 +366,7 @@ export function AssistantWidget({
             }
           }}
           aria-label="Ask RealityNG assistant"
-          placeholder="Ask about a property..."
+          placeholder={ASSISTANT_PLACEHOLDER}
           ref={inputRef}
           disabled={!conversationId || send.isPending || !responseMode}
           className="flex-1"
@@ -391,7 +395,7 @@ function MessageBubble({ message }: { message: AIMessage }) {
             : "border border-reality-border-secondary bg-reality-bg-subtle text-reality-text-primary",
         )}
       >
-        {message.content}
+        {message.role === "assistant" ? assistantDisplayText(message.content) : message.content}
         {!isUser && message.tool_results && message.tool_results.length > 0 && (
           <ToolResultCards toolResults={message.tool_results} />
         )}

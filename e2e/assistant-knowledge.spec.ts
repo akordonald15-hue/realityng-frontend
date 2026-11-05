@@ -51,8 +51,14 @@ for (const route of ["/", "/for-professionals"]) {
     await page.getByRole("button", { name: "Ask", exact: true }).click();
     await expect(page.getByText(/Source: Find properties/)).toBeVisible();
     const panel = page.getByRole("region", { name: "RealityNG AI assistant" });
-    await panel.locator("[data-assistant-avatar] img").evaluate(image => (image as HTMLImageElement).decode());
-    expect(await panel.locator("[data-assistant-avatar] img").evaluate(image => getComputedStyle(image).transitionDuration)).toBe("0s");
+    await panel
+      .locator("[data-assistant-avatar] img")
+      .evaluate((image) => (image as HTMLImageElement).decode());
+    expect(
+      await panel
+        .locator("[data-assistant-avatar] img")
+        .evaluate((image) => getComputedStyle(image).transitionDuration),
+    ).toBe("0s");
     const box = await panel.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);
@@ -181,11 +187,14 @@ test("authenticated assistant uses knowledge-only answers above mobile navigatio
 for (const destination of ["/", "/for-professionals", "/saved-properties"]) {
   test(`approved demo configuration keeps replies and navigation working on ${destination}`, async ({
     page,
-  }) => {
+  }, testInfo) => {
     const authenticated = destination === "/saved-properties";
     const sent: string[] = [];
     const reply =
       "You can continue in RealityNG at /dashboard. I can only suggest approved app destinations in demo mode.";
+    const unsupportedQuery = "What is the weather on Mars?";
+    const unsupportedReply =
+      "I am currently a guided demo assistant. I can help with property search guidance, viewing requests, rental applications, verification, support, and approved app navigation. I cannot answer unsupported questions or fabricate private, legal, pricing, or listing details.";
     if (authenticated)
       await page.addInitScript(() => {
         localStorage.setItem("realityng.accessToken", "isolated-demo-fixture");
@@ -232,15 +241,25 @@ for (const destination of ["/", "/for-professionals", "/saved-properties"]) {
         throw new Error("Knowledge endpoint must not be used");
       if (path.endsWith("/assistant/demo/")) {
         expect(route.request().postDataJSON()).toEqual({
-          query: "Open dashboard",
+          query: route.request().postDataJSON().query,
           knowledge_only: false,
         });
+        expect(["Open dashboard", unsupportedQuery]).toContain(
+          route.request().postDataJSON().query,
+        );
         sent.push("public-demo");
         body = {
           intent: "navigation",
-          content: reply,
+          content:
+            (route.request().postDataJSON().query ?? route.request().postDataJSON().content) ===
+            unsupportedQuery
+              ? unsupportedReply
+              : reply,
           sources: [],
-          links: [{ label: "Continue in RealityNG", path: "/dashboard" }],
+          links:
+            route.request().postDataJSON().query === unsupportedQuery
+              ? [{ label: "Contact RealityNG", path: "/contact" }]
+              : [{ label: "Continue in RealityNG", path: "/dashboard" }],
           knowledge_version: null,
           status: "demo",
           provider_metadata: { provider: "demo", mode: "demo" },
@@ -248,25 +267,39 @@ for (const destination of ["/", "/for-professionals", "/saved-properties"]) {
       }
       if (path.endsWith("/conversations/owned-demo/messages/")) {
         expect(route.request().postDataJSON()).toEqual({
-          content: "Open dashboard",
+          content: route.request().postDataJSON().content,
           knowledge_only: false,
           demo_only: true,
         });
+        expect(["Open dashboard", unsupportedQuery]).toContain(
+          route.request().postDataJSON().content,
+        );
         sent.push("authenticated-demo");
         body = {
-          user_message: { id: "du", role: "user", content: "Open dashboard" },
+          user_message: {
+            id: `du-${sent.length}`,
+            role: "user",
+            content: route.request().postDataJSON().content,
+          },
           assistant_message: {
-            id: "da",
+            id: `da-${sent.length}`,
             role: "assistant",
-            content: reply,
-            tool_results: [
-              {
-                tool_use_id: "demo-nav",
-                tool: "navigate",
-                input: {},
-                result: { target: "dashboard", property_id: null, path: "/dashboard" },
-              },
-            ],
+            content:
+              (route.request().postDataJSON().query ?? route.request().postDataJSON().content) ===
+              unsupportedQuery
+                ? unsupportedReply
+                : reply,
+            tool_results:
+              route.request().postDataJSON().content === unsupportedQuery
+                ? []
+                : [
+                    {
+                      tool_use_id: "demo-nav",
+                      tool: "navigate",
+                      input: {},
+                      result: { target: "dashboard", property_id: null, path: "/dashboard" },
+                    },
+                  ],
           },
           provider_metadata: { provider: "demo", mode: "demo" },
         };
@@ -282,9 +315,28 @@ for (const destination of ["/", "/for-professionals", "/saved-properties"]) {
       exact: true,
     });
     await expect(input).toBeEnabled();
+    await expect(page.getByRole("heading", { name: "RealityNG AI", exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Your RealityNG property assistant", { exact: true }),
+    ).toBeVisible();
+    await expect(input).toHaveAttribute("placeholder", "Ask me about RealityNG...");
+    await expect(page.getByText(/Hi! Welcome to RealityNG/)).toBeVisible();
+    const kind = authenticated
+      ? "authenticated"
+      : destination.includes("professionals")
+        ? "professional"
+        : "public";
+    await page.screenshot({
+      path: `test-results/assistant/copy-review/${kind}-${testInfo.project.name}.png`,
+    });
     await input.fill("Open dashboard");
     await input.press("Enter");
-    await expect(page.getByText(reply)).toBeVisible();
+    await expect(
+      page.getByText(
+        "You can continue in RealityNG at /dashboard. Use the link below to continue.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByText(/guided demo|live model|demo mode/i)).toHaveCount(0);
     await expect(
       page.getByRole("link", {
         name: authenticated ? "View dashboard" : "Continue in RealityNG",
@@ -292,12 +344,15 @@ for (const destination of ["/", "/for-professionals", "/saved-properties"]) {
       }),
     ).toHaveAttribute("href", "/dashboard");
     expect(sent).toEqual([authenticated ? "authenticated-demo" : "public-demo"]);
+    await input.fill(unsupportedQuery);
+    await input.press("Enter");
+    await expect(page.getByText(/I can help with questions about RealityNG/)).toBeVisible();
+    await expect(page.getByText(/guided demo|live model|demo mode/i)).toHaveCount(0);
     await input.focus();
     await page.keyboard.press("Escape");
     await expect(launch).toBeFocused();
   });
 }
-
 
 test.describe("portrait motion preferences", () => {
   test.use({ contextOptions: { reducedMotion: "no-preference" } });
