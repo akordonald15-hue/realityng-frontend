@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   createConversation,
+  getAssistantResponseMode,
+  type AssistantResponseMode,
   getAssistantConfig,
   sendMessage,
   listConversations,
@@ -43,6 +45,7 @@ export function AssistantWidget({
     queryKey: ["assistant-config"],
     queryFn: getAssistantConfig,
   });
+  const responseMode = getAssistantResponseMode(assistantConfig.data);
   const conversationHistory = useQuery({
     queryKey: ["assistant-conversations", auth?.user?.id],
     queryFn: listConversations,
@@ -78,7 +81,7 @@ export function AssistantWidget({
     setMessages([]);
     setShowHistory(false);
     setUnavailable(false);
-    if (assistantConfig.data?.knowledge_enabled && !ensureConversation.isPending) {
+    if (responseMode && !ensureConversation.isPending) {
       ensureConversation.mutate(request);
     }
   }
@@ -99,11 +102,13 @@ export function AssistantWidget({
     mutationFn: ({
       conversationId,
       content,
+      mode,
     }: {
       conversationId: string;
       content: string;
       request: number;
-    }) => sendMessage({ conversationId, content }),
+      mode: AssistantResponseMode;
+    }) => sendMessage({ conversationId, content, mode }),
     onMutate: async ({ content, request }) => {
       if (request !== generation.current) return;
       const optimisticUserMessage: AIMessage = {
@@ -150,7 +155,7 @@ export function AssistantWidget({
 
   function handleOpen() {
     setIsOpen(true);
-    if (!assistantConfig.data?.enabled || !assistantConfig.data?.knowledge_enabled) {
+    if (!responseMode) {
       setUnavailable(true);
       return;
     }
@@ -161,10 +166,10 @@ export function AssistantWidget({
 
   function handleSend() {
     const content = draft.trim();
-    if (!content || !conversationId || send.isPending) {
+    if (!content || !conversationId || send.isPending || !responseMode) {
       return;
     }
-    send.mutate({ conversationId, content, request: generation.current });
+    send.mutate({ conversationId, content, request: generation.current, mode: responseMode });
   }
 
   if (!isOpen) {
@@ -214,7 +219,7 @@ export function AssistantWidget({
             </h2>
             {assistantConfig.data?.provider_mode === "demo" ? (
               <p className="mt-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-reality-brand-600">
-                Approved platform guidance
+                {responseMode === "demo" ? "Guided demo mode" : "Approved platform guidance"}
               </p>
             ) : null}
           </div>
@@ -359,18 +364,13 @@ export function AssistantWidget({
           aria-label="Ask RealityNG assistant"
           placeholder="Ask about a property..."
           ref={inputRef}
-          disabled={!conversationId || send.isPending || !assistantConfig.data?.knowledge_enabled}
+          disabled={!conversationId || send.isPending || !responseMode}
           className="flex-1"
         />
         <Button
           type="button"
           onClick={handleSend}
-          disabled={
-            !draft.trim() ||
-            !conversationId ||
-            send.isPending ||
-            !assistantConfig.data?.knowledge_enabled
-          }
+          disabled={!draft.trim() || !conversationId || send.isPending || !responseMode}
         >
           Send
         </Button>

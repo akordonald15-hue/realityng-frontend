@@ -10,6 +10,7 @@ export type AssistantProviderMode = "disabled" | "demo" | "anthropic";
 
 export type AssistantConfig = {
   knowledge_enabled?: boolean;
+  demo_enabled?: boolean;
   enabled: boolean;
   provider_mode: AssistantProviderMode;
   label: string;
@@ -35,9 +36,24 @@ export type NavigateResult = {
 };
 
 export type ToolResult =
-  | { tool_use_id: string; tool: "search_properties"; input: Record<string, unknown>; result: SearchPropertiesResult }
-  | { tool_use_id: string; tool: "compare_properties"; input: Record<string, unknown>; result: ComparePropertiesResult }
-  | { tool_use_id: string; tool: "navigate"; input: Record<string, unknown>; result: NavigateResult };
+  | {
+      tool_use_id: string;
+      tool: "search_properties";
+      input: Record<string, unknown>;
+      result: SearchPropertiesResult;
+    }
+  | {
+      tool_use_id: string;
+      tool: "compare_properties";
+      input: Record<string, unknown>;
+      result: ComparePropertiesResult;
+    }
+  | {
+      tool_use_id: string;
+      tool: "navigate";
+      input: Record<string, unknown>;
+      result: NavigateResult;
+    };
 
 export type AIMessage = {
   id: string;
@@ -146,9 +162,11 @@ export async function getConversation(conversationId: string): Promise<AIConvers
 export async function sendMessage({
   conversationId,
   content,
+  mode = "knowledge",
 }: {
   conversationId: string;
   content: string;
+  mode?: AssistantResponseMode;
 }): Promise<SendMessageResponse> {
   if (USE_MOCKS) {
     return {
@@ -175,7 +193,7 @@ export async function sendMessage({
   }
   const response = await apiClient.post<SendMessageResponse>(
     `/conversations/${conversationId}/messages/`,
-    { content, knowledge_only: true },
+    { content, knowledge_only: mode === "knowledge", demo_only: mode === "demo" },
   );
   return response.data;
 }
@@ -188,17 +206,31 @@ export async function searchWithAssistant(query: string): Promise<AISearchResult
   return response.data;
 }
 
-
 export type KnowledgeAnswer = {
   intent: string;
   content: string;
   sources: { id: string; title: string; version: string }[];
   links: { label: string; path: string }[];
-  knowledge_version: string;
+  knowledge_version: string | null;
   status: string;
 };
 
-export async function answerAssistant(query: string): Promise<KnowledgeAnswer> {
-  const response = await apiClient.post<KnowledgeAnswer>("/assistant/answer/", { query });
+export async function answerAssistant(
+  query: string,
+  mode: AssistantResponseMode = "knowledge",
+): Promise<KnowledgeAnswer> {
+  const response = await apiClient.post<KnowledgeAnswer>(
+    mode === "demo" ? "/assistant/demo/" : "/assistant/answer/",
+    { query, knowledge_only: mode === "knowledge" },
+  );
   return response.data;
+}
+
+export type AssistantResponseMode = "knowledge" | "demo";
+export function getAssistantResponseMode(
+  config?: AssistantConfig | null,
+): AssistantResponseMode | null {
+  if (!config?.enabled || config.provider_mode === "disabled") return null;
+  if (config.knowledge_enabled) return "knowledge";
+  return config.demo_enabled && config.provider_mode === "demo" ? "demo" : null;
 }

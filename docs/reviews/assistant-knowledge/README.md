@@ -16,3 +16,10 @@ Validation:
 Browser tests intercept APIs using isolated fixtures, never real accounts or production data. Screenshots/reports are uploaded in CI under the existing property-detail-layout evidence artifact alongside the original responsive checks. Run npm run build, then npx playwright test --config=playwright.assistant.config.ts. The existing property layout suite remains enabled.
 
 Knowledge publication and service activation remain separate CTO approval gates. Commercial terms, retention commitments and support SLAs stay unpublished. The female portrait concept is a separate artwork-only PR; this implementation retains the orb.
+
+
+## Demo/knowledge compatibility correction — 5 November 2026
+
+The existing demo is an independent server capability: enabled=true, provider_mode=demo, demo_enabled=true allows demo replies even when knowledge_enabled=false. Both interfaces explicitly select the advertised mode. Public demo replies use the stateless /assistant/demo/ route and existing server responder; authenticated demo requests send demo_only=true, knowledge_only=false and retain existing owner-scoped demo history. They cannot invoke a paid provider or the new knowledge service. Knowledge-mode requests remain knowledge_only=true and are never retried or silently downgraded after an error. Global disable, expired/revoked native enrollment, property visibility and ownership remain enforced.
+
+No default live-model mode is enabled and no policy/retention change is introduced. Missing/unsupported capabilities still fail closed. Tests include the approved release combination in public B2C/B2B and authenticated browsers, in addition to retained knowledge-enabled cases. The approved release remains paused; no merge, deployment or feature activation is authorized by the correction.

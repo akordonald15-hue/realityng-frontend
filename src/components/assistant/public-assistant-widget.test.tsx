@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PublicAssistantWidget } from "./public-assistant-widget";
 
 const api = vi.hoisted(() => ({ getAssistantConfig: vi.fn(), answerAssistant: vi.fn() }));
-vi.mock("@/lib/api/assistant", () => api);
+vi.mock("@/lib/api/assistant", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api/assistant")>()),
+  ...api,
+}));
 vi.mock("@/providers/auth-provider", () => ({ useOptionalAuth: () => null }));
 const response = {
   intent: "search",
@@ -51,7 +54,7 @@ describe("Shared public assistant", () => {
     await act(async () => {
       submit();
     });
-    expect(api.answerAssistant).toHaveBeenCalledWith("search");
+    expect(api.answerAssistant).toHaveBeenCalledWith("search", "knowledge");
     expect(screen.getByText(response.content)).toBeInTheDocument();
     expect(screen.getByText(/Source: Find properties/)).toBeInTheDocument();
   });
@@ -120,5 +123,30 @@ describe("Shared public assistant", () => {
     });
     expect(screen.getByText("Do not share secrets")).toBeInTheDocument();
     expect(screen.queryByText("search")).not.toBeInTheDocument();
+  });
+  it("preserves public demo replies with knowledge disabled", async () => {
+    api.getAssistantConfig.mockResolvedValue({
+      enabled: true,
+      provider_mode: "demo",
+      demo_enabled: true,
+      knowledge_enabled: false,
+      suggested_prompts: [],
+    });
+    api.answerAssistant.mockResolvedValue({
+      ...response,
+      status: "demo",
+      sources: [],
+      knowledge_version: null,
+      content: "Existing guided demo reply",
+    });
+    render(<PublicAssistantWidget />);
+    await open();
+    await act(async () => {
+      submit();
+    });
+    expect(api.answerAssistant).toHaveBeenCalledWith("search", "demo");
+    expect(screen.getByText("Existing guided demo reply")).toBeInTheDocument();
+    expect(screen.getByText("Guided demo mode. No live model.")).toBeInTheDocument();
+    expect(screen.queryByText(/Source:/)).not.toBeInTheDocument();
   });
 });

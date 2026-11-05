@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   answerAssistant,
   getAssistantConfig,
+  getAssistantResponseMode,
   type AssistantConfig,
   type KnowledgeAnswer,
 } from "@/lib/api/assistant";
@@ -63,7 +64,11 @@ export function PublicAssistantWidget() {
   const busy = useRef(false);
   const [config, setConfig] = useState<AssistantConfig | null>(null);
   const [unavailable, setUnavailable] = useState(false);
-  const helperText = "Approved platform guidance. No live model.";
+  const responseMode = getAssistantResponseMode(config);
+  const helperText =
+    responseMode === "demo"
+      ? "Guided demo mode. No live model."
+      : "Approved platform guidance. No live model.";
   const orbState = isResponding ? "thinking" : "idle";
 
   useEffect(() => {
@@ -111,7 +116,7 @@ export function PublicAssistantWidget() {
   async function submitMessage(content: string) {
     const value = content.trim();
     if (!value || busy.current) return;
-    if (!config?.enabled || !config.knowledge_enabled) {
+    if (!responseMode) {
       setUnavailable(true);
       return;
     }
@@ -123,7 +128,7 @@ export function PublicAssistantWidget() {
     setUnavailable(false);
     setDraft("");
     try {
-      const answer = await answerAssistant(value);
+      const answer = await answerAssistant(value, responseMode);
       if (request !== generation.current) return;
       // Do not echo sensitive input when the shared service flags it.
       setMessages((previous) => [
@@ -243,7 +248,9 @@ export function PublicAssistantWidget() {
       >
         {messages.map((message) => (
           <div
-            className={message.role === "user" ? "flex flex-col items-end" : "flex flex-col items-start"}
+            className={
+              message.role === "user" ? "flex flex-col items-end" : "flex flex-col items-start"
+            }
             key={message.id}
           >
             <p

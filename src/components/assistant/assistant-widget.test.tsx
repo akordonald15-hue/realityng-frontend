@@ -13,7 +13,10 @@ const api = vi.hoisted(() => ({
   sendMessage: vi.fn(),
 }));
 
-vi.mock("@/lib/api/assistant", () => api);
+vi.mock("@/lib/api/assistant", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api/assistant")>()),
+  ...api,
+}));
 
 describe("AssistantWidget", () => {
   beforeEach(() => {
@@ -174,5 +177,38 @@ describe("AssistantWidget", () => {
     });
     expect(screen.queryByText("Late A answer")).not.toBeInTheDocument();
     expect(screen.queryByText("Question A")).not.toBeInTheDocument();
+  });
+  it("preserves authenticated demo replies with knowledge disabled", async () => {
+    api.getAssistantConfig.mockResolvedValue({
+      enabled: true,
+      provider_mode: "demo",
+      demo_enabled: true,
+      knowledge_enabled: false,
+      label: "RealityNG Demo Assistant",
+      supported_topics: [],
+      suggested_prompts: [],
+    });
+    api.sendMessage.mockResolvedValue({
+      user_message: { id: "demo-user", role: "user", content: "Hello" },
+      assistant_message: {
+        id: "demo-answer",
+        role: "assistant",
+        content: "Existing guided demo reply",
+      },
+    });
+    renderWithQueryClient(<AssistantWidget />);
+    await userEvent.click(
+      screen.getByRole("button", { name: /open realityng (?:ai )?assistant/i }),
+    );
+    await waitFor(() => expect(screen.getByLabelText("Ask RealityNG assistant")).toBeEnabled());
+    await userEvent.type(screen.getByLabelText("Ask RealityNG assistant"), "Hello");
+    await userEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByText("Existing guided demo reply")).toBeInTheDocument();
+    expect(api.sendMessage).toHaveBeenCalledWith({
+      conversationId: "conversation-1",
+      content: "Hello",
+      mode: "demo",
+    });
+    expect(screen.getByText("Guided demo mode")).toBeInTheDocument();
   });
 });

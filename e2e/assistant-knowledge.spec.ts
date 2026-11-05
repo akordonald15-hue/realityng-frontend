@@ -175,3 +175,122 @@ test("authenticated assistant uses knowledge-only answers above mobile navigatio
     page.getByRole("button", { name: "Open RealityNG assistant", exact: true }),
   ).toBeFocused();
 });
+
+for (const destination of ["/", "/for-professionals", "/saved-properties"]) {
+  test(`approved demo configuration keeps replies and navigation working on ${destination}`, async ({
+    page,
+  }) => {
+    const authenticated = destination === "/saved-properties";
+    const sent: string[] = [];
+    const reply =
+      "You can continue in RealityNG at /dashboard. I can only suggest approved app destinations in demo mode.";
+    if (authenticated)
+      await page.addInitScript(() => {
+        localStorage.setItem("realityng.accessToken", "isolated-demo-fixture");
+        localStorage.setItem("realityng.refreshToken", "isolated-demo-fixture");
+      });
+    await page.route("**/api/v1/**", async (route) => {
+      const headers = {
+        "Access-Control-Allow-Origin": route.request().headers().origin ?? "*",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Headers": "content-type,x-request-id,authorization",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      };
+      if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+      const path = new URL(route.request().url()).pathname;
+      let status = 200;
+      let body: unknown = { results: [], count: 0 };
+      if (path.endsWith("/users/me/")) {
+        status = authenticated ? 200 : 401;
+        body = {
+          id: "isolated-demo-user",
+          email: "demo-fixture@example.test",
+          first_name: "Synthetic",
+          last_name: "Buyer",
+          is_active: true,
+          is_email_verified: true,
+          is_suspended: false,
+          profile: {},
+          roles: [{ role: { name: "buyer" }, status: "approved" }],
+        };
+      }
+      if (path.endsWith("/assistant/config/"))
+        body = {
+          enabled: true,
+          provider_mode: "demo",
+          demo_enabled: true,
+          knowledge_enabled: false,
+          label: "RealityNG Demo Assistant",
+          supported_topics: ["Navigation"],
+          suggested_prompts: [],
+        };
+      if (path.endsWith("/conversations/"))
+        body = { id: "owned-demo", status: "active", provider: "demo" };
+      if (path.endsWith("/assistant/answer/"))
+        throw new Error("Knowledge endpoint must not be used");
+      if (path.endsWith("/assistant/demo/")) {
+        expect(route.request().postDataJSON()).toEqual({
+          query: "Open dashboard",
+          knowledge_only: false,
+        });
+        sent.push("public-demo");
+        body = {
+          intent: "navigation",
+          content: reply,
+          sources: [],
+          links: [{ label: "Continue in RealityNG", path: "/dashboard" }],
+          knowledge_version: null,
+          status: "demo",
+          provider_metadata: { provider: "demo", mode: "demo" },
+        };
+      }
+      if (path.endsWith("/conversations/owned-demo/messages/")) {
+        expect(route.request().postDataJSON()).toEqual({
+          content: "Open dashboard",
+          knowledge_only: false,
+          demo_only: true,
+        });
+        sent.push("authenticated-demo");
+        body = {
+          user_message: { id: "du", role: "user", content: "Open dashboard" },
+          assistant_message: {
+            id: "da",
+            role: "assistant",
+            content: reply,
+            tool_results: [
+              {
+                tool_use_id: "demo-nav",
+                tool: "navigate",
+                input: {},
+                result: { target: "dashboard", property_id: null, path: "/dashboard" },
+              },
+            ],
+          },
+          provider_metadata: { provider: "demo", mode: "demo" },
+        };
+      }
+      await route.fulfill({ status, headers, json: body });
+    });
+    await page.goto(destination);
+    const launch = page.getByRole("button", {
+      name: authenticated ? /Open RealityNG (?:AI )?assistant/i : /^Open RealityNG AI$/,
+    });
+    await launch.click();
+    const input = page.getByLabel(authenticated ? "Ask RealityNG assistant" : "Ask RealityNG AI", {
+      exact: true,
+    });
+    await expect(input).toBeEnabled();
+    await input.fill("Open dashboard");
+    await input.press("Enter");
+    await expect(page.getByText(reply)).toBeVisible();
+    await expect(
+      page.getByRole("link", {
+        name: authenticated ? "View dashboard" : "Continue in RealityNG",
+        exact: true,
+      }),
+    ).toHaveAttribute("href", "/dashboard");
+    expect(sent).toEqual([authenticated ? "authenticated-demo" : "public-demo"]);
+    await page.keyboard.press("Escape");
+    await expect(launch).toBeFocused();
+  });
+}
