@@ -11,7 +11,7 @@ import {
   type KnowledgeAnswer,
 } from "@/lib/api/assistant";
 import { KnowledgeSources } from "@/components/assistant/knowledge-sources";
-import { AssistantOrb } from "@/components/assistant/assistant-orb";
+import { AssistantAvatar } from "@/components/assistant/assistant-avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -188,7 +188,7 @@ export function PublicAssistantWidget() {
           ref={launcherRef}
           type="button"
         >
-          <AssistantOrb state={orbState} size="launcher" />
+          <AssistantAvatar state={orbState} size="launcher" />
           <span className="pointer-events-none absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-full bg-reality-surfaceDark px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-reality-sm backdrop-blur-md transition group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:opacity-100">
             Ask Reality AI
           </span>
@@ -212,7 +212,7 @@ export function PublicAssistantWidget() {
     >
       <div className="flex items-start justify-between gap-3 border-b border-reality-border-secondary bg-reality-surfaceBrand px-4 py-3">
         <div className="flex items-center gap-3">
-          <AssistantOrb state={orbState} size="sm" />
+          <AssistantAvatar state={orbState} size="sm" />
           <div>
             <h2 className="font-display text-lg font-semibold text-reality-text-primary">
               RealityNG AI

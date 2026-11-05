@@ -18,7 +18,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
-  projects: [320, 390, 768, 1440].map((width) => ({
+  projects: [320, 375, 390, 768, 1440].map((width) => ({
     name: `assistant-${width}`,
     use: { viewport: { width, height: width < 768 ? 844 : 960 } },
   })),
